@@ -1,0 +1,15 @@
+{
+  "name": "fishing-tournament-template-v3",
+  "version": "3.0.0",
+  "main": "",
+  "scripts": {
+    "start": "npm start --prefix api",
+    "install-client": "cd client && npm install && npm run build && cd ..",
+    "install-api": "cd api && npm install && cd .. ",
+    "heroku-postbuild": "npm run install-client && npm run install-api"
+  },
+  "dependencies": {
+    "@firebase/auth": "^1.7.1",
+    "@mui/icons-material": "^5.15.15"
+  }
+}
