@@ -1,0 +1,145 @@
+
+/* Start countdown timer styling */
+.expired-notice {
+  text-align: center;
+  padding: 2rem;
+  border: 1px solid #ebebeb;
+  border-radius: 0.25rem;
+  margin: 0.5rem;
+}
+
+.expired-notice > span {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: red;
+}
+
+.expired-notice > p {
+  font-size: 1.5rem;
+}
+
+.show-counter {
+  padding: 0.5rem;
+}
+
+.show-counter .countdown-link {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 2.25rem;
+  line-height: 2.75rem;
+  padding: 0.5rem;
+  border: 1px solid #ebebeb;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  color: #212529;
+}
+
+.show-counter .countdown {
+  line-height: 2.25rem;
+  padding: 0 0.75rem 0 0.75rem;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.show-counter .countdown.danger {
+  color: #ff0000;
+}
+
+.show-counter .countdown > p {
+  margin: 0;
+}
+
+.show-counter .countdown > span {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.pageContainer {
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+}
+
+.buttonContainer {
+  display: inline-flex;
+  flex-flow: row;
+  width: 100%;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  background-color: white;
+  color: #212529;
+  z-index: 1001;
+}
+
+.tournamentContainer {
+  display: inline-flex;
+  flex-flow: nowrap;
+  width: 100%;
+  background-color: white;
+  margin: 0;
+  padding: 0;
+}
+
+.tournamentInfo {
+  display: inline-flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  background-color: white;
+  color: #212529;
+  font-size: 24px;
+}
+
+.tournamentLogo {
+  display: inline-flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center; 
+  flex: 1;
+  background-color: white;
+  font-size: 24px;
+}
+
+.tournamentColElement {
+  flex: 1;
+  background-color: white;
+  color: #212529;
+}
+
+.tournamentContact {
+  display: inline-flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  background-color: white;
+  font-size: 24px;
+}
+
+select {
+  background-color: white;
+  color: black;
+}
+
+.earlyBirdYes {
+  color: green;
+}
+
+.earlyBirdNo {
+  color: red;
+}
+
+.paymentContainer {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  width: 100%;
+  height: 250px;
+}

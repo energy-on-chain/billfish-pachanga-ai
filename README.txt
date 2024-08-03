@@ -14,39 +14,39 @@
 # Initial commit of the project. 
 ###############################################################################
 ###############################################################################
-DEV HOURS: 0
-AS OF: XX August 2024
+DEV HOURS: 3
+AS OF: 2 August 2024
 ###############################################################################
 ###############################################################################
-SETUP STEPS
-1. Create a new github repo for the event
-2. FIXME: Stripe
-  - Add client credentials to the .env file in the main directory
-  - Add client credentials to the .env file in the client directory
-3. FIXME: Firebase
-  - Add client credentials to the .env file in the main directory
-  - Add client credentials to the .env file in the client directory
-4. FIXME: Google Cloud
-  - Add client credentials to the .env file in the main directory
-  - Add client credentials to the .env file in the client directory
-5. FIXME: Heroku
-  - Add the following config variables to the dev project
-  - Add the following config variables to the prod project
-6. FIXME: .env
-  - In the main directory, replace the DWD Stripe credentials with the client's
-  - Repeat this in the client directory
-7. FIXME: Config fields
-  - appConfig
-  - contactConfig
-  - firebaseConfig
-  - stripeConfig
+NEW TOURNAMENT SETUP STEPS
+1. Fork new github repo for tournament from template
+2. Get artwork from client
+  - Homepage logo (size = FIXME)
+  - Navbar logo (size = FIXME)
+  - Favicon (size = FIXME)
+3. Update the client/public folder
+  - Add client title to index.html 
+  - Add client favicon.ico to folder
+4. Update the .env file in the main project directory
+  - Add client stripe
+  - Add client firebase
+  - Add google Cloud
+5. Update the config.js file at client/src/config.js
 ###############################################################################
 ###############################################################################
 GENERAL
-[x] Create repo
-[x] Frame out main directory
-[] Frame out api (move stuff to config)
-[] Frame out client (move stuff to config)
+[x] Create repo, frame
+[] Footer
+[] Home page
+[] Create dev branch
+[] Registration page
+[] Catches page
+[] Admin page
+[] Leaderboard page
+[] Pots page
+[] Auction page
+[] Styling
+[] Heroku deploy for BFP
 
 CONFIG: 
 [] vars: hasRegistration, hasLeaderboard, hasPots, hasAuction, hasCatches => dictates admin tabs and links in nav bar, hasCatchAndRelease, hasMeatfish, catchAndReleaseSpeciesList, meatfishSpeciesList
@@ -56,9 +56,6 @@ CONFIG:
 [] Put as a subdomain on our site
 [] Bulk upload feature from a local csv file
 [] move contact info to its own config file for footer
-
-HOME
-[] vars: hasEarlyBirdRegistration, earlyBirdCutoffTimestamp, earlyBirdPrice, regularPrice, tournamentStartDate, tournamentEndDate, rulesUrl, tournamentWebsiteUrl, tournamentLogoUrl
 
 REGISTRATION
 [] vars: additionalRegistrationFields, includeImageFile, hasSponsorRegistration
@@ -101,10 +98,20 @@ POTS
 [] Board creation? hasCatchAndReleaseBoard, hasMeatfishBoard with name mapping
 [] If no winner yet, post empty table
 [] Deleting a team deletes their pots too
+[] Add stat to homepage
 
 AUCTION
 [] vars: auctionStartTimestamp, auctionEndTiimestamp, hideAuctionEmails, hideAuctionPhoneNumbers, *checkboxStrings: e.g. is 21?*
 [] See DSR notes?
+[] Add stat to the homepage
+
+STYLING
+[] Move the header and background colors to the config file
+[] "FIXME" search and replace
+[] BasePage.css (multiple)
+[] HomePage.css (multiple)
+[] RegisterPage.css (multiple)
+[] RootNavigation.css (multiple)
 
 NEW FEATURES
 - Sponsors (links to their site)
