@@ -14,11 +14,11 @@
 # Initial commit of the project. 
 ###############################################################################
 ###############################################################################
-DEV HOURS: 3
-AS OF: 2 August 2024
+# DEV HOURS: 6
+# AS OF: 3 August 2024
 ###############################################################################
 ###############################################################################
-NEW TOURNAMENT SETUP STEPS
+# NEW TOURNAMENT SETUP STEPS
 1. Fork new github repo for tournament from template
 2. Get artwork from client
   - Homepage logo (size = FIXME)
@@ -34,28 +34,30 @@ NEW TOURNAMENT SETUP STEPS
 5. Update the config.js file at client/src/config.js
 ###############################################################################
 ###############################################################################
-GENERAL
+# FUTURE FEATURE ADDITIONS
+- Sponsors (links to their site)
+- Media (photos, videos of past tournaments)
+- Merch shop (standalone, with registration)
+- Newsfeed
+- Stats (public/private)
+- Participants (angler/boat profiles)
+- Email list (customer follow up, advertising, etc.)
+###############################################################################
+###############################################################################
+#DEV TODO
 [x] Create repo, frame
-[] Footer
-[] Home page
-[] Create dev branch
+[x] Footer
+[x] Home page
 [] Registration page
-[] Catches page
 [] Admin page
+[] Catches page
 [] Leaderboard page
 [] Pots page
 [] Auction page
 [] Styling
-[] Heroku deploy for BFP
-
-CONFIG: 
-[] vars: hasRegistration, hasLeaderboard, hasPots, hasAuction, hasCatches => dictates admin tabs and links in nav bar, hasCatchAndRelease, hasMeatfish, catchAndReleaseSpeciesList, meatfishSpeciesList
-[] Write so that ?team? can be boat or angler?
-[] Sorting arrows visible on all tables
-[] Loading screens for all
-[] Put as a subdomain on our site
-[] Bulk upload feature from a local csv file
-[] move contact info to its own config file for footer
+[] Create dev branch, heroku deploy
+[] Full scale QA with BFP2024 data
+[] Create as subdomain of customtournamentsolutions/[NAME_GOES_HERE]
 
 REGISTRATION
 [] vars: additionalRegistrationFields, includeImageFile, hasSponsorRegistration
@@ -64,6 +66,7 @@ REGISTRATION
 [] Include checkedIn box
 [] Include userInput unique text fields (e.g. hometown)
 [] Autocomplete using past entry data
+[] Bulk upload feature for teams
 
 ADMIN
 [] vars: numLeaderboardAwards (e.g. top 3?)
@@ -80,6 +83,7 @@ ADMIN
 CATCHES
 [] vars: listOfFieldsToDisplay (e.g. name, age, gender, team, length, width, girth)
 [] Searchable by team / angler
+[] Bulk upload feature for catches
 
 LEADERBOARD
 [] vars: numLeaderboardRows, hasSpeciesWinners, hasGrandChampion, hasGrandSlam, hasCatchAndReleaseDaily, hasMeatfishDaily, finalResultsTimestamp
@@ -106,18 +110,12 @@ AUCTION
 [] Add stat to the homepage
 
 STYLING
+[] Loading screens for all
 [] Move the header and background colors to the config file
+[] Sorting arrows visible on tables
 [] "FIXME" search and replace
 [] BasePage.css (multiple)
 [] HomePage.css (multiple)
 [] RegisterPage.css (multiple)
 [] RootNavigation.css (multiple)
 
-NEW FEATURES
-- Sponsors (links to their site)
-- Media (photos, videos of past tournaments)
-- Merch shop (standalone, with registration)
-- Newsfeed
-- Stats (public/private)
-- Participants (angler/boat profiles)
-- Email list (customer follow up, advertising, etc.)
