@@ -24,6 +24,7 @@ function Footer() {
             </div>
             <div className="copyrightInfoContainer">
               <div className="copyrightTextLeft">
+                <p>Note: All content is preliminary. Official results are certified by the tournament committee.</p>
                 <p><span>&copy;</span>{CONFIG_CONTACT_FOOTER_COMPANY_COPYRIGHT_STRING}</p>
               </div>
               <div className="copyrightTextRight">

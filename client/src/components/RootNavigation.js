@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 
 import { 
   CONFIG_GENERAL_HAS_INFO, 
+  CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT,
   CONFIG_GENERAL_INFO_LINK_OBJECT,
   CONFIG_GENERAL_HAS_REGISTRATION, 
   CONFIG_GENERAL_HAS_ADMIN, 
@@ -94,26 +95,7 @@ function RootNavigation(props) {
         <li>
           <NavLink to="/" className={({ isActive }) => isActive ? "active" : undefined}>Home</NavLink>
         </li>
-        {CONFIG_GENERAL_HAS_LEADERBOARD && (
-          <li>
-            <NavLink to="/leaderboard" className={({ isActive }) => isActive ? "active" : undefined}>Leaderboard</NavLink>
-          </li>
-        )}
-        {CONFIG_GENERAL_HAS_POTS && (
-          <li>
-            <NavLink to="/pots" className={({ isActive }) => isActive ? "active" : undefined}>Pots</NavLink>
-          </li>
-        )}
-        {CONFIG_GENERAL_HAS_CATCHES && (
-          <li>
-            <NavLink to="/catches" className={({ isActive }) => isActive ? "active" : undefined}>Catches</NavLink>
-          </li>
-        )}
-        {CONFIG_GENERAL_HAS_ADMIN && (
-          <li>
-            <NavLink to="/admin" className={({ isActive }) => isActive ? "active" : undefined}>Admin</NavLink>
-          </li>
-        )}
+
         {CONFIG_GENERAL_HAS_INFO && !isMobile && (
           <div className="dropdown">
             <button className="dropbtn">Info <i className="fa fa-caret-down nav-icon"></i></button>
@@ -131,6 +113,33 @@ function RootNavigation(props) {
             </li>
           ))
         )}
+
+        {!isMobile && (
+          <div className="dropdown">
+            <button className="dropbtn">Tournament <i className="fa fa-caret-down nav-icon"></i></button>
+            <div className="dropdown-content">
+              {Object.entries(CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT).map(([label, url]) => (
+                <li>
+                  <NavLink to={url} className={({ isActive }) => isActive ? "active" : undefined}>{label}</NavLink>
+                </li>
+              ))}
+            </div>
+          </div>
+        )}
+        {isMobile && (
+          Object.entries(CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT).map(([label, url]) => (
+            <li key={label}>
+              <NavLink to={url} className={({ isActive }) => isActive ? "active" : undefined}>{label}</NavLink>
+            </li>
+          ))
+        )}
+
+        {CONFIG_GENERAL_HAS_ADMIN && (
+          <li>
+            <NavLink to="/admin" className={({ isActive }) => isActive ? "active" : undefined}>Admin</NavLink>
+          </li>
+        )}
+
         {CONFIG_GENERAL_HAS_REGISTRATION && (
           <li className="navButtonHamburgerToggle">
             <NavLink to="/register" className={({ isActive }) => isActive ? "active" : undefined}>Register</NavLink>

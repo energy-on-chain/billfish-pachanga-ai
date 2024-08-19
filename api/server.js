@@ -12,7 +12,7 @@ const redis = require('redis');
 // ROUTES
 const homeRoutes = require('./routes/homeRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
-// const adminRoutes = require('./routes/adminRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 // const leaderboardRoutes = require('./routes/leaderboardRoutes');
 // const potRoutes = require('./routes/potRoutes');
 
@@ -124,7 +124,7 @@ app.use(session({
 app.use('/', express.static(path.join(__dirname, '../client/build')));
 app.use('/', homeRoutes);
 app.use('/', registrationRoutes({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }));
-// app.use('/', adminRoutes);
+app.use('/', adminRoutes);
 // app.use('/', leaderboardRoutes);
 // app.use('/', potRoutes);
 

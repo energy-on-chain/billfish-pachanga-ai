@@ -1,6 +1,6 @@
 module.exports = {
   /////////////////////////////////////////////////////////////////////////////
-  // 1. General ///////////////////////////////////////////////////////////////
+  // 1. General Settings //////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
   CONFIG_GENERAL_YEAR: "2025",
   CONFIG_GENERAL_HAS_INFO: true,
@@ -8,17 +8,60 @@ module.exports = {
   CONFIG_GENERAL_HAS_LEADERBOARD: true,
   CONFIG_GENERAL_HAS_CATCHES: true,
   CONFIG_GENERAL_HAS_ADMIN: true,
+  CONFIG_GENERAL_HAS_STATS_TAB: true,
+  CONFIG_GENERAL_HAS_REPORTS_TAB: true,
   CONFIG_GENERAL_HAS_POTS: true,
   CONFIG_GENERAL_HAS_AUCTION: false,
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_WEBSITE: "https://www.billfishpachanga.com/",
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES: "https://www.billfishpachanga.com/rules/",
+  CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT: {
+    "Register": "/register",
+    "Leaderboard": "/leaderboard",
+    "Catches": "/catches",
+    "Pots": "/pots",
+    "Auction": "/auction",
+  },
   CONFIG_GENERAL_INFO_LINK_OBJECT: {
     "Tournament Site": "https://www.billfishpachanga.com/",
     "Rules": "https://www.billfishpachanga.com/rules/"
   },
-
+  CONFIG_CONTACT_FOOTER_LOCATION_STRING: "Austin, TX    -    New Orleans, LA",    // Contact info
+  CONFIG_CONTACT_FOOTER_PHONE_STRING: "Phone / Text: (903) 235-5195",
+  CONFIG_CONTACT_FOOTER_EMAIL_STRING: "Email: info@customtournamentsolutions.com",
+  CONFIG_CONTACT_FOOTER_COMPANY_COPYRIGHT_STRING: " Custom Tournament Solutions, 2023-Present, All Rights Reserved",
+  CONFIG_CONTACT_INFO_ADMIN_NAME_1: "Cody Craig",
+  CONFIG_CONTACT_INFO_ADMIN_NAME_2: "Matt Hartigan",
+  CONFIG_CONTACT_INFO_ADMIN_EMAIL_1: "cody@arrowheadecology.com",
+  CONFIG_CONTACT_INFO_ADMIN_EMAIL_2: "matthew@deepwaterdigital.tech",
+  CONFIG_FIREBASE_TEAMS_TABLE_NAME: "teams2025",    // Firebase
+  CONFIG_FIREBASE_TEAMS_ID_NAME: "teamId",    
+  CONFIG_FIREBASE_CATCHES_TABLE_NAME: "catches2025",
+  CONFIG_FIREBASE_CATCHES_ID_NAME: "catchId",
+  CONFIG_FIREBASE_POTS_TABLE_NAME: "pots2025",
+  CONFIG_FIREBASE_POTS_ID_NAME: "potId",
+  CONFIG_FIREBASE_AUCTION_TABLE_NAME: "auction2025",
+  CONFIG_FIREBASE_AUCTION_ID_NAME: "auctionId",
+  firebaseStagingConfig: {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_STAGING,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_STAGING,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_STAGING,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_STAGING,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID_STAGING,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_STAGING,
+  },
+  firebaseProductionConfig: {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_PRODUCTION,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_PRODUCTION,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID_PRODUCTION,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_PRODUCTION,
+  },
+  // FIXME: Styling
   /////////////////////////////////////////////////////////////////////////////
-  // 2. Home //////////////////////////////////////////////////////////////////
+  // 2. Home Page Settings ////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
   CONFIG_HOME_TOURNAMENT_DATE_STRING: "July 16th - 19th, 2025",
   CONFIG_HOME_TOURNAMENT_START_IN_LOCAL_TIME_IN_MS: "1752642000000",
@@ -30,9 +73,8 @@ module.exports = {
     "Billfish",
     "Meatfish",
   ],
-
   /////////////////////////////////////////////////////////////////////////////
-  // 3. Registration //////////////////////////////////////////////////////////
+  // 3. Registration Page Settings ////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION: true,
   CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS: "1750050000000",
@@ -95,57 +137,51 @@ module.exports = {
     "Extra Wristbands": {"price": 175, "minimumQty": 0, "maximumQty": 12},
     "T-shirts": {"price": 20, "minimumQty": 0, "maximumQty": 99},
   },
-
   /////////////////////////////////////////////////////////////////////////////
-  // 4. Firebase //////////////////////////////////////////////////////////////
+  // 5. ADMIN PAGE SETTINGS////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
-  CONFIG_FIREBASE_TEAMS_TABLE_NAME: "teams2025",
-  CONFIG_FIREBASE_ANGLERS_TABLE_NAME: "anglers2025",
-  CONFIG_FIREBASE_CATCHES_TABLE_NAME: "catches2025",
-  CONFIG_FIREBASE_POTS_TABLE_NAME: "pots2025",
-  firebaseStagingConfig: {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_STAGING,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_STAGING,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_STAGING,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_STAGING,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID_STAGING,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_STAGING,
-  },
-  firebaseProductionConfig: {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_PRODUCTION,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_PRODUCTION,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID_PRODUCTION,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_PRODUCTION,
-  },
-
+  CONFIG_ADMIN_DEFAULT_TAB_NAME: "Catches",
+  CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST: [
+    "Teams",
+    "Catches",
+    // "Pots",
+    // "Auction",
+    "Stats",
+    "Reports",
+  ],
+  CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING: "2024-07-19",
+  CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING: "2024-07-21",
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS: [
+    {databaseFieldName: "teamId", header: "Team Id", type: "string", isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: true, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+    {databaseFieldName: "teamName", header: "Team", type: "string", isAddOnCharge: false, isEditable: true, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+    {databaseFieldName: "teamCardholderName", header: "Cardholder Name", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+    {databaseFieldName: "teamEmail", header: "Cardholder Email", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: true, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+    {databaseFieldName: "teamPhone", header: "Cardholder Phone", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+    {databaseFieldName: "totalFeePaidAtCheckout", header: "Total Fee ($)", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+  ],
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES: [
+  ],
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS: [
+  ],
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS: [
+  ],
   /////////////////////////////////////////////////////////////////////////////
-  // 5. Styling ///////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-  // FIXME: pages...
-  // FIXME: tables...
-
-  /////////////////////////////////////////////////////////////////////////////
-  // 6. Contact ///////////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-  CONFIG_CONTACT_FOOTER_LOCATION_STRING: "Austin, TX    -    New Orleans, LA",
-  CONFIG_CONTACT_FOOTER_PHONE_STRING: "Phone / Text: (903) 235-5195",
-  CONFIG_CONTACT_FOOTER_EMAIL_STRING: "Email: info@customtournamentsolutions.com",
-  CONFIG_CONTACT_FOOTER_COMPANY_COPYRIGHT_STRING: " Custom Tournament Solutions, 2023-Present, All Rights Reserved",
-  CONFIG_CONTACT_INFO_ADMIN_NAME_1: "Cody Craig",
-  CONFIG_CONTACT_INFO_ADMIN_NAME_2: "Matt Hartigan",
-  CONFIG_CONTACT_INFO_ADMIN_EMAIL_1: "cody@arrowheadecology.com",
-  CONFIG_CONTACT_INFO_ADMIN_EMAIL_2: "matthew@deepwaterdigital.tech",
-
-  /////////////////////////////////////////////////////////////////////////////
-  // 7. TOURNAMENT-SPECIFIC VARIABLES /////////////////////////////////////////
-  /////////////////////////////////////////////////////////////////////////////
-
-
+  // 6. CATCHES PAGE SETTINGS//////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
-};
+  // 7. LEADERBOARD PAGE SETTINGS//////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+  CONFIG_LEADERBOARD_NUMBER_OF_PLACES_TO_DISPLAY: [
+    {title: "FIXME", numPlaces: 3},
+  ],
+  /////////////////////////////////////////////////////////////////////////////
+  // 8. POTS PAGE SETTINGS/////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+  CONFIG_POTS_NUMBER_OF_PLACES_TO_DISPLAY: [
+    {title: "FIXME", numPlaces: 3},
+  ],
+  /////////////////////////////////////////////////////////////////////////////
+  // 9. AUCTION PAGE SETTINGS//////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+}
 

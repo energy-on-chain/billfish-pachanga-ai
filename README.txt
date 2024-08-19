@@ -23,7 +23,7 @@
 ###############################################################################
 # NEW TOURNAMENT SETUP STEPS
 1. Fork new github repo for tournament from template
-2. Get artwork from client
+2. Update client artwork
   - Homepage logo for desktop (location="client/src/images/HomePageLogoDesktop.png" maxWidth=1020px)
   - Homepage logo for tablet (location="client/src/images/HomePageLogoTablet.png" maxWidth=750px)
   - Homepage logo for mobile (location="client/src/images/HomePageLogoMobile.png" location= maxWidth=350px)
@@ -31,14 +31,28 @@
   - Favicon logo for all devices (location="client/public/favicon.ico" size=48px by 48px )
 3. Update the client/public folder
   - Add client title to index.html 
-  - Add client favicon.ico to folder
-4. Update the .env file in the main project directory
-  - Add client stripe (local testing using a terminal with: stripe listen --forward-to localhost:3001/api/registration-webhook)
-  - Add client firebase (required services: Authentication, Firestore Database, Storage)
-  - Add google Cloud
-5. Update the config.js file at client/src/config.js
+4. Setup project Stripe services
+  - Get email and password from client
+  - Add client logo to the "payment receipt" template
+  - Setup staging webhook(s) for registration, pots
+  - Setup production webhook(s) for registration, pots
+  - Save project secred info to put into .env file (e.g. private key, webhook key)
+5. Setup project Firebase services
+  - Authentication (add admin emails and passwords)
+  - Firestore Database
+  - Storage (for images)
+  - Save project secret info to put into .env file
+6. FIXME: Setup project Google Cloud services...? Automatic? Creds?
+7. Update the .env file in the main project directory
+  - Add client stripe info 
+  - Add client firebase info
+  - FIXME: Add google cloud info...?
+8. Update the config.js file at client/src/config.js
   - Update the stripe webhook urls for test and production (test them both!!!)
-6. Deploy to heroku... Redis??
+9. Deploy to heroku
+  - Enable automatic re-deployment via github push for staging and production
+  - Enter all variables from .env file to config_vars tab for staging and production
+  - FIXME: Redis?
 ###############################################################################
 ###############################################################################
 ###############################################################################
@@ -59,39 +73,23 @@
 - Start stripe webhook for local dev: (run in terminal: stripe listen --forward-to localhost:3001/api/registration-webhook)
 
 // TODO
-[x] New template repo
-[x] Footer
-[x] Home
-[x] Registration
-[] Admin
-[] Catches
-[] Leaderboard
---------
-[] Pots
-[] Auction
-[] Styling
-[] Create subdomains of customtournamentsolutions/[EVENT_NAME_GOES_HERE]
 [] Production deployment test using blank template and BFP2024 data (full edge case plan... e.g. ensure correct earlybird switch)
 [] Production deployment of BFP2025
+[] Production deployment of DSR2025 (don't mess with it too much because it already works!!!!)
 
 ADMIN
-[] vars: numLeaderboardAwards (e.g. top 3?)
-[] Login + logout
-[] Stay on same tab on refresh
-[] Team tab (make sure that delete removes all the images from storage too)
-[] Catches tab
-[] Pots tab
-[] Auction tab
-[] Reports tab (registration check-in, leaderboard summary, pot summary, auction summary, full award summary that includes)
+[] Fix handling of table properties in CrudTable
+[] Implement AdminDeleteModal (teams, catches in config file and server)
+[] Implement AdminEditModal (teams, catches in config file and server)
+[] Implement AdminAddModal (teams, catches in config file and server)
+[] Safe handling of image CRUD (teams, catches, pots, auction)
 [] Stats tab
-[] How to safely edit image on back end for a team, angler, etc.
-[] Settings tab (hideLeaderboard, hidePots, hideAuction, hide? all pages by toggling the hasWhatever variable)
-[] Full catch report (timestamp vs l/w/g)
+[] Reports tab (registration, catches by team and all, leaderboard by team and all, pots by team and all, auction by person and all, awards by team and all)
 
 CATCHES
 [] vars: listOfFieldsToDisplay (e.g. name, age, gender, team, length, width, girth)
-[] Searchable by team / angler
-[] Bulk upload feature for catches
+[] Searchable (by team, by type, by species, by date)
+[] Ability to upload a photo with the catch as well
 
 LEADERBOARD
 [] vars: numLeaderboardRows, hasSpeciesWinners, hasGrandChampion, hasGrandSlam, hasCatchAndReleaseDaily, hasMeatfishDaily, finalResultsTimestamp
@@ -100,6 +98,21 @@ LEADERBOARD
 [] Toggle ?preliminary? vs ?final? message using config file time stamp
 [] Views: list, select, slideshow
 [] If no winners yet, post empty table
+[] Add report to admin reports tab... full awards too
+[] modularize all the endpoints... i.e. just swap out the logic
+
+STYLING
+[] Loading screens for all
+[] Move the header and background colors to the config file
+[] Sorting arrows visible on tables
+[] "FIXME" search and replace
+[] BasePage.css (multiple)
+[] HomePage.css (multiple)
+[] RegisterPage.css (multiple)
+[] RootNavigation.css (multiple)
+[] Login.js (avatar style)
+[] CrudTable.js (sx styling)
+[] AdminPage.js (styling)
 
 POTS
 [] vars: numLeaderboardRows, hasSpeciesWinners, hasGrandChampion, hasGrandSlam, hasCatchAndReleaseDaily, hasMeatfishDaily, finalResultsTimestamp
@@ -111,24 +124,20 @@ POTS
 [] If no winner yet, post empty table
 [] Deleting a team deletes their pots too
 [] Add stat to homepage
+[] Add tab to admin
+[] Add report to admin
 
 AUCTION
 [] vars: auctionStartTimestamp, auctionEndTiimestamp, hideAuctionEmails, hideAuctionPhoneNumbers, *checkboxStrings: e.g. is 21?*
 [] See DSR notes?
 [] Add stat to the homepage
-
-STYLING
-[] Loading screens for all
-[] Move the header and background colors to the config file
-[] Sorting arrows visible on tables
-[] "FIXME" search and replace
-[] BasePage.css (multiple)
-[] HomePage.css (multiple)
-[] RegisterPage.css (multiple)
-[] RootNavigation.css (multiple)
+[] Add tab to admin
+[] Add report to admin
 
 ADDITIONAL "NICE TO HAVE" UPGRADES
+[] Add chiron to pots or leaderboard
 [] Increased ability to handle multiple registration cases (track anglers, captains, mates and incorporate into catches, leaderboard, admin, etc.)
 [] Scripts: bulk upload teams (anglers, captains, mates)
 [] Scripts: bulk upload catches
+[] V4: "Settings" tab on admin where pages can be toggled on and off
 

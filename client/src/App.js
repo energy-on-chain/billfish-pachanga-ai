@@ -10,7 +10,7 @@ import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import RegisterSuccessPage from "./pages/RegisterSuccessPage";
 import RegisterErrorPage from "./pages/RegisterErrorPage";
-// import AdminPage from "./pages/AdminPage";
+import AdminPage from "./pages/AdminPage";
 // import LeaderboardPage from "./pages/LeaderboardPage";
 // import CatchesPage from "./pages/CatchesPage";
 // import PotsPage from "./pages/PotsPage";
@@ -39,7 +39,7 @@ function App() {
         { path: '/register', element: <RegisterPage delayRefresh={delayRefresh} /> },   
         { path: '/registration_success', element: <RegisterSuccessPage /> },   
         { path: '/registration_error', element: <RegisterErrorPage /> },   
-        // { path: '/admin', element: <AdminPage/> },    
+        { path: '/admin', element: <AdminPage/> },    
         // { path: '/leaderboard', element: <LeaderboardPage/> },    
         // { path: '/catches', element: <CatchesPage/> },    
         // { path: '/pots', element: <PotsPage/> },    
