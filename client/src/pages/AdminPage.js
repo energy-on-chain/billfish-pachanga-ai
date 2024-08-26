@@ -40,6 +40,7 @@ import {
   CONFIG_FIREBASE_CATCHES_TABLE_NAME,    // catches
   CONFIG_FIREBASE_CATCHES_ID_NAME,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
+  CONFIG_CATCHES_STATS_LIST,
 
   CONFIG_FIREBASE_POTS_TABLE_NAME,    // pots
   CONFIG_FIREBASE_POTS_ID_NAME,
@@ -62,23 +63,21 @@ function AdminPage() {
   const [tabName, setTabName] = useState(window.localStorage.getItem('selectedTab') || (CONFIG_ADMIN_DEFAULT_TAB_NAME)); 
   const [tableProperties, setTableProperties] = useState([])
   const [apiUrl, setApiUrl] = useState();
-
-  // STATE - TABS
   const today = new Date();
-  const [rows, setRows] = useState([]);
-  const [rowsHaveLoaded, setRowsHaveLoaded] = useState(false);
   const desktopScroll = null;
   const mobileScroll = 'scroll';
   const [style, setStyle] = useState();
   const [initialState, setInitialState] = useState();
   const [pageSizeOptions, setPageSizeOptions] = useState();
 
-  // STATE - MODALS
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [deleteInfo, setDeleteInfo] = useState();
-  const [editInfo, setEditInfo] = useState();
+  // STATE - TEAMS
+  const [teamRows, setTeamRows] = useState([]);
+  const [teamRowsHaveLoaded, setTeamRowsHaveLoaded] = useState(false);
+  const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
+  const [isDeleteTeamModalOpen, setIsDeleteTeamModalOpen] = useState(false);
+  const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState(false);
+  const [deleteTeamInfo, setDeleteTeamInfo] = useState();
+  const [editTeamInfo, setEditTeamInfo] = useState();
   const [registrationStats, setRegistrationStats] = useState({
     totalTeams: 0,
     checkedInTeams: 0,
@@ -86,12 +85,33 @@ function AdminPage() {
     totalRegistrationFees: 0,
     totalAddOnFees: 0
   });
-  const openAddModal = () => {setIsAddModalOpen(true)};
-  const closeAddModal = () => {setIsAddModalOpen(false)};
-  const openEditModal = () => {setIsEditModalOpen(true)};
-  const closeEditModal = () => {setIsEditModalOpen(false)};
-  const openDeleteModal = () => {setIsDeleteModalOpen(true)};
-  const closeDeleteModal = () => {setIsDeleteModalOpen(false)};
+  const openAddTeamModal = () => {setIsAddTeamModalOpen(true)};
+  const closeAddTeamModal = () => {setIsAddTeamModalOpen(false)};
+  const openEditTeamModal = () => {setIsEditTeamModalOpen(true)};
+  const closeEditTeamModal = () => {setIsEditTeamModalOpen(false)};
+  const openDeleteTeamModal = () => {setIsDeleteTeamModalOpen(true)};
+  const closeDeleteTeamModal = () => {setIsDeleteTeamModalOpen(false)};
+
+  // STATE - CATCHES
+  const [catchRows, setCatchRows] = useState([]);
+  const [catchRowsHaveLoaded, setCatchRowsHaveLoaded] = useState(false);
+  const [isAddCatchModalOpen, setIsAddCatchModalOpen] = useState(false);
+  const [isDeleteCatchModalOpen, setIsDeleteCatchModalOpen] = useState(false);
+  const [isEditCatchModalOpen, setIsEditCatchModalOpen] = useState(false);
+  const [deleteCatchInfo, setDeleteCatchInfo] = useState();
+  const [editCatchInfo, setEditCatchInfo] = useState();
+  const [catchesStats, setCatchesStats] = useState({
+    totalFish: 0,
+  });
+  const openAddCatchModal = () => {setIsAddCatchModalOpen(true)};
+  const closeAddCatchModal = () => {setIsAddCatchModalOpen(false)};
+  const openEditCatchModal = () => {setIsEditCatchModalOpen(true)};
+  const closeEditCatchModal = () => {setIsEditCatchModalOpen(false)};
+  const openDeleteCatchModal = () => {setIsDeleteCatchModalOpen(true)};
+  const closeDeleteCatchModal = () => {setIsDeleteCatchModalOpen(false)};
+
+  // Pots FIXME
+  // Auction FIXME
 
   // INITIALIZE
   useEffect(() => {
@@ -103,10 +123,6 @@ function AdminPage() {
 
     try {
 
-      // Clear rows before fetching new data
-      setRows([]);
-      setRowsHaveLoaded(false);
-
       // Environment
       let initialApiUrl = null; 
       if (process.env.REACT_APP_NODE_ENV === "staging") {
@@ -114,8 +130,15 @@ function AdminPage() {
       } else if (process.env.REACT_APP_NODE_ENV === "production") {
         initialApiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
       }
+
+      // Clear all row data
+      setTeamRows([]);
+      setTeamRowsHaveLoaded(false);
+      setCatchRows([]);
+      setCatchRowsHaveLoaded(false);
+      // FIXME: pots, auction
   
-      // Tab settings
+      // Define tab settings
       let tableName;
       let idName;
       let tempTableProperties;
@@ -145,7 +168,7 @@ function AdminPage() {
       }
       let tempRows = [];
 
-      // Fetch
+      // Fetch tab data
       if (tab === "Stats") {
         try {
 
@@ -195,19 +218,54 @@ function AdminPage() {
             });
           }
 
-          // FIXME: Catches 
+          // Catches
+          if (CONFIG_GENERAL_HAS_CATCHES) {
+            try {
+              // Fetch total fish count as a promise
+              const totalFishRes = fetch(`${initialApiUrl}/api/admin_get_total_catch_count`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME })
+              }).then(res => res.json());
+
+              // Fetch fish count by species
+              const speciesStatsPromises = CONFIG_CATCHES_STATS_LIST.map((speciesType) => {
+                return fetch(`${initialApiUrl}/api/admin_get_total_catch_count_by_species`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME, speciesType })
+                })
+                .then(res => res.json())
+                .then(data => ({ speciesType, count: data.speciesCount }));
+              });
+
+              // Wait for all promises to resolve
+              const [totalFishData, ...speciesStats] = await Promise.all([totalFishRes, ...speciesStatsPromises]);
+
+              // Parse the results
+              const totalFishCount = totalFishData.totalFishCount;
+              const speciesCountStats = speciesStats.reduce((acc, { speciesType, count }) => {
+                acc[speciesType] = count;
+                return acc;
+              }, {});
+
+              // Update the state
+              setCatchesStats({
+                totalFish: totalFishCount,
+                speciesStats: speciesCountStats,
+              });
+
+            } catch (error) {
+              console.error('Error fetching catches data:', error);
+            }
+          }         
+
           // FIXME: Pots 
           // FIXME: Auction
           
         } catch (error) {
           console.error('Error fetching stats:', error);
         }
-      } else if (tab === "Reports") {
-        // FIXME: add report endpoint and function calls here
-        // FIXME: Registration
-        // FIXME: Catches
-        // FIXME: Pots
-        // FIXME: Auction
       } else {
         const res = await fetch(`${initialApiUrl}/api/admin_get_database_list`, {
           method: 'POST',
@@ -226,19 +284,39 @@ function AdminPage() {
         });
       }
       
-      // Tab state
+      // Set general state
       setApiUrl(initialApiUrl);
       setTableProperties(tempTableProperties);
-      setRows(tempRows);
-      setRowsHaveLoaded(true);
       setStyle({ height: 800, width: '100%' });
       setInitialState({ pagination: { paginationModel: { page: 0, pageSize: 10 } } });
       setPageSizeOptions([5, 10, 25, 100]);
+
+      // Set specific tab state
+      if (tab === 'Teams') {
+        setTeamRows(tempRows);
+        setTeamRowsHaveLoaded(true);
+      } else if (tab === 'Catches') {
+        setCatchRows(tempRows);
+        setCatchRowsHaveLoaded(true);
+      } else if (tab === 'Pots') {
+        // FIMXE
+      } else if (tab === 'Auction') {
+        // FIXME
+      }
   
-      // Modal state
-      setIsAddModalOpen(false);   
-      setIsEditModalOpen(false);
-      setIsDeleteModalOpen(false);
+      // Set all modal states
+      // Teams
+      setIsAddTeamModalOpen(false);   
+      setIsEditTeamModalOpen(false);
+      setIsDeleteTeamModalOpen(false);
+
+      // Catches
+      setIsAddCatchModalOpen(false);   
+      setIsEditCatchModalOpen(false);
+      setIsDeleteCatchModalOpen(false);
+
+      // Pots FIXME
+      // Auction FIXME
   
     } catch (error) {
       console.log('There was an error loading the server data for the default tab on the admin page: ' + error);
@@ -396,7 +474,43 @@ function AdminPage() {
                               <br/>
                             </div>
                           }
-                          { CONFIG_GENERAL_HAS_CATCHES && <h2>FIXME: Catches</h2>}
+
+                          {CONFIG_GENERAL_HAS_CATCHES &&
+                            <div>
+                              <h2>Catches</h2>
+                              {console.log("Rendering catchesStats:", catchesStats)}
+                              {isMobile ? (
+                                <>
+                                  <p><strong>Total Fish Caught:</strong></p>
+                                  <p>{catchesStats.totalFish}</p>
+                                  {catchesStats.speciesStats && Object.keys(catchesStats.speciesStats).map(speciesType => (
+                                    <div key={speciesType}>
+                                      <p>({catchesStats.speciesStats[speciesType]} {speciesType})</p>
+                                    </div>
+                                  ))}
+                                </>
+                              ) : (
+                                <>
+                                  <p>
+                                    <strong>Total Fish Caught:</strong> {catchesStats.totalFish}
+                                    {catchesStats.speciesStats && (
+                                      <> (
+                                        {Object.keys(catchesStats.speciesStats).map((speciesType, index, array) => (
+                                          <span key={speciesType}>
+                                            {catchesStats.speciesStats[speciesType]} {speciesType}
+                                            {index < array.length - 1 && ', '}
+                                          </span>
+                                        ))}
+                                        )
+                                      </>
+                                    )}
+                                  </p>
+                                </>
+                              )}
+                              <br />
+                            </div>
+                          }
+
                           { CONFIG_GENERAL_HAS_POTS && <h2>FIXME: Pots</h2>}
                           { CONFIG_GENERAL_HAS_AUCTION && <h2>FIXME: Auction</h2>}
                         </div>
@@ -419,10 +533,10 @@ function AdminPage() {
                         </div>
                       </TabPanel>
                     );
-                  } else {
+                  } else if (tab === "Teams") {
                     return (
                       <TabPanel key={tab} value={tab}>
-                        {!rowsHaveLoaded ? (
+                        {!teamRowsHaveLoaded ? (
                           <CircularProgress />
                         ) : (
                           <div style={style}> 
@@ -437,30 +551,77 @@ function AdminPage() {
                               buttonLabel={`Add ${tab} Entry`}
                               tableProperties={tableProperties}
                               style={style}
-                              rows={rows || []}
+                              rows={teamRows || []}
                               scroll={matches ? desktopScroll : mobileScroll}
                               initialState={initialState}
                               pageSizeOptions={pageSizeOptions}
                               checkboxSelection={true}
 
                               // add
-                              addStatus={isAddModalOpen}
-                              openAddModal={openAddModal}
-                              closeAddModal={closeAddModal}
+                              addStatus={isAddTeamModalOpen}
+                              openAddModal={openAddTeamModal}
+                              closeAddModal={closeAddTeamModal}
 
                               // edit
-                              editStatus={isEditModalOpen}
-                              editInfo={editInfo}
-                              setEditInfo={setEditInfo}
-                              openEditModal={openEditModal}
-                              closeEditModal={closeEditModal}
+                              editStatus={isEditTeamModalOpen}
+                              editInfo={editTeamInfo}
+                              setEditInfo={setEditTeamInfo}
+                              openEditModal={openEditTeamModal}
+                              closeEditModal={closeEditTeamModal}
 
                               // delete
-                              deleteStatus={isDeleteModalOpen}
-                              deleteInfo={deleteInfo}
-                              setDeleteInfo={setDeleteInfo}
-                              openDeleteModal={openDeleteModal}
-                              closeDeleteModal={closeDeleteModal}
+                              deleteStatus={isDeleteTeamModalOpen}
+                              deleteInfo={deleteTeamInfo}
+                              setDeleteInfo={setDeleteTeamInfo}
+                              openDeleteModal={openDeleteTeamModal}
+                              closeDeleteModal={closeDeleteTeamModal}
+                            />
+                          </div>
+                        )}
+                      </TabPanel>
+                    );
+                  } else if (tab === "Catches") {
+                    return (
+                      <TabPanel key={tab} value={tab}>
+                        {!catchRowsHaveLoaded ? (
+                          <CircularProgress />
+                        ) : (
+                          <div style={style}> 
+                            <CrudTable
+                              // dates
+                              today={today}
+                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+
+                              // table styling
+                              tableType={tab}
+                              buttonLabel={`Add ${tab} Entry`}
+                              tableProperties={tableProperties}
+                              style={style}
+                              rows={catchRows || []}
+                              scroll={matches ? desktopScroll : mobileScroll}
+                              initialState={initialState}
+                              pageSizeOptions={pageSizeOptions}
+                              checkboxSelection={true}
+
+                              // add
+                              addStatus={isAddCatchModalOpen}
+                              openAddModal={openAddCatchModal}
+                              closeAddModal={closeAddCatchModal}
+
+                              // edit
+                              editStatus={isEditCatchModalOpen}
+                              editInfo={editCatchInfo}
+                              setEditInfo={setEditCatchInfo}
+                              openEditModal={openEditCatchModal}
+                              closeEditModal={closeEditCatchModal}
+
+                              // delete
+                              deleteStatus={isDeleteCatchModalOpen}
+                              deleteInfo={deleteCatchInfo}
+                              setDeleteInfo={setDeleteCatchInfo}
+                              openDeleteModal={openDeleteCatchModal}
+                              closeDeleteModal={closeDeleteCatchModal}
                             />
                           </div>
                         )}

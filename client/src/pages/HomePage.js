@@ -16,6 +16,7 @@ import {
   CONFIG_HOME_TOURNAMENT_START_IN_LOCAL_TIME_IN_MS,
   CONFIG_HOME_PAST_TOURNAMENT_RESULT_STRINGS,
   CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
+  CONFIG_HOME_CATCH_STAT_TYPE,
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION,
   CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS,
   CONFIG_REGISTRATION_EARLYBIRD_DATE_STRING,
@@ -169,7 +170,7 @@ function HomePage() {
           {CONFIG_HOME_PAST_TOURNAMENT_RESULT_STRINGS.map((result, index) => (
             <p key={index}>{result}</p>
           ))}
-          <p><strong>{CONFIG_GENERAL_YEAR} Tournament:</strong> <span>{numTeams} teams </span> / <span>{numCatches} catches</span> / <span>{/*potTotal*/}TBD total pot</span></p>
+          <p><strong>{CONFIG_GENERAL_YEAR} Tournament:</strong> <span>{numTeams} teams </span> / <span>{numCatches} {CONFIG_HOME_CATCH_STAT_TYPE}</span> / <span>{/*potTotal*/}TBD total pot</span></p>
         </section>
         <Footer/>
       </main>

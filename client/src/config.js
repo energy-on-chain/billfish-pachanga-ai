@@ -11,7 +11,7 @@ module.exports = {
   CONFIG_GENERAL_HAS_ADMIN: true,
   CONFIG_GENERAL_HAS_STATS_TAB: true,
   CONFIG_GENERAL_HAS_REPORTS_TAB: true,
-  CONFIG_GENERAL_HAS_POTS: true,
+  CONFIG_GENERAL_HAS_POTS: false,
   CONFIG_GENERAL_HAS_AUCTION: false,
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_WEBSITE: "https://www.billfishpachanga.com/",
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES: "https://www.billfishpachanga.com/rules/",
@@ -71,9 +71,10 @@ module.exports = {
     "2024 Tournament: 31 teams / 187 billfish / $854,250 total pot",
   ],
   CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT: [
-    "Billfish",
-    "Meatfish",
+    "Catch & Release",
+    // "Meatfish",
   ],
+  CONFIG_HOME_CATCH_STAT_TYPE: "billfish",
   /////////////////////////////////////////////////////////////////////////////
   // 3. Registration Page Settings ////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
@@ -144,14 +145,14 @@ module.exports = {
   CONFIG_ADMIN_DEFAULT_TAB_NAME: "Catches",
   CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST: [
     "Teams",
-    // "Catches",
+    "Catches",
     // "Pots",
     // "Auction",
     "Stats",
     "Reports",
   ],
-  CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING: "2024-07-19",
-  CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING: "2024-07-21",
+  CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING: "2025-07-16",
+  CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING: "2025-07-19",
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS: [
     // Standard
     {field: "teamId", headerName: "Team ID", type: "string", isEditable: false, isRequired: true, isVisible: false, flex: 3, width: 300, isId: true, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
@@ -174,14 +175,38 @@ module.exports = {
     {field: "T-shirts", headerName: "# T-shirts", type: "number", isEditable: false, isRequired: true, isVisible: true, flex: 2, width: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isCurrency: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: true, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
   ],
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES: [
+    {field: "catchId", headerName: "Catch ID", type: "string", isEditable: false, isRequired: true, isVisible: false, flex: 3, width: 300, isId: true, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamId", headerName: "Team ID", type: "string", isEditable: false, isRequired: true, isVisible: false, flex: 3, width: 300, isId: true, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "species", headerName: "Species", type: "string", isEditable: false, isRequired: true, isVisible: true, flex: 2, width: 200, isId: false, isPhoneNumber: false, isCurrency: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "speciesType", headerName: "Type", type: "string", isEditable: false, isRequired: true, isVisible: true, flex: 2, width: 200, isId: false, isPhoneNumber: false, isCurrency: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamName", headerName: "Team", type: "string", isEditable: false, isRequired: true, isVisible: true, flex: 3, width: 300, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "weight", headerName: "Weight (lbs)", type: "number", isEditable: true, isRequired: false, isVisible: true, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "length", headerName: "Length (in)", type: "number", isEditable: true, isRequired: false, isVisible: true, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "girth", headerName: "Girth (in)", type: "number", isEditable: true, isRequired: false, isVisible: true, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "points", headerName: "Points", type: "number", isEditable: false, isRequired: false, isVisible: true, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "dateTime", headerName: "Time of Catch", type: "dateTime", isEditable: true, isRequired: true, isVisible: true, flex: 3, width: 300, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: true, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
   ],
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS: [
   ],
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS: [
   ],
   /////////////////////////////////////////////////////////////////////////////
-  // 6. CATCHES PAGE SETTINGS//////////////////////////////////////////////////
+  // 6. CATCHES PAGE SETTINGS /////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
+  CONFIG_CATCHES_SPECIES_LIST: [
+    {label: "Blue Marlin", category: "Catch & Release", points: 300},
+    {label: "White Marlin", category: "Catch & Release", points: 150},
+    {label: "Spearfish", category: "Catch & Release", points: 150},
+    {label: "Sailfish", category: "Catch & Release", points: 100},
+    {label: "Dorado", category: "Meatfish", points: 1},
+    {label: "Tuna", category: "Meatfish", points: 1},
+    {label: "Wahoo", category: "Meatfish", points: 1},
+  ],
+  CONFIG_CATCHES_ROUND_POINTS_DOWN: true,
+  CONFIG_CATCHES_STATS_LIST: [
+    "Catch & Release",
+    "Meatfish",
+  ],
   /////////////////////////////////////////////////////////////////////////////
   // 7. LEADERBOARD PAGE SETTINGS//////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////

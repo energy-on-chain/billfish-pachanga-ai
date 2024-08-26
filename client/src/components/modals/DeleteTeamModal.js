@@ -5,12 +5,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';  // Import dayjs for date-time formatting
 
-const DeleteModal = (props) => {
+const DeleteTeamModal = (props) => {
   const [info, setInfo] = useState(null);
 
   useEffect(() => {
     setInfo(props.deleteInfo);
-    console.log("In DeleteModal, here are the props.tableProperties...");
+    console.log("In DeleteTeamModal, here are the props.tableProperties...");
     console.log(props.tableProperties);
   }, [props.deleteInfo]);
 
@@ -43,30 +43,23 @@ const DeleteModal = (props) => {
         ? process.env.REACT_APP_SERVER_URL_STAGING
         : process.env.REACT_APP_SERVER_URL_PRODUCTION;
 
-      if (props.tableType === "Teams") {
-        const response = await fetch(`${apiUrl}/api/admin_delete_team`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            teamId: info.teamId,
-            teamYear: props.teamYear,
-            catchYear: props.catchYear,
-            potYear: props.potYear,
-            auctionYear: props.auctionYear
-          })
-        });
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        toast.success('The team was successfully deleted! Redirecting...');
-        delayRefresh();
-      } else if (props.tableType === "Catches") {
-        // FIXME: add catches functionality
-      } else if (props.tableType === "Pots") {
-        // FIXME: add pots functionality
-      } else if (props.tableType === "Auction") {
-        // FIXME: add auction functionality
+      const response = await fetch(`${apiUrl}/api/admin_delete_team`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teamId: info.teamId,
+          teamYear: props.teamYear,
+          catchYear: props.catchYear,
+          potYear: props.potYear,
+          auctionYear: props.auctionYear
+        })
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
+      toast.success('The team was successfully deleted! Redirecting...');
+      delayRefresh();
+      
     } catch (error) {
       console.log('There was an error while attempting to delete this database entry: ' + error);
       toast.error('There was an error while attempting to delete the team. Page will refresh now. Please try again.');
@@ -137,5 +130,5 @@ const DeleteModal = (props) => {
   );
 };
 
-export default DeleteModal;
+export default DeleteTeamModal;
 

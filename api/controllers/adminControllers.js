@@ -247,7 +247,7 @@ module.exports = ({redisClient}) => {
     try {
       const db = getFirestore();
       const bucket = getStorage().bucket();
-      const { teamId, teamYear, teamName, teamEmail, teamPhone } = req.body;
+      const { catchYear, teamId, teamYear, teamName, teamEmail, teamPhone } = req.body;
       let { hasCheckedIn } = req.body;
 
       // Convert hasCheckedIn back to a boolean
@@ -279,7 +279,6 @@ module.exports = ({redisClient}) => {
 
           // Delete images that have been replaced
           let oldImageUrl = teamData[element.originalname];
-          console.log('oldImageUrl: ', oldImageUrl);
           if (oldImageUrl) {
             try {
               // await bucket.file(oldImageUrl).delete();
@@ -326,13 +325,19 @@ module.exports = ({redisClient}) => {
         })
       }
 
-      console.log("newImageFields:", newImageFields);
-  
       // Update the team document with the new data and new image URLs
       await teamDocRef.update({
         ...updatedFields,
         ...newImageFields, // Update the document with new image URLs if available
       });
+
+      // Update the team name in all matching catches
+      const catchQuerySnapshot = await db.collection(catchYear).where('teamId', '==', teamId).get();
+      const catchUpdatePromises = [];
+      catchQuerySnapshot.forEach(doc => {
+        catchUpdatePromises.push(doc.ref.update({ teamName: teamName }));
+      });
+      await Promise.all(catchUpdatePromises);
   
       console.log(`Team ${teamId} updated successfully in ${teamYear} collection`);
       res.sendStatus(200);
@@ -447,9 +452,11 @@ module.exports = ({redisClient}) => {
     const catchData = JSON.parse(req.body.catchData);
   
     try {
+      
       const db = getFirestore();
+      
       catchData.forEach(async item => {
-        await db.collection(req.body.catchYear).add({
+        const catchDocRef = await db.collection(req.body.catchYear).add({
           teamId: item.teamId,
           teamName: item.teamName,
           speciesType: item.speciesType,
@@ -460,7 +467,9 @@ module.exports = ({redisClient}) => {
           weight: item.weight,
           points: item.points
         });
+        await catchDocRef.update({catchId: catchDocRef.id });
       });
+
       res.sendStatus(200);
     } catch (e) {
       console.log(e);
@@ -511,6 +520,46 @@ module.exports = ({redisClient}) => {
     }
   };
 
+  const adminGetTotalCatchCount = async (req, res) => {
+    console.log('In api/admin_get_total_catch_count...');
+    
+    try {
+      const db = getFirestore();
+      const catchYear = req.body.catchYear;
+      
+      // Get all documents in the collection
+      const snapshot = await db.collection(catchYear).get();
+      
+      const totalFishCount = snapshot.size;  // Total number of documents
+      res.status(200).json({ totalFishCount });
+      
+    } catch (error) {
+      console.error("Error getting total fish count:", error);
+      res.status(500).json({ error: "Failed to get total fish count" });
+    }
+  };
+
+  const adminGetTotalCatchCountBySpecies = async (req, res) => {
+    console.log('In api/admin_get_total_catch_count_by_species...');
+    
+    try {
+      const db = getFirestore();
+      const catchYear = req.body.catchYear;
+      const speciesType = req.body.speciesType;  // Pass the species type
+  
+      // Query to get documents where the speciesType matches
+      const snapshot = await db.collection(catchYear).where("speciesType", "==", speciesType).get();
+      
+      const speciesCount = snapshot.size;  // Number of matching documents
+      res.status(200).json({ speciesCount });
+      
+    } catch (error) {
+      console.error("Error getting fish count by species:", error);
+      res.status(500).json({ error: "Failed to get fish count by species" });
+    }
+  };
+  
+
   return {
     adminGetDatabaseCount,
     adminGetDatabaseList,
@@ -521,6 +570,8 @@ module.exports = ({redisClient}) => {
     adminAddCatch,
     adminEditCatch,
     adminDeleteCatch,
+    adminGetTotalCatchCount,
+    adminGetTotalCatchCountBySpecies,
     adminGetRegisteredTeamDataForReport,
     upload
   };
