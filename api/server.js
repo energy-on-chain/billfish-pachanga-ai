@@ -32,7 +32,7 @@ let sessionSecret;
 
 if (process.env.REACT_APP_NODE_ENV === "staging") {
 
-  admin.initializeApp({    // fireboase
+  admin.initializeApp({    // firebase
     credential: admin.credential.cert({
       "type": process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_TYPE_STAGING,
       "project_id": process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_PROJECT_ID_STAGING,
@@ -124,7 +124,7 @@ app.use(session({
 app.use('/', express.static(path.join(__dirname, '../client/build')));
 app.use('/', homeRoutes);
 app.use('/', registrationRoutes({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }));
-app.use('/', adminRoutes);
+app.use('/', adminRoutes ({redisClient}));
 // app.use('/', leaderboardRoutes);
 // app.use('/', potRoutes);
 

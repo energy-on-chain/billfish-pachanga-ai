@@ -7,6 +7,11 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
     registrationGetPastTeamNameList, 
     registrationCheckoutSession, 
     registrationWebhook,
+    registrationGetNumberOfRegisteredTeams,
+    registrationGetNumberOfCheckedInTeams,
+    registrationGetTotalFeesCollected,
+    registrationGetTotalRegistrationFeesCollected,
+    registrationGetTotalAddOnFeesCollected,
     upload  
   } = require('../controllers/registrationControllers')({ clientUrl, serverUrl, stripe, webhookSecret, redisClient });
 
@@ -16,6 +21,11 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
     { name: 'imageUploads', maxCount: 10 }
   ]), registrationCheckoutSession);
   router.post('/api/registration-webhook', bodyParser.raw({ type: 'application/json' }), registrationWebhook);
+  router.post('/api/registration-get-number-of-registered-teams', registrationGetNumberOfRegisteredTeams);
+  router.post('/api/registration-get-number-of-checked-in-teams', registrationGetNumberOfCheckedInTeams);
+  router.post('/api/registration-get-total-fees-collected', registrationGetTotalFeesCollected);
+  router.post('/api/registration-get-total-registration-fees-collected', registrationGetTotalRegistrationFeesCollected);
+  router.post('/api/registration-get-total-add-on-fees-collected', registrationGetTotalAddOnFeesCollected);
 
   return router;
 };

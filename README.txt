@@ -41,8 +41,27 @@
   - Authentication (add admin emails and passwords)
   - Firestore Database
   - Storage (for images)
+  - Set the Storage "Rules" as follows:
+
+    rules_version = '2';
+    // Craft rules based on data in your Firestore database
+    // allow write: if firestore.get(
+    //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+    service firebase.storage {
+      match /b/{bucket}/o {
+        match /{allPaths=**} {
+          // Allow anyone to read
+          allow read: if true;
+          // Allow only authenticated users to write
+          allow write: if request.auth != null;
+        }
+      }
+    }
+
   - Save project secret info to put into .env file
-6. FIXME: Setup project Google Cloud services...? Automatic? Creds?
+6. Setup google cloud services
+  - Go to the google cloud console for the project and enable Cloud Storage
+  - Go to the settings tab for your storage bucked (staging and production), then create a new member called "allUsers" who is a "Storage Object Viewer"
 7. Update the .env file in the main project directory
   - Add client stripe info 
   - Add client firebase info

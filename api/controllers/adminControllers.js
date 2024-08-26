@@ -1,224 +1,528 @@
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
 const { getFirestore } = require("firebase-admin/firestore");
+const { getStorage } = require("firebase-admin/storage");
 
-// General
-exports.adminGetDatabaseCount = async (req, res) => {
-  console.log('In api/admin_get_database_count...');
+// Helpers
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB file size limit
+});
 
-  try {
-    let counter = 0;
-    const db = getFirestore();
-    const snapshot = await db.collection(req.body.tableName).get();
-    snapshot.forEach(() => counter++);
-    res.json({ "count": counter === 0 ? "TBD" : counter });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
+const flattenObjectWithPrefix = (obj, prefix = '') => {
+  return Object.keys(obj).reduce((acc, k) => {
+    const pre = prefix.length ? prefix + '.' : '';
+    if (typeof obj[k] === 'object' && obj[k] !== null) {
+      Object.assign(acc, flattenObjectWithPrefix(obj[k], pre + k));
+    } else {
+      acc[pre + k] = String(obj[k]); // Convert both keys and values to strings
+    }
+    return acc;
+  }, {});
 };
 
-exports.adminGetDatabaseList = async (req, res) => {
-  console.log('In api/admin_get_database_list...');
+module.exports = ({redisClient}) => {
 
-  try {
+  // General
+  const adminGetDatabaseCount = async (req, res) => {
+    console.log('In api/admin_get_database_count...');
+  
+    try {
+      let counter = 0;
+      const db = getFirestore();
+      const snapshot = await db.collection(req.body.tableName).get();
+      snapshot.forEach(() => counter++);
+      res.json({ "count": counter === 0 ? "TBD" : counter });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  const adminGetDatabaseList = async (req, res) => {
+    console.log('In api/admin_get_database_list...');
+  
+    try {
+      const db = getFirestore();
+      const documentObject = {};
+      const snapshot = await db.collection(req.body.table).get();
+      snapshot.forEach(document => {
+        documentObject[document.id] = document.data();
+      });
+      res.send(documentObject);
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  };
+  
+  // Teams
+  const adminAddTeam = async (req, res) => {
+    console.log('In api/admin_add_team...');
+  
+    try {
+      // Parse the metaDataObject from the request body
+      console.log(req.body.metaDataObject);
+      const parsedMetaData = JSON.parse(req.body.metaDataObject);
+
+      // Flatten specific fields
+      const flattenedMetaData = {
+        ...flattenObjectWithPrefix(parsedMetaData.requiredDropdownFields, 'requiredDropdownFields'),
+        ...flattenObjectWithPrefix(parsedMetaData.nonRequiredStringFields, 'nonRequiredStringFields'),
+        ...flattenObjectWithPrefix(parsedMetaData.requiredStringFields, 'requiredStringFields'),
+        ...flattenObjectWithPrefix(parsedMetaData.nonRequiredDropdownFields, 'nonRequiredDropdownFields'),
+        ...parsedMetaData // Include the rest of the metadata as-is
+      };
+
+      // Process image uploads
+      console.log("Processing images now...");
+      const imageBuffers = {};
+
+      if (req.files.requiredImageUploads) {
+        req.files.requiredImageUploads.forEach((element) => {
+          imageBuffers[element.originalname] = {
+            buffer: element.buffer.toString('base64'), // Convert buffer to base64
+            // originalname: element.originalname,
+            // fieldname: element.fieldname,
+            fieldName: element.fieldName,
+            fileName: element.fileName,
+            fileExtension: element.fileExtension, 
+            mimetype: element.mimetype,
+          };
+        });
+      }
+      
+      if (req.files.imageUploads) {
+        req.files.imageUploads.forEach((element) => {
+          imageBuffers[element.originalname] = {
+            buffer: element.buffer.toString('base64'), // Convert buffer to base64
+            // originalname: element.originalname,
+            // fieldname: element.fieldname,
+            fieldName: element.fieldName,
+            fileName: element.fileName,
+            fileExtension: element.fileExtension, 
+            mimetype: element.mimetype,
+          };
+        });
+      }
+
+      // Prepare metadata for Firebase
+      const metadata = {
+        ...parsedMetaData,
+        imageBuffers
+      };
+
+      // Save the metadata to Firebase and handle images in Google Cloud Storage
+      await processAddTeamFirestore(metadata);
+
+      res.status(200).json({ message: "Team added successfully" });
+      
+    } catch (e) {
+      console.error("Error in adminAddTeam:", e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  const processAddTeamFirestore = async (metadata) => {
+    console.log('In processAddTeamFirestore() function inside adminAddTeam() creating a new team registration record in firebase...');
+
     const db = getFirestore();
-    const documentObject = {};
-    const snapshot = await db.collection(req.body.table).get();
-    snapshot.forEach(document => {
-      documentObject[document.id] = document.data();
-    });
-    res.send(documentObject);
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-};
+    const bucket = getStorage().bucket();
 
-// Teams
-exports.adminAddTeam = async (req, res) => {
-  console.log('In api/admin_add_team...');
+    console.log('Metadata:', metadata);
 
-  try {
-    console.log('Writing team record to firestore database...');
-    const payload = req.body;
-
-    const db = getFirestore();
-    const docRef = await db.collection(req.body.teamYear).add({
-      teamName: payload.teamName,
-      registrationFee: payload.registrationFee,
-      wristbandFee: payload.wristbandFee,
-      numExtraWristbands: payload.numExtraWristbands,
-      numAnglers: payload.numAnglers,
-      hasSonar: payload.hasSonar,
-      hasCheckedIn: payload.hasCheckedIn,
-      anglerList: anglerList,
-      teamEmail: "admin@gmail.com",
-      teamCardholderName: "By Admin",
-      teamPhone: "1-555-5555",
-      teamPaymentStatus: "By Admin",
-      totalFee: "By Admin",
-    });
-
-
-    res.sendStatus(200);
-  } catch (error) {
-    console.log("Error while writing to firestore db: ", error);
-  }
-};
-
-exports.adminUpdateTeam = async (req, res) => {
-  console.log('In api/admin_update_team...');
-
-  try {
-    const db = getFirestore();
-    const { teamYear, teamId, teamName, teamEmail, teamPhone, catchYear, anglerYear, hasSonar, hasCheckedIn } = req.body;
-
-    // Get the team document
-    const teamDocRef = db.collection(teamYear).doc(teamId);
-    const teamDoc = await teamDocRef.get();
-    if (!teamDoc.exists) {
-      return res.status(404).json({ error: 'Team not found' });
+    // Combine addOnProperties and addOnQuantities and add costOfPurchase
+    const combinedAddOns = {};
+    for (const [addOn, properties] of Object.entries(metadata.addOnProperties)) {
+      const quantityPurchased = metadata.addOnQuantities[addOn] || 0;
+      combinedAddOns[addOn] = {
+        ...properties,
+        quantityPurchased,
+        costOfPurchase: quantityPurchased * properties.price, // Calculate cost of purchase
+      };
     }
 
-    // Update the team document
-    await teamDocRef.update({
-      teamName: teamName,
-      teamEmail: teamEmail,
-      teamPhone: teamPhone,
-      hasSonar: hasSonar,
-      hasCheckedIn: hasCheckedIn
+    // Flatten required and non-required fields
+    const flattenedFields = {
+      ...metadata.requiredStringFields,
+      ...metadata.requiredIntFields,
+      ...metadata.requiredBooleanFields,
+      ...metadata.requiredDropdownFields,
+      ...metadata.nonRequiredStringFields,
+      ...metadata.nonRequiredIntFields,
+      ...metadata.nonRequiredBooleanFields,
+      ...metadata.nonRequiredDropdownFields,
+    };
+
+    // Handle image uploads using imported field names
+    const requiredImageFields = {};
+    const nonRequiredImageFields = {};
+
+    // Handle required image uploads
+    console.log('metadata.imageBuffers:', metadata.imageBuffers);
+    for (const [originalname, fileData] of Object.entries(metadata.imageBuffers)) {
+      const buffer = Buffer.from(fileData.buffer, 'base64');
+      const sanitizedFilename = originalname.replace(/\s+/g, '-');
+      const filename = `${uuidv4()}-${sanitizedFilename}`;
+      const fileUpload = bucket.file(filename);
+
+      try {
+        await fileUpload.save(buffer, {
+          metadata: {
+            contentType: fileData.mimetype,
+          },
+        });
+
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+
+        // Determine if the image is required or non-required based on fieldname
+        if (fileData.fieldName === 'requiredImageUploads') {
+          requiredImageFields[originalname] = publicUrl;
+          console.log(`Stored required image: ${originalname} at URL: ${publicUrl}`);
+        } else {
+          nonRequiredImageFields[originalname] = publicUrl;
+          console.log(`Stored non-required image: ${originalname} at URL: ${publicUrl}`);
+        }
+      } catch (error) {
+        console.error(`Error storing image ${originalname}:`, error);
+      }
+    }
+
+    // Prepare final metadata without nested objects and without imageBuffers
+    const finalMetadata = {
+      ...flattenedFields,
+      ...metadata, // This still includes non-nested properties like teamTableName, teamName, etc.
+    };
+
+    // Separate each required and non-required image field into its own field
+    for (const [imageName, imageUrl] of Object.entries(requiredImageFields)) {
+      finalMetadata[imageName] = imageUrl;
+    }
+
+    for (const [imageName, imageUrl] of Object.entries(nonRequiredImageFields)) {
+      finalMetadata[imageName] = imageUrl;
+    }
+
+    // Separate each addOnCharge into its own field
+    for (const [addOn, addOnData] of Object.entries(combinedAddOns)) {
+      finalMetadata[addOn] = addOnData;
+    }
+
+    // Exclude original `required...`, `nonRequired...`, `imageBuffers`, and `addOnQuantities`
+    delete finalMetadata.requiredStringFields;
+    delete finalMetadata.requiredIntFields;
+    delete finalMetadata.requiredBooleanFields;
+    delete finalMetadata.requiredDropdownFields;
+    delete finalMetadata.nonRequiredStringFields;
+    delete finalMetadata.nonRequiredIntFields;
+    delete finalMetadata.nonRequiredBooleanFields;
+    delete finalMetadata.nonRequiredDropdownFields;
+    delete finalMetadata.imageBuffers;
+    delete finalMetadata.addOnQuantities;
+    delete finalMetadata.teamTableName;
+    delete finalMetadata.addOnProperties;
+
+    // Add the team document and get the document reference
+    const teamDocRef = await db.collection(metadata.teamTableName).add({
+      teamName: finalMetadata.teamName,
+      registrationFee: finalMetadata.registrationFee,
+      hasCheckedIn: finalMetadata.hasCheckedIn,
+      isEarlybird: finalMetadata.isEarlybird,
+      registrationTimestampInLocalTime: new Date().toLocaleString(),
+      ...finalMetadata,  // Save all additional fields including flattened fields and image URLs
+      teamCardholderName: "Admin",
+      teamEmail: "info@customtournamentsolutions.com",
+      teamPaymentStatus: "paid",
+      teamPhone: "+15555555555",
+
     });
 
-    // Update the team name in all matching catches
-    const catchQuerySnapshot = await db.collection(catchYear).where('teamId', '==', teamId).get();
-    const catchUpdatePromises = [];
-    catchQuerySnapshot.forEach(doc => {
-      catchUpdatePromises.push(doc.ref.update({ teamName: teamName }));
-    });
-    await Promise.all(catchUpdatePromises);
+    // Now add the teamId using the newly created doc number in firebase
+    await teamDocRef.update({ teamId: teamDocRef.id });
 
-    console.log(`Team ${teamId} updated successfully and associated records updated`);
-    res.sendStatus(200);
-  } catch (e) {
-    console.log("There was an error in update_team...");
-    console.log(e);
-    res.status(500).json({ error: e.message });
-  }
-};
+    console.log('Successfully saved a new team registration record in firebase');
+  };
 
-exports.adminDeleteTeam = async (req, res) => {
-  console.log('In api/admin_delete_team...');
+  const adminEditTeam = async (req, res) => {
+    console.log('In api/admin_edit_team...');
+  
+    try {
+      const db = getFirestore();
+      const bucket = getStorage().bucket();
+      const { teamId, teamYear, teamName, teamEmail, teamPhone } = req.body;
+      let { hasCheckedIn } = req.body;
 
-  try {
-    const db = getFirestore();
-    const teamId = req.body.teamId;
-    const teamYear = req.body.teamYear;
-    const catchYear = req.body.catchYear;
+      // Convert hasCheckedIn back to a boolean
+      hasCheckedIn = (hasCheckedIn === 'true');
+  
+      // Get the team document
+      const teamDocRef = db.collection(teamYear).doc(teamId);
+      const teamDoc = await teamDocRef.get();
+  
+      if (!teamDoc.exists) {
+        return res.status(404).json({ error: 'Team not found' });
+      }
+  
+      const teamData = teamDoc.data();
+      const updatedFields = {
+        teamName,
+        teamEmail,
+        teamPhone,
+        hasCheckedIn
+      };
+  
+      // Handle image replacements
+      const imageBuffers = {};
+      const newImageFields = {};
 
-    // Delete the team document
-    const teamDocRef = db.collection(teamYear).doc(teamId);
-    await teamDocRef.delete();
-    console.log(`Team ${teamId} deleted successfully from ${teamYear} collection`);
+      if (req.files.newImages) {
 
-    // Delete all catches with the specified teamId
-    const catchQuerySnapshot = await db.collection(catchYear).where('teamId', '==', teamId).get();
-    const catchDeletePromises = [];
-    catchQuerySnapshot.forEach(doc => {
-      catchDeletePromises.push(doc.ref.delete());
-    });
-    await Promise.all(catchDeletePromises);
-    console.log(`All catches with teamId ${teamId} deleted successfully from ${catchYear} collection`);
+        req.files.newImages.forEach((element) => {
 
-    res.sendStatus(200);
-  } catch (e) {
-    console.log("There was an error in delete_team...");
-    console.log(e);
-    res.status(500).json({ error: e.message });
-  }
-};
+          // Delete images that have been replaced
+          let oldImageUrl = teamData[element.originalname];
+          console.log('oldImageUrl: ', oldImageUrl);
+          if (oldImageUrl) {
+            try {
+              // await bucket.file(oldImageUrl).delete();
+              const filePath = decodeURIComponent(oldImageUrl.split('/').slice(4).join('/'));
+              bucket.file(filePath).delete();
+              console.log(`Deleted old image: ${filePath}`);
+            } catch (error) {
+              console.error(`Error deleting old image: ${oldImageUrl}`, error);
+            }
+          }
 
-// Catches
-exports.adminGetCatches = async (req, res) => {
-  console.log('In api/admin_get_catches...');
+          // Create buffers for new images
+          imageBuffers[element.originalname] = {
+            buffer: element.buffer.toString('base64'), // Convert buffer to base64
+            fieldName: element.originalname,
+            mimetype: element.mimetype,
+          };
 
-  try {
-    const documentObject = {};
-    const db = getFirestore();
-    const catchesRef = db.collection(req.body.catchYear);
-    const snapshot = await catchesRef.get();
-    snapshot.forEach(document => {
-      documentObject[document.id] = document.data();
-    });
-    res.send(documentObject);
-  } catch (e) {
-    console.log('Error getting collection of catches', e);
-    res.status(500).json({ error: e.message });
-  }
-};
+          // Save new images to firebase storage
+          for (const [originalname, fileData] of Object.entries(imageBuffers)) {
+            const buffer = Buffer.from(fileData.buffer, 'base64');
+            const sanitizedFilename = originalname.replace(/\s+/g, '-');
+            const filename = `${uuidv4()}-${sanitizedFilename}`;
+            const fileUpload = bucket.file(filename);
+      
+            try {
 
-exports.adminAddCatch = async (req, res) => {
-  console.log('In api/admin_add_catch...');
-  const catchData = JSON.parse(req.body.catchData);
+              // await fileUpload.save(buffer, {
+              fileUpload.save(buffer, {
+                metadata: {
+                  contentType: fileData.mimetype,
+                },
+              });
+      
+              const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+              newImageFields[originalname] = publicUrl;
+              console.log(`Stored new image: ${originalname} at URL: ${publicUrl}`);
 
-  try {
-    const db = getFirestore();
-    catchData.forEach(async item => {
-      await db.collection(req.body.catchYear).add({
-        teamId: item.teamId,
-        teamName: item.teamName,
-        speciesType: item.speciesType,
-        species: item.species,
-        dateTime: item.dateTime,
-        length: item.length,
-        girth: item.girth,
-        weight: item.weight,
-        points: item.points
+            } catch (error) {
+              console.error(`Error storing image ${originalname}:`, error);
+            }
+          }
+
+        })
+      }
+
+      console.log("newImageFields:", newImageFields);
+  
+      // Update the team document with the new data and new image URLs
+      await teamDocRef.update({
+        ...updatedFields,
+        ...newImageFields, // Update the document with new image URLs if available
       });
-    });
-    res.sendStatus(200);
-  } catch (e) {
-    console.log(e);
-    res.status(500).json({ error: e.message });
-  }
+  
+      console.log(`Team ${teamId} updated successfully in ${teamYear} collection`);
+      res.sendStatus(200);
+    } catch (e) {
+      console.log("There was an error in admin_edit_team...");
+      console.log(e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+  
+  const adminDeleteTeam = async (req, res) => {
+    console.log('In api/admin_delete_team...');
+  
+    try {
+      const db = getFirestore();
+      const bucket = getStorage().bucket();
+      const teamId = req.body.teamId;
+      const teamYear = req.body.teamYear;
+      const catchYear = req.body.catchYear;
+  
+      // Get the team document
+      const teamDocRef = db.collection(teamYear).doc(teamId);
+      const teamDoc = await teamDocRef.get();
+  
+      if (!teamDoc.exists) {
+        return res.status(404).json({ error: 'Team not found' });
+      }
+  
+      const teamData = teamDoc.data();
+  
+      // Find all image URLs in the team data
+      const imageFields = Object.values(teamData).filter(value => typeof value === 'string' && value.startsWith('https://storage.googleapis.com/'));
+  
+      // Delete each image from Firebase Storage
+      const deletePromises = imageFields.map(async (imageUrl) => {
+        try {
+          // Extract the file path from the URL (remove the "https://storage.googleapis.com/[bucket_name]/")
+          const filePath = decodeURIComponent(imageUrl.split('/').slice(4).join('/')); // Decoding the path to handle any URL encoding
+          const file = bucket.file(filePath);
+          await file.delete();
+          console.log(`Deleted image: ${filePath}`);
+        } catch (error) {
+          console.error(`Error deleting image ${imageUrl}:`, error);
+        }
+      });
+  
+      // Wait for all image deletions to complete
+      await Promise.all(deletePromises);
+  
+      // Delete the team document
+      await teamDocRef.delete();
+      console.log(`Team ${teamId} deleted successfully from ${teamYear} collection`);
+  
+      // Delete all catches with the specified teamId
+      const catchQuerySnapshot = await db.collection(catchYear).where('teamId', '==', teamId).get();
+      const catchDeletePromises = [];
+      catchQuerySnapshot.forEach(doc => {
+        catchDeletePromises.push(doc.ref.delete());
+      });
+      await Promise.all(catchDeletePromises);
+      console.log(`All catches with teamId ${teamId} deleted successfully from ${catchYear} collection`);
+  
+      res.sendStatus(200);
+    } catch (e) {
+      console.log("There was an error in delete_team...");
+      console.log(e);
+      res.status(500).json({ error: e.message });
+    }
+  }; 
+  
+  const adminGetRegisteredTeamDataForReport = async (req, res) => {
+    console.log('In api/admin_get_registered_team_data_for_report...');
+  
+    try {
+      const db = getFirestore();
+      const teamCollection = db.collection(req.body.teamYear);  // Assuming the team year is passed in the request body
+      const snapshot = await teamCollection.get();
+      
+      const teams = {};
+      snapshot.forEach(doc => {
+        teams[doc.id] = doc.data();  // Collect all team data
+      });
+  
+      res.json(teams);  // Return the team data as JSON
+    } catch (error) {
+      console.error("Error fetching registered teams:", error);
+      res.status(500).json({ error: "Failed to fetch registered team data" });
+    }
+  };
+  
+  // Catches
+  const adminGetCatches = async (req, res) => {
+    console.log('In api/admin_get_catches...');
+  
+    try {
+      const documentObject = {};
+      const db = getFirestore();
+      const catchesRef = db.collection(req.body.catchYear);
+      const snapshot = await catchesRef.get();
+      snapshot.forEach(document => {
+        documentObject[document.id] = document.data();
+      });
+      res.send(documentObject);
+    } catch (e) {
+      console.log('Error getting collection of catches', e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  const adminAddCatch = async (req, res) => {
+    console.log('In api/admin_add_catch...');
+    const catchData = JSON.parse(req.body.catchData);
+  
+    try {
+      const db = getFirestore();
+      catchData.forEach(async item => {
+        await db.collection(req.body.catchYear).add({
+          teamId: item.teamId,
+          teamName: item.teamName,
+          speciesType: item.speciesType,
+          species: item.species,
+          dateTime: item.dateTime,
+          length: item.length,
+          girth: item.girth,
+          weight: item.weight,
+          points: item.points
+        });
+      });
+      res.sendStatus(200);
+    } catch (e) {
+      console.log(e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  const adminEditCatch = async (req, res) => {
+    console.log('In api/admin_edit_catch...');
+  
+    try {
+      const db = getFirestore();
+      await db.collection(req.body.catchYear).doc(req.body.catchId).update({
+        dateTime: req.body.dateTime,
+        length: req.body.length,
+        girth: req.body.girth,
+        weight: req.body.weight,
+        points: req.body.points
+      });
+  
+      console.log('Catch ' + req.body.catchId + ' was successfully updated!');
+      res.sendStatus(200);
+    } catch (e) {
+      console.log("There was an error in edit_catch...");
+      console.log(e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  const adminDeleteCatch = async (req, res) => {
+    console.log('In api/admin_delete_catch...');
+  
+    try {
+  
+      console.log(req.body.catchYear)
+      console.log(req.body.catchId)
+  
+      const db = getFirestore();
+      const documentRef = db.doc(`${req.body.catchYear}/${req.body.catchId}`);
+      await documentRef.delete();
+  
+      console.log('Catch ' + req.body.catchId + ' was successfully deleted!');
+      res.sendStatus(200);
+    } catch (e) {
+      console.log("There was an error in delete_catch...");
+      console.log(e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
+  return {
+    adminGetDatabaseCount,
+    adminGetDatabaseList,
+    adminAddTeam,
+    adminEditTeam,
+    adminDeleteTeam,
+    adminGetCatches,
+    adminAddCatch,
+    adminEditCatch,
+    adminDeleteCatch,
+    adminGetRegisteredTeamDataForReport,
+    upload
+  };
+
 };
-
-exports.adminUpdateCatch = async (req, res) => {
-  console.log('In api/admin_update_catch...');
-
-  try {
-    const db = getFirestore();
-    await db.collection(req.body.catchYear).doc(req.body.catchId).update({
-      dateTime: req.body.dateTime,
-      length: req.body.length,
-      girth: req.body.girth,
-      weight: req.body.weight,
-      points: req.body.points
-    });
-
-    console.log('Catch ' + req.body.catchId + ' was successfully updated!');
-    res.sendStatus(200);
-  } catch (e) {
-    console.log("There was an error in edit_catch...");
-    console.log(e);
-    res.status(500).json({ error: e.message });
-  }
-};
-
-exports.adminDeleteCatch = async (req, res) => {
-  console.log('In api/admin_delete_catch...');
-
-  try {
-
-    console.log(req.body.catchYear)
-    console.log(req.body.catchId)
-
-    const db = getFirestore();
-    const documentRef = db.doc(`${req.body.catchYear}/${req.body.catchId}`);
-    await documentRef.delete();
-
-    console.log('Catch ' + req.body.catchId + ' was successfully deleted!');
-    res.sendStatus(200);
-  } catch (e) {
-    console.log("There was an error in delete_catch...");
-    console.log(e);
-    res.status(500).json({ error: e.message });
-  }
-};
-

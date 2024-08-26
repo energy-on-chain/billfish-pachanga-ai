@@ -2,6 +2,7 @@ module.exports = {
   /////////////////////////////////////////////////////////////////////////////
   // 1. General Settings //////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
+  CONFIG_GENERAL_TOURNAMENT_NAME: "Billfish Pachanga",
   CONFIG_GENERAL_YEAR: "2025",
   CONFIG_GENERAL_HAS_INFO: true,
   CONFIG_GENERAL_HAS_REGISTRATION: true,
@@ -110,7 +111,7 @@ module.exports = {
     // "Boat Length (ft)"
   ],
   CONFIG_REGISTRATION_ADDITIONAL_REQUIRED_BOOLEAN_FIELDS: [
-    "Sonar?"
+    // "Sonar?"
   ],
   CONFIG_REGISTRATION_ADDITIONAL_REQUIRED_DROPDOWN_FIELDS: {
     // "Division": ["Kayak", "Offshore", "Bay/Surf"],
@@ -143,7 +144,7 @@ module.exports = {
   CONFIG_ADMIN_DEFAULT_TAB_NAME: "Catches",
   CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST: [
     "Teams",
-    "Catches",
+    // "Catches",
     // "Pots",
     // "Auction",
     "Stats",
@@ -152,12 +153,25 @@ module.exports = {
   CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING: "2024-07-19",
   CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING: "2024-07-21",
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS: [
-    {databaseFieldName: "teamId", header: "Team Id", type: "string", isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: true, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
-    {databaseFieldName: "teamName", header: "Team", type: "string", isAddOnCharge: false, isEditable: true, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
-    {databaseFieldName: "teamCardholderName", header: "Cardholder Name", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
-    {databaseFieldName: "teamEmail", header: "Cardholder Email", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: true, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
-    {databaseFieldName: "teamPhone", header: "Cardholder Phone", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
-    {databaseFieldName: "totalFeePaidAtCheckout", header: "Total Fee ($)", type: "string", isAddOnCharge: false, isEditable: false, isVisible: false, desktopWidth: 2, mobileWidth: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, isRequired: true},
+    // Standard
+    {field: "teamId", headerName: "Team ID", type: "string", isEditable: false, isRequired: true, isVisible: false, flex: 3, width: 300, isId: true, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamName", headerName: "Team", type: "string", isEditable: true, isRequired: true, isVisible: true, flex: 3, width: 300, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "isEarlybird", headerName: "Earlybird?", type: "boolean", isEditable: false, isRequired: true, isVisible: false, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: true, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamEmail", headerName: "Email", type: "string", isEditable: true, isRequired: true, isVisible: true, flex: 4, width: 400, isId: false, isPhoneNumber: false, isCurrency: false, isEmail: true, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamPhone", headerName: "Phone", type: "string", isEditable: true, isRequired: true, isVisible: true, flex: 2, width: 200, isId: false, isPhoneNumber: true, isCurrency: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamCardholderName", headerName: "Cardholder Name", type: "string", isEditable: false, isRequired: true, isVisible: false, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "teamPaymentStatus", headerName: "Has Paid", type: "string", isEditable: false, isRequired: true, isVisible: false, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: true, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "totalFeePaidAtCheckout", headerName: "Total Fee ($)", type: "number", isEditable: false, isRequired: true, isVisible: true, flex: 2, width: 200, isId: false, isCurrency: true, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "hasCheckedIn", headerName: "Checked-In?", type: "boolean", isEditable: true, isRequired: true, isVisible: true, flex: 2, width: 200, isId: false, isCurrency: false, isPhoneNumber: true, isEmail: false, isDateTime: false, isImage: false, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "registrationFee", headerName: "Registration Fee ($)", type: "number", isEditable: false, isRequired: false, isVisible: false, flex: 2, width: 200, isId: false, isCurrency: true, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "registrationTimestampInLocalTime", headerName: "Time of Registration", type: "dateTime", isEditable: false, isRequired: true, isVisible: true, flex: 3, width: 300, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: true, isImage: false,  isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    // Required images
+    {field: "Team Photo", headerName: "Team Photo", type: "image", isEditable: true, isRequired: true, isVisible: false, flex: 2, width: 200, valueFormatter: null, isId: false, isCurrency: false, isPhoneNumber: true, isEmail: false, isDateTime: false, isImage: true, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    // Unrequired images
+    {field: "Captain Photo", headerName: "Captain Photo", type: "image", isEditable: true, isRequired: false, isVisible: false, flex: 2, width: 200, valueFormatter: null, isId: false, isCurrency: false, isPhoneNumber: true, isEmail: false, isDateTime: false, isImage: true, isAddOnCharge: false, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    // Add on charges
+    {field: "Extra Wristbands", headerName: "# Extra Wristbands", type: "number", isEditable: false, isRequired: true, isVisible: true, flex: 3, width: 300, valueFormatter: null, isId: false, isCurrency: false, isPhoneNumber: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: true, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    {field: "T-shirts", headerName: "# T-shirts", type: "number", isEditable: false, isRequired: true, isVisible: true, flex: 2, width: 200, valueFormatter: null, isId: false, isPhoneNumber: false, isCurrency: false, isEmail: false, isDateTime: false, isImage: false,  isAddOnCharge: true, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
   ],
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES: [
   ],

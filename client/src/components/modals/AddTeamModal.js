@@ -26,7 +26,7 @@ import {
 
 import 'react-toastify/dist/ReactToastify.css';
 
-const RegisterTeamModal = (props) => {
+const AddTeamModal = (props) => {
 
   const [teamNameOptions, setTeamNameOptions] = useState([]);
   const [teamName, setTeamName] = useState('');
@@ -108,6 +108,13 @@ const RegisterTeamModal = (props) => {
 
   }, []);
 
+  const delayRefresh = () => {
+    setTimeout(() => {
+      console.log('Delaying page refresh...');
+      window.location.reload();
+    }, 2000);
+  }
+
   const handleClose = () => {
     setTeamName('');
     setIsChecked(false);
@@ -135,7 +142,7 @@ const RegisterTeamModal = (props) => {
         isValid = false;
     }
 
-    if (!isChecked) {
+    if (!isChecked && !props.isAdmin) {
         toast.warning("Please read and agree to the event rules.");
         setIsValidInput(false);
         isValid = false;
@@ -288,10 +295,10 @@ const RegisterTeamModal = (props) => {
         ...prevImages,
         [fieldName]: {
           file: newFile,
-          fieldName,
+          fieldName: fieldName,
           url: URL.createObjectURL(newFile),  // Create an object URL for the preview
-          filename: fieldName,  // Store the new filename without extension
-          fileExtension, // Store the file extension separately
+          fileName: fieldName,  // Store the new filename without extension
+          fileExtension: fileExtension
         },
       }));
     }
@@ -318,10 +325,10 @@ const RegisterTeamModal = (props) => {
         ...prevImages,
         [fieldName]: {
           file: newFile,
-          fieldName,
+          fieldName: fieldName,
           url: URL.createObjectURL(newFile),
-          filename: fieldName,  // Store the new filename without extension
-          fileExtension, // Store the file extension separately
+          fileName: fieldName,  // Store the new filename without extension
+          fileExtension: fileExtension
         },
       }));
     }
@@ -353,6 +360,7 @@ const RegisterTeamModal = (props) => {
   };
 
   const handlePayment = async () => {
+    console.log('In handlePayment...')
     let apiUrl = null;
     if (process.env.REACT_APP_NODE_ENV === "staging") {
         apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
@@ -380,6 +388,8 @@ const RegisterTeamModal = (props) => {
         addOnQuantities,
         addOnProperties: CONFIG_REGISTRATION_ADDITIONAL_PAID_ADD_ON_FIELDS,
     }
+    console.log('metaDataObject: ');
+    console.log(metaDataObject);
 
     const formData = new FormData();
     formData.append('metaDataObject', JSON.stringify(metaDataObject));
@@ -396,20 +406,39 @@ const RegisterTeamModal = (props) => {
       formData.append('imageUploads', imageUploads[fieldName].file);
     });
 
-    fetch(`${apiUrl}/api/registration-checkout-session`, {
+    if (props.isAdmin) {    // register as admin, non-payment case
+
+      fetch(`${apiUrl}/api/admin_add_team`, {
         method: 'POST',
         body: formData,
-    }).then(res => {
+      }).then(res => {
         if (res.ok) {
-            return res.json();
+          toast.success("Successfully added a new team! Page refreshing...");
+          delayRefresh();
         } else {
-            return res.json().then(json => Promise.reject(json));
+          toast.error("Error while attempting to save team to database as administrator. Please try again or contact site administrator.");
         }
-    }).then(({ url }) => {
-        window.location = url;
-    }).catch(e => {
-        console.error(e.error);
-    });
+      })
+
+    } else {
+
+      fetch(`${apiUrl}/api/registration-checkout-session`, {
+        method: 'POST',
+        body: formData,
+      }).then(res => {
+          if (res.ok) {
+              return res.json();
+          } else {
+              return res.json().then(json => Promise.reject(json));
+          }
+      }).then(({ url }) => {
+          window.location = url;
+      }).catch(e => {
+          console.error(e.error);
+      });
+
+    }
+
 }
   
   const handleFormSubmission = () => {
@@ -430,7 +459,11 @@ const RegisterTeamModal = (props) => {
   return (
     <Dialog open={props.status} onClose={handleClose} fullWidth maxWidth="xl">
       <form action="/" method="POST" onSubmit={(e) => { e.preventDefault(); this.handleClose(); }}>
-        <DialogTitle>Register a New Team<IconButton onClick={handleClose} style={{ float: 'right' }}><CloseIcon color="primary"></CloseIcon></IconButton></DialogTitle>
+        {props.isAdmin ? (
+          <DialogTitle>Register a New Team as Admin<IconButton onClick={handleClose} style={{ float: 'right' }}><CloseIcon color="primary"></CloseIcon></IconButton></DialogTitle>
+        ) : (
+          <DialogTitle>Register a New Team<IconButton onClick={handleClose} style={{ float: 'right' }}><CloseIcon color="primary"></CloseIcon></IconButton></DialogTitle>
+        )}
         <DialogContent>
           <Stack xs spacing={2} margin={2}>
             <InputLabel id="team-label"><strong>Required Information</strong></InputLabel>
@@ -627,13 +660,19 @@ const RegisterTeamModal = (props) => {
                 {addOn} ({addOnQuantities[addOn]}): {formatCurrency(addOnQuantities[addOn] * CONFIG_REGISTRATION_ADDITIONAL_PAID_ADD_ON_FIELDS[addOn].price)}
               </InputLabel>
             ))}
-            <FormControlLabel id="rule-checkbox-id" key="rules-checkbox-key" control={<Checkbox color="primary" onChange={(e) => { setIsChecked(e.target.checked) }}></Checkbox>} label={
-              <div>
-                <span>I have read and understand </span>
-                <a href={CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES} target="_blank" rel="noopener noreferrer"> the rules.</a>
-              </div>
-            }></FormControlLabel>
-            <Button color="primary" variant="contained" disabled={!isChecked} onClick={handleFormSubmission}>Go to payment</Button>
+            { !props.isAdmin && 
+              <FormControlLabel id="rule-checkbox-id" key="rules-checkbox-key" control={<Checkbox color="primary" onChange={(e) => { setIsChecked(e.target.checked) }}></Checkbox>} label={
+                <div>
+                  <span>I have read and understand </span>
+                  <a href={CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES} target="_blank" rel="noopener noreferrer"> the rules.</a>
+                </div>
+              }></FormControlLabel>
+            }
+            {props.isAdmin ? (
+              <Button color="primary" variant="contained" onClick={handleFormSubmission}>Register team (with no online payment)</Button>
+            ) : (
+              <Button color="primary" variant="contained" disabled={!isChecked} onClick={handleFormSubmission}>Go to payment</Button>
+            )}
           </Stack>
         </DialogContent>
       </form>
@@ -641,5 +680,5 @@ const RegisterTeamModal = (props) => {
   );
 };
 
-export default RegisterTeamModal;
+export default AddTeamModal;
 

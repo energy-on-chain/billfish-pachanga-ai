@@ -19,8 +19,15 @@ import CrudTable from '../components/CrudTable';
 import Footer from '../components/Footer';
 import Login from '../components/Login';
 
+import { generateRegistrationReport } from '../generators/registrationReports';
+
 import { 
-  CONFIG_GENERAL_YEAR,    // general
+  CONFIG_GENERAL_TOURNAMENT_NAME,    // general
+  CONFIG_GENERAL_YEAR,    
+  CONFIG_GENERAL_HAS_REGISTRATION,
+  CONFIG_GENERAL_HAS_CATCHES,
+  CONFIG_GENERAL_HAS_POTS,
+  CONFIG_GENERAL_HAS_AUCTION,
   CONFIG_ADMIN_DEFAULT_TAB_NAME,
   CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST,
   CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING,
@@ -50,8 +57,10 @@ function AdminPage() {
   // STATE - GENERAL
   const theme = useTheme();    // device size
   const matches = useMediaQuery(theme.breakpoints.up("md"));  
+  const isMobile = !matches; // Detect if the user is on mobile
   const currentUser = JSON.parse(window.localStorage.getItem('user'));    // login status
-  const [tab, setTab] = useState(window.localStorage.getItem('selectedTab') || (CONFIG_ADMIN_DEFAULT_TAB_NAME)); 
+  const [tabName, setTabName] = useState(window.localStorage.getItem('selectedTab') || (CONFIG_ADMIN_DEFAULT_TAB_NAME)); 
+  const [tableProperties, setTableProperties] = useState([])
   const [apiUrl, setApiUrl] = useState();
 
   // STATE - TABS
@@ -70,6 +79,13 @@ function AdminPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteInfo, setDeleteInfo] = useState();
   const [editInfo, setEditInfo] = useState();
+  const [registrationStats, setRegistrationStats] = useState({
+    totalTeams: 0,
+    checkedInTeams: 0,
+    totalFees: 0,
+    totalRegistrationFees: 0,
+    totalAddOnFees: 0
+  });
   const openAddModal = () => {setIsAddModalOpen(true)};
   const closeAddModal = () => {setIsAddModalOpen(false)};
   const openEditModal = () => {setIsEditModalOpen(true)};
@@ -79,13 +95,17 @@ function AdminPage() {
 
   // INITIALIZE
   useEffect(() => {
-    const initialTab = window.localStorage.getItem('selectedTab') || CONFIG_ADMIN_DEFAULT_TAB_NAME;
-    fetchData(initialTab);
-  }, []);  
+    const selectedTab = tabName || CONFIG_ADMIN_DEFAULT_TAB_NAME;  // Ensure fallback to the default tab
+    fetchData(selectedTab);
+  }, [tabName]);  // add tabName as a dependency to re-fetch when the tab changes
 
   const fetchData = async (tab) => {
 
     try {
+
+      // Clear rows before fetching new data
+      setRows([]);
+      setRowsHaveLoaded(false);
 
       // Environment
       let initialApiUrl = null; 
@@ -98,27 +118,27 @@ function AdminPage() {
       // Tab settings
       let tableName;
       let idName;
-      let tableProperties;
+      let tempTableProperties;
       switch (tab) {   
         case 'Teams':
           tableName = CONFIG_FIREBASE_TEAMS_TABLE_NAME;
           idName = CONFIG_FIREBASE_TEAMS_ID_NAME;
-          tableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
+          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
           break;
         case 'Catches':
           tableName = CONFIG_FIREBASE_CATCHES_TABLE_NAME;
           idName = CONFIG_FIREBASE_CATCHES_ID_NAME;
-          tableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
+          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
           break;
         case 'Pots':
           tableName = CONFIG_FIREBASE_POTS_TABLE_NAME;
           idName = CONFIG_FIREBASE_POTS_ID_NAME;
-          tableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
+          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
           break;
         case 'Auction':
           tableName = CONFIG_FIREBASE_AUCTION_TABLE_NAME;
           idName = CONFIG_FIREBASE_AUCTION_ID_NAME;
-          tableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS;
+          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS;
           break;
         default:    // handles "Stats" and "Reports" tab cases
           break;
@@ -126,7 +146,69 @@ function AdminPage() {
       let tempRows = [];
 
       // Fetch
-      if (tab != "Stats" && tab != "Reports") {
+      if (tab === "Stats") {
+        try {
+
+          // Registration
+          if (CONFIG_GENERAL_HAS_REGISTRATION) {
+            const [totalTeamsRes, checkedInTeamsRes, totalFeesRes, totalRegistrationFeesRes, totalAddOnFeesRes] = await Promise.all([
+              fetch(`${initialApiUrl}/api/registration-get-number-of-registered-teams`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+              }),
+              fetch(`${initialApiUrl}/api/registration-get-number-of-checked-in-teams`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+              }),
+              fetch(`${initialApiUrl}/api/registration-get-total-fees-collected`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+              }),
+              fetch(`${initialApiUrl}/api/registration-get-total-registration-fees-collected`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+              }),
+              fetch(`${initialApiUrl}/api/registration-get-total-add-on-fees-collected`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+              })
+            ]);
+        
+            const totalTeams = await totalTeamsRes.json();
+            const checkedInTeams = await checkedInTeamsRes.json();
+            const totalFees = await totalFeesRes.json();
+            const totalRegistrationFees = await totalRegistrationFeesRes.json();
+            const totalAddOnFees = await totalAddOnFeesRes.json();
+        
+            // Update state with fetched data
+            setRegistrationStats({
+              totalTeams: totalTeams.totalTeams,
+              checkedInTeams: checkedInTeams.checkedInTeams,
+              totalFees: totalFees.totalFees,
+              totalRegistrationFees: totalRegistrationFees.totalRegistrationFees,
+              totalAddOnFees: totalAddOnFees.totalAddOnFees
+            });
+          }
+
+          // FIXME: Catches 
+          // FIXME: Pots 
+          // FIXME: Auction
+          
+        } catch (error) {
+          console.error('Error fetching stats:', error);
+        }
+      } else if (tab === "Reports") {
+        // FIXME: add report endpoint and function calls here
+        // FIXME: Registration
+        // FIXME: Catches
+        // FIXME: Pots
+        // FIXME: Auction
+      } else {
         const res = await fetch(`${initialApiUrl}/api/admin_get_database_list`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -138,16 +220,19 @@ function AdminPage() {
             tempObject["id"] = i;
             tempObject[idName] = elementKey;
             tempRows.push(tempObject);
+            console.log('List of fetched data for tab:');
+            console.log(tempObject);
           });
         });
       }
       
       // Tab state
       setApiUrl(initialApiUrl);
+      setTableProperties(tempTableProperties);
       setRows(tempRows);
       setRowsHaveLoaded(true);
-      setStyle({ height: 400, width: '100%' });
-      setInitialState({ pagination: { paginationModel: { page: 0, pageSize: 5 } } });
+      setStyle({ height: 800, width: '100%' });
+      setInitialState({ pagination: { paginationModel: { page: 0, pageSize: 10 } } });
       setPageSizeOptions([5, 10, 25, 100]);
   
       // Modal state
@@ -161,8 +246,17 @@ function AdminPage() {
   } 
   
   // HELPERS
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+  };
+
   const handleTabChange = (event, newTab) => {
-    setTab(newTab);
+    setTabName(newTab);
     window.localStorage.setItem('selectedTab', newTab); // Save the selected tab to local storage
     fetchData(newTab);
   };
@@ -180,6 +274,7 @@ function AdminPage() {
     );
   };
 
+  // AUTHENTICATION
   const handleLogin = (e, email, password) => {
 
     if (!validateEmail(email)) {
@@ -220,6 +315,34 @@ function AdminPage() {
       })
   }
 
+  // REPORT GENERATORS
+  const handleGenerateRegistrationReport = async (year) => {
+    try {
+      let apiUrl = null;
+      if (process.env.REACT_APP_NODE_ENV === "staging") {
+        apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
+      } else if (process.env.REACT_APP_NODE_ENV === "production") {
+        apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+      }
+  
+      const response = await fetch(`${apiUrl}/api/admin_get_registered_team_data_for_report`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamYear: CONFIG_FIREBASE_TEAMS_TABLE_NAME }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error fetching data: ${response.statusText}`);
+      }
+  
+      const teamData = await response.json();
+      generateRegistrationReport(teamData, year, CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS, CONFIG_GENERAL_TOURNAMENT_NAME);
+  
+    } catch (error) {
+      console.error("Error fetching team data or generating PDF:", error);
+    }
+  };
+
   return (
     <AnimatedPage>
       <main>
@@ -237,80 +360,117 @@ function AdminPage() {
               <br/>
               <br/>
 
-              <TabContext value={tab}>
+              <TabContext value={tabName}>
 
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                   <TabList variant="scrollable" onChange={handleTabChange} aria-label="lab API tabs example">
-                    <Tab key={tabName} label={tabName} value={tabName} />
+                    {CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => (
+                      <Tab key={tab} label={tab} value={tab} />
+                    ))}
                   </TabList>
                 </Box>
 
-                {CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tabName) => {
-
-                  if (tabName === "Stats") {
-                    <TabPanel value="Reports">
-                      <div>
-                        <h2>FIXME: stats go here</h2>
-                      </div>
-                    </TabPanel>
-                  } else if (tabName === "Reports") {
-                    <TabPanel value="Reports">
-                      <div>
-                        <h2>FIXME: reports go here</h2>
-                      </div>
-                    </TabPanel>
-                  } else {
-                    <TabPanel key={tabName} value={tabName}>
-                      {(!rowsHaveLoaded) ? (
-                        <CircularProgress />
-                      ) : (
-                        <div style={style}>
-                          <CrudTable
-
-                            // dates
-                            today={today}
-                            startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
-                            endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
-
-                            // table styling                            
-                            tableType={tabName}
-                            buttonLabel={`Add ${tabName} Entry`}
-                            tableProperties={tableProperties}
-                            style={style}
-                            rows={rows || []}
-                            scroll={matches ? (desktopScroll) : (mobileScroll)}
-                            initialState={initialState}
-                            pageSizeOptions={pageSizeOptions}
-                            checkboxSelection={true}
-
-                            // add
-                            addStatus={isAddModalOpen}
-                            openAddModal={openAddModal}
-                            closeAddModal={closeAddModal}
-
-                            // edit
-                            editStatus={isEditModalOpen}
-                            editInfo={editInfo}
-                            setEditInfo={setEditInfo}
-                            openEditModal={openEditModal}
-                            closeEditModal={closeEditModal}
-                            
-                            // delete
-                            deleteStatus={isDeleteModalOpen}
-                            deleteInfo={deleteInfo}
-                            setDeleteInfo={setDeleteInfo}
-                            openDeleteModal={openDeleteModal}
-                            closeDeleteModal={closeDeleteModal}
-
-                          />
+                {CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => {
+                  if (tab === "Stats") {
+                    return (
+                      <TabPanel key="Stats" value="Stats">
+                        <div>
+                          { CONFIG_GENERAL_HAS_REGISTRATION && 
+                            <div>
+                              <h2>Registration</h2>
+                              {isMobile ? (
+                                <>
+                                  <p><strong>Total Teams Registered:</strong></p>
+                                  <p>{registrationStats.totalTeams} ({registrationStats.checkedInTeams} checked-in)</p>
+                                  <p><strong>Total Fees Collected:</strong></p>
+                                  <p>{formatCurrency(registrationStats.totalFees)}</p>
+                                  <p>({formatCurrency(registrationStats.totalRegistrationFees)} registration)</p>
+                                  <p>({formatCurrency(registrationStats.totalAddOnFees)} add-ons)</p>
+                                </>
+                              ) : (
+                                <>
+                                  <p><strong>Total Teams Registered:</strong> {registrationStats.totalTeams} ({registrationStats.checkedInTeams} checked-in)</p>
+                                  <p><strong>Total Fees Collected:</strong> {formatCurrency(registrationStats.totalFees)} ({formatCurrency(registrationStats.totalRegistrationFees)} registration, {formatCurrency(registrationStats.totalAddOnFees)} add-ons)</p>
+                                </>
+                              )}
+                              <br/>
+                            </div>
+                          }
+                          { CONFIG_GENERAL_HAS_CATCHES && <h2>FIXME: Catches</h2>}
+                          { CONFIG_GENERAL_HAS_POTS && <h2>FIXME: Pots</h2>}
+                          { CONFIG_GENERAL_HAS_AUCTION && <h2>FIXME: Auction</h2>}
                         </div>
-                      )}
-                    </TabPanel>
+                      </TabPanel>
+                    );
+                  } else if (tab === "Reports") {
+                    return (
+                      <TabPanel key="Reports" value="Reports">
+                        <div>
+                          { CONFIG_GENERAL_HAS_REGISTRATION && 
+                            <div>
+                              <Button onClick={() => {handleGenerateRegistrationReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Team Check-In Form</Button>
+                              <br/>
+                              <br/>
+                            </div>
+                          }
+                          { CONFIG_GENERAL_HAS_CATCHES && <h2>Catches</h2>}
+                          { CONFIG_GENERAL_HAS_POTS && <h2>Pots</h2>}
+                          { CONFIG_GENERAL_HAS_AUCTION && <h2>Auction</h2>}
+                        </div>
+                      </TabPanel>
+                    );
+                  } else {
+                    return (
+                      <TabPanel key={tab} value={tab}>
+                        {!rowsHaveLoaded ? (
+                          <CircularProgress />
+                        ) : (
+                          <div style={style}> 
+                            <CrudTable
+                              // dates
+                              today={today}
+                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+
+                              // table styling
+                              tableType={tab}
+                              buttonLabel={`Add ${tab} Entry`}
+                              tableProperties={tableProperties}
+                              style={style}
+                              rows={rows || []}
+                              scroll={matches ? desktopScroll : mobileScroll}
+                              initialState={initialState}
+                              pageSizeOptions={pageSizeOptions}
+                              checkboxSelection={true}
+
+                              // add
+                              addStatus={isAddModalOpen}
+                              openAddModal={openAddModal}
+                              closeAddModal={closeAddModal}
+
+                              // edit
+                              editStatus={isEditModalOpen}
+                              editInfo={editInfo}
+                              setEditInfo={setEditInfo}
+                              openEditModal={openEditModal}
+                              closeEditModal={closeEditModal}
+
+                              // delete
+                              deleteStatus={isDeleteModalOpen}
+                              deleteInfo={deleteInfo}
+                              setDeleteInfo={setDeleteInfo}
+                              openDeleteModal={openDeleteModal}
+                              closeDeleteModal={closeDeleteModal}
+                            />
+                          </div>
+                        )}
+                      </TabPanel>
+                    );
                   }
-                
                 })}
 
               </TabContext>
+
             </Box> 
           }
           {(currentUser === undefined || currentUser === null) && <Login handleLogin={handleLogin} handleLogout={handleLogout} />}     

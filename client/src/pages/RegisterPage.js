@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
-import RegisterTeamModal from '../components/modals/RegisterTeamModal';
+import AddTeamModal from '../components/modals/AddTeamModal';
 
 import { 
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION,
@@ -18,18 +18,18 @@ import "./RegisterPage.css";
 import 'react-toastify/dist/ReactToastify.css';
 
 function RegisterPage(props) {   
-  const [isRegisterTeamModalOpen, setIsRegisterTeamModalOpen] = useState(false);
+  const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
 
-  const openRegisterTeamModal = () => {
-    setIsRegisterTeamModalOpen(true);
+  const openAddTeamModal = () => {
+    setIsAddTeamModalOpen(true);
   };
 
-  const closeRegisterTeamModal = () => {
-    setIsRegisterTeamModalOpen(false);
+  const closeAddTeamModal = () => {
+    setIsAddTeamModalOpen(false);
   };
 
   useEffect(() => {
-    setIsRegisterTeamModalOpen(false);
+    setIsAddTeamModalOpen(false);
   }, []);
 
   return (
@@ -73,8 +73,8 @@ function RegisterPage(props) {
             </>
           )}
 
-          <button className="home-signup-button" onClick={openRegisterTeamModal} type="button">Signup Now!</button>  
-          <RegisterTeamModal status={isRegisterTeamModalOpen} open={openRegisterTeamModal} close={closeRegisterTeamModal}/>
+          <button className="home-signup-button" onClick={openAddTeamModal} type="button">Signup Now!</button>  
+          <AddTeamModal isAdmin={false} status={isAddTeamModalOpen} open={openAddTeamModal} close={closeAddTeamModal}/>
 
           {CONFIG_REGISTRATION_HAS_DISCLAIMERS && (
             <>

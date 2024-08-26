@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import dayjs from 'dayjs';
 
-// import AdminAddModal from './modals/AdminAddModal';
-// import AdminEditModal from './modals/AdminEditModal';
-// import AdminDeleteModal from './modals/AdminDeleteModal';
+import AddTeamModal from './modals/AddTeamModal';
+import EditTeamModal from './modals/EditTeamModal';
+import DeleteModal from './modals/DeleteModal';
 import AdminToolbar from './toolbars/AdminToolbar';
 
 import { 
@@ -14,6 +15,8 @@ import {
   CONFIG_FIREBASE_CATCHES_TABLE_NAME,
   CONFIG_FIREBASE_POTS_TABLE_NAME,
   CONFIG_FIREBASE_AUCTION_TABLE_NAME,
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
 } from '../config';
 
 function CrudTable(props) {
@@ -22,83 +25,170 @@ function CrudTable(props) {
   const [buttonLabel, setButtonLabel] = useState();
   const [style, setStyle] = useState();
   const [rows, setRows] = useState([]);
+  const [columns, setColumns] = useState([]);
   const [tableProperties, setTableProperties] = useState([]);
   const [scroll, setScroll] = useState();
   const [initialState, setInitialState] = useState();
   const [pageSizeOptions, setPageSizeOptions] = useState();
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
 
   // STATE - DATA
   const [editInfo, setEditInfo] = useState();
-  const [isEditModalOpen, setIsEditModalOpen] = useState();
+  const [isEditTeamModalOpen, setIsEditTeamModalOpen] = useState();
   const [deleteInfo, setDeleteInfo] = useState();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState();
 
   // INITIALIZE
   useEffect(() => {
-    loadAllData();
+
+    let rawColumns;
+    if (props.tableType === "Teams") {
+      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
+    } else if (props.tableType === "Catches") {
+      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
+    }
+
+    loadAllData(rawColumns);
+
   }, []);
 
-  const loadAllData = async () => {
+  const loadAllData = async (rawColumns) => {
 
     try {
-      let updatedColumnList = props.columns.map(columnObject => { return { ...columnObject } });
-      updatedColumnList.push(
-        {
-          field: 'actions',
-          type: 'actions',
-          headerName: 'Actions',
-          headerClassName: 'super-app-theme--header',
-          width: 100,
-          cellClassName: 'actions',
-          getActions: ({ id }) => {
-            return [
-              <GridActionsCellItem
-                icon={<EditIcon />}
-                label="Edit"
-                className="textPrimary"
-                onClick={() => handleEdit(id)}
-                color="inherit"
-              />,
-              <GridActionsCellItem
-                icon={<DeleteIcon />}
-                label="Delete"
-                onClick={() => handleDelete(id)}
-                color="inherit"
-              />,
-            ];
-          },
-        }
-      );
 
-      // update state
+      // Parse columns
+      const updatedColumnList = rawColumns.map(columnObject => {
+        const updatedColumn = { ...columnObject };
+
+        // Set visibility
+        setColumnVisibilityModel(prev => ({
+          ...prev,
+          [columnObject.field]: columnObject.isVisible
+        }));
+
+        // Set width
+        const screenWidth = window.innerWidth;
+        if (screenWidth <= 750) { // Mobile width
+          updatedColumn.width = columnObject.width || 150; // Set width
+          delete updatedColumn.flex; // Ensure no flex property on mobile
+        } else if (screenWidth <= 1024) { // Tablet width
+          updatedColumn.width = columnObject.width || 200; // Set width
+          delete updatedColumn.flex; // Ensure no flex property on tablet
+        } else { // Desktop and larger
+          updatedColumn.flex = columnObject.flex || 1; // Set flex
+          delete updatedColumn.width; // Ensure no width property on desktop
+        }
+
+        // Apply value formatters
+        if (columnObject.isImage) {
+          updatedColumn.renderCell = (params) => {
+            console.log('Value for isImage:')
+            console.log(params.value);
+            return <img
+              src={params.value}
+              alt="Thumbnail"
+              style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+              onError={(e) => {
+                console.error('Error loading image:', e);
+              }}
+            />
+          }  
+        }
+
+        if (columnObject.isDateTime) {
+          updatedColumn.valueFormatter = (value) => {
+            return dayjs(value).format('M-DD-YYYY hh:mm A');
+          };
+        }
+
+        if (columnObject.isCurrency) {
+          updatedColumn.valueFormatter = (value) => {
+            if (value == null) return ''; // Check if value is null or undefined
+            return new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD', // You can replace 'USD' with the desired currency code
+            }).format(value);
+          };
+        }
+
+        if (columnObject.isAddOnCharge) {
+          updatedColumn.valueFormatter = (value) => {
+            if (value == null) return ''; // Check if value is null or undefined
+            return value.quantityPurchased;
+          };
+        }
+        
+        if (columnObject.isAddOnCharge && columnObject.isCurrency) {
+          updatedColumn.valueFormatter = (value) => {
+            if (value == null) return ''; // Check if value is null or undefined
+            return new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD', // You can replace 'USD' with the desired currency code
+            }).format(value.price);
+          };
+        }
+
+        return updatedColumn;
+      });
+
+      // Add actions column
+      updatedColumnList.push({
+        field: 'actions',
+        type: 'actions',
+        headerName: 'Actions',
+        headerClassName: 'super-app-theme--header',
+        width: 100,
+        cellClassName: 'actions',
+        getActions: ({ id }) => {
+          return [
+            <GridActionsCellItem
+              icon={<EditIcon />}
+              label="Edit"
+              className="textPrimary"
+              onClick={() => handleEdit(id)}
+              color="inherit"
+            />,
+            <GridActionsCellItem
+              icon={<DeleteIcon />}
+              label="Delete"
+              onClick={() => handleDelete(id)}
+              color="inherit"
+            />,
+          ];
+        },
+      });
+
+      // Update state
       setButtonLabel(props.buttonLabel);
       setStyle(props.style);
-      setTableProperties(props.setTableProperties);
+      setTableProperties(props.tableProperties);
       setScroll(props.scroll);
       setInitialState(props.initialState);
       setRows(props.rows);
+      setColumns(updatedColumnList);
       setPageSizeOptions(props.pageSizeOptions);
 
     } catch (error) {
       console.log('There was an error loading the data for the CRUD Table: ' + error);
     }
+
     setIsDeleteModalOpen(false);
-    setIsEditModalOpen(false);
-  }
+    setIsEditTeamModalOpen(false);
+  };
 
   // HELPERS
   const handleOpenAddModal = () => {props.openAddModal()};    // Add
   const handleCloseAddModal = () => {props.closeAddModal()};
 
-  const openEditModal = () => {setIsEditModalOpen(true)};    // Edit
-  const closeEditModal = () => {
+  const openEditTeamModal = () => {setIsEditTeamModalOpen(true)};    // Edit
+  const closeEditTeamModal = () => {
     setEditInfo();
-    setIsEditModalOpen(false);
+    setIsEditTeamModalOpen(false);
   }
   const handleEdit = async (id) => {
     console.log("Selected row " + id + " to edit. The info is: " + props.rows[id])
     setEditInfo(props.rows[id]);
-    openEditModal();
+    openEditTeamModal();
   }
 
   const openDeleteModal = () => {setIsDeleteModalOpen(true)};    // Delete
@@ -116,9 +206,10 @@ function CrudTable(props) {
     <div style={style}>
 
       {/* DELETE */}
-      {/* { deleteInfo && 
-        <AdminDeleteModal 
-          tableStyle={props.tableStyle}
+      { deleteInfo && 
+        <DeleteModal 
+          tableType={props.tableType}
+          tableProperties={tableProperties}
           deleteInfo={deleteInfo} 
           status={isDeleteModalOpen} 
           open={openDeleteModal} 
@@ -129,31 +220,32 @@ function CrudTable(props) {
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
         />
-      } */}
+      }
 
       {/* EDIT */}
-      {/* { editInfo && 
-        <AdminEditModal 
-          tableStyle={props.tableStyle}
-          today={props.today} 
+      { editInfo && 
+        <EditTeamModal 
+          tableType={props.tableType}
+          tableProperties={tableProperties}
+          editInfo={editInfo} 
+          status={isEditTeamModalOpen} 
+          open={openEditTeamModal} 
+          close={closeEditTeamModal} 
           startDate={props.startDate}
           endDate={props.endDate} 
-          editInfo={editInfo} 
-          status={isEditModalOpen} 
-          open={openEditModal} 
-          close={closeEditModal} 
           year={CONFIG_GENERAL_YEAR} 
           teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
           catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
         />
-      } */}
+      }
 
       <div style={style}>
 
         {/* ADD */}
-        {/* <AdminAddModal 
+        <AddTeamModal 
+          isAdmin={true}
           tableStyle={props.tableStyle}
           today={props.today} 
           startDate={props.startDate}
@@ -166,14 +258,15 @@ function CrudTable(props) {
           catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-        /> */}
+        />
 
         {/* TABLE */}
         <DataGrid
           VerticalContentAlignment="center"
           rows={rows || []}
-          // columns={columns || []}
-          // columnVisibilityModel={visibility}
+          columns={columns || []}
+          columnVisibilityModel={columnVisibilityModel}
+          onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
           sx={{
             overflowX: scroll,
             '.MuiDataGrid-row.Mui-odd': {

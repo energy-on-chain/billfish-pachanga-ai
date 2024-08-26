@@ -232,7 +232,8 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
     console.log('metadata.imageBuffers:', metadata.imageBuffers)
     for (const [originalname, fileData] of Object.entries(metadata.imageBuffers)) {
       const buffer = Buffer.from(fileData.buffer, 'base64');
-      const filename = `${uuidv4()}-${originalname}`;
+      const sanitizedFilename = originalname.replace(/\s+/g, '-');
+      const filename = `${uuidv4()}-${sanitizedFilename}`;
       const fileUpload = bucket.file(filename);
 
       try {
@@ -261,10 +262,21 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
     const finalMetadata = {
         ...flattenedFields,
         ...metadata, // This still includes non-nested properties like teamTableName, teamName, etc.
-        requiredImageFields,
-        nonRequiredImageFields,
-        addOnCharges: combinedAddOns, // Combined add-ons with quantities and cost included
     };
+
+    // Separate each required and non-required image field into its own field
+    for (const [imageName, imageUrl] of Object.entries(requiredImageFields)) {
+      finalMetadata[imageName] = imageUrl;
+    }
+
+    for (const [imageName, imageUrl] of Object.entries(nonRequiredImageFields)) {
+      finalMetadata[imageName] = imageUrl;
+    }
+
+    // Separate each addOnCharge into its own field
+    for (const [addOn, addOnData] of Object.entries(combinedAddOns)) {
+      finalMetadata[addOn] = addOnData;
+    }
 
     // Exclude original `required...`, `nonRequired...`, `imageBuffers`, and `addOnQuantities`
     delete finalMetadata.requiredStringFields;
@@ -299,11 +311,96 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
 
     console.log('Successfully saved a new team registration record in firebase');
 };
+
+  const registrationGetNumberOfRegisteredTeams = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const snapshot = await db.collection(req.body.teamTableName).get();
+      const totalTeams = snapshot.size; // Count the number of documents
+      res.json({ totalTeams });
+    } catch (error) {
+      console.error("Error fetching total registered teams: ", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+
+  const registrationGetNumberOfCheckedInTeams = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const snapshot = await db.collection(req.body.teamTableName).where('hasCheckedIn', '==', true).get();
+      const checkedInTeams = snapshot.size; // Count the number of documents where hasCheckedIn is true
+      res.json({ checkedInTeams });
+    } catch (error) {
+      console.error("Error fetching checked-in teams: ", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+  
+  const registrationGetTotalFeesCollected = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const snapshot = await db.collection(req.body.teamTableName).get();
+  
+      let totalFees = 0;
+      snapshot.forEach(doc => {
+        totalFees += doc.data().totalFeePaidAtCheckout || 0;
+      });
+  
+      res.json({ totalFees });
+    } catch (error) {
+      console.error("Error fetching total fees collected: ", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+  
+  const registrationGetTotalRegistrationFeesCollected = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const snapshot = await db.collection(req.body.teamTableName).get();
+  
+      let totalRegistrationFees = 0;
+      snapshot.forEach(doc => {
+        totalRegistrationFees += doc.data().registrationFee || 0;
+      });
+  
+      res.json({ totalRegistrationFees });
+    } catch (error) {
+      console.error("Error fetching total registration fees collected: ", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
+  
+  const registrationGetTotalAddOnFeesCollected = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const snapshot = await db.collection(req.body.teamTableName).get();
+  
+      let totalAddOnFees = 0;
+      snapshot.forEach(doc => {
+        const addOns = doc.data();
+        Object.keys(addOns).forEach(key => {
+          if (addOns[key] && addOns[key].costOfPurchase) {
+            totalAddOnFees += addOns[key].costOfPurchase;
+          }
+        });
+      });
+  
+      res.json({ totalAddOnFees });
+    } catch (error) {
+      console.error("Error fetching total add-on fees collected: ", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  };
   
   return {
     registrationGetPastTeamNameList,
     registrationCheckoutSession,
     registrationWebhook,
+    registrationGetNumberOfRegisteredTeams,
+    registrationGetNumberOfCheckedInTeams,
+    registrationGetTotalFeesCollected,
+    registrationGetTotalRegistrationFeesCollected,
+    registrationGetTotalAddOnFeesCollected,
     upload
   };
 };
