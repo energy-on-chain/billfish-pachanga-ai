@@ -96,19 +96,13 @@
 [] Production deployment of BFP2025
 [] Production deployment of DSR2025 (don't mess with it too much because it already works!!!!)
 
-ADMIN
-[] Fix handling of table properties in CrudTable
-[] Implement AdminDeleteModal (teams, catches in config file and server)
-[] Implement AdminEditModal (teams, catches in config file and server)
-[] Implement AdminAddModal (teams, catches in config file and server)
-[] Safe handling of image CRUD (teams, catches, pots, auction)
-[] Stats tab
-[] Reports tab (registration, catches by team and all, leaderboard by team and all, pots by team and all, auction by person and all, awards by team and all)
-
 CATCHES
-[] vars: listOfFieldsToDisplay (e.g. name, age, gender, team, length, width, girth)
 [] Searchable (by team, by type, by species, by date)
 [] Ability to upload a photo with the catch as well
+[] Make sure it is easy to see the sortability!
+- Overall (log, counts)
+- By Team (log, counts)
+- By Species (log, counts)
 
 LEADERBOARD
 [] vars: numLeaderboardRows, hasSpeciesWinners, hasGrandChampion, hasGrandSlam, hasCatchAndReleaseDaily, hasMeatfishDaily, finalResultsTimestamp
@@ -119,9 +113,11 @@ LEADERBOARD
 [] If no winners yet, post empty table
 [] Add report to admin reports tab... full awards too
 [] modularize all the endpoints... i.e. just swap out the logic
+[] misc: "largest red snapper", "top lady angler", "best captain", "snapper count"
 
 STYLING
 [] Loading screens for all
+[] Find new template, deviate from Real Time Apps (especially the footer and nav bar!!!)
 [] Move the header and background colors to the config file
 [] Sorting arrows visible on tables
 [] "FIXME" search and replace

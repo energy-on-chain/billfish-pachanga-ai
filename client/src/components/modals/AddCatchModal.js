@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import {
-  CONFIG_FIREBASE_CATCHES_TABLE_NAME,
   CONFIG_CATCHES_SPECIES_LIST,
   CONFIG_CATCHES_ROUND_POINTS_DOWN, 
 } from '../../config';
@@ -38,7 +37,7 @@ const AddCatchModal = (props) => {
       apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
     }
 
-    fetch(`${apiUrl}/api/admin_get_database_list`, {    // FIXME: create thsi endpoint
+    fetch(`${apiUrl}/api/admin_get_database_list`, {    // get list of registered teams
       method: 'POST',    
       headers: {
         'Content-Type': 'application/json'
@@ -134,6 +133,12 @@ const AddCatchModal = (props) => {
         return false;
       } 
 
+      if(entry["catchPhotoIsRequired"] && (entry["catchPhoto"] === null || entry["catchPhoto" === undefined])) {
+        toast.warning("A photo is required for catch #" + (i+1));
+        inputIsValid = false;
+        return false;
+      }
+
     })
 
   if (inputIsValid) {
@@ -161,6 +166,8 @@ const AddCatchModal = (props) => {
             girth: "",
             weight: "",
             points: "",
+            catchPhoto: null,
+            catchPhotoIsRequired: false,
           }
         )
       }
@@ -193,12 +200,22 @@ const AddCatchModal = (props) => {
           newCatchData[index].points = species.points;
         };
       });
+      speciesList.forEach(species => {
+        if (species.label === value["label"]) {
+          newCatchData[index].catchPhotoIsRequired = species.photoIsRequired;
+        };
+      });
 
     } else if (value["category"] === "Meatfish") {
 
       newCatchData[index].species = value["label"];
       newCatchData[index].speciesType = value["category"];
       newCatchData[index].dateTime = today;
+      speciesList.forEach(species => {
+        if (species.label === value["label"]) {
+          newCatchData[index].catchPhotoIsRequired = species.photoIsRequired;
+        };
+      });
 
     }
 
@@ -238,6 +255,14 @@ const AddCatchModal = (props) => {
     setCatchData(newCatchData);
   }
 
+  const handleImageChange = (e, fieldName) => {
+    // FIXME: implement this function
+  };
+
+  const handleRemoveImage = (fieldName) => {
+    // FIXME: implement this function
+  };
+
   const addCatches = () => {
     return catchData.map((element, index) => (
       <div>
@@ -259,7 +284,10 @@ const AddCatchModal = (props) => {
           </Grid>
         </Grid>
         <br/>
-          { catchData[index].speciesType === "Catch & Release" && 
+          {(
+            catchData[index].speciesType === "Catch & Release" &&    // no catch photo case
+            !catchData[index].catchPhotoIsRequired
+          ) && 
             <div>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={12} md={12} lg={12} xl={12}>
@@ -277,8 +305,35 @@ const AddCatchModal = (props) => {
               </Grid>
             </div>
           }
+          {(
+            catchData[index].speciesType === "Catch & Release" &&    // catch photo case
+            catchData[index].catchPhotoIsRequired
+          ) && 
+            <div>
+              <Grid container spacing={2}>
+                <Grid item xs={6} sm={6} md={6} lg={6} xl={6}>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DateTimePicker 
+                      required 
+                      // disablePast 
+                      id={"select-catch-date-" + index} 
+                      timeSteps={{ minutes: 1 }}
+                      minDate={dayjs(day1)} 
+                      maxDate={dayjs(day2)} 
+                      onChange={(e) => handleDateTimeSelection(index, e)}/>
+                  </LocalizationProvider>
+                </Grid>
+                <Grid item xs={6} sm={6} md={6} lg={6} xl={6}>
+                  <InputLabel>FIXME: image upload</InputLabel>
+                </Grid>
+              </Grid>
+            </div>
+          }
 
-        { catchData[index].speciesType === "Meatfish" &&
+        {( 
+          catchData[index].speciesType === "Meatfish" &&    // no catch photo case
+          !catchData[index].catchPhotoIsRequired
+        ) &&
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4} md={4} lg={4} xl={4}>
               <TextField 
@@ -318,6 +373,55 @@ const AddCatchModal = (props) => {
                     label="Girth (by 1/8 inch)"
                     onChange={(e) => handleGirthSelection(index, e)}
                 />
+            </Grid>
+          </Grid>
+        }
+        {( 
+          catchData[index].speciesType === "Meatfish" &&    // catch photo case
+          catchData[index].catchPhotoIsRequired 
+        ) &&
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={3} md={3} lg={3} xl={3}>
+              <TextField 
+                    type="number"
+                    id={"select-catch-weight-" + index}
+                    InputProps={{
+                        inputProps: { 
+                            step: 0.1, min: 0.1 
+                        }
+                    }}
+                    label="Weight (by 1/10 lb)"
+                    onChange={(e) => handleWeightSelection(index, e)}
+                />
+            </Grid>
+            <Grid item xs={12} sm={3} md={3} lg={3} xl={3}>
+              <TextField 
+                  type="number"
+                  id={"select-catch-length-" + index}
+                  InputProps={{
+                      inputProps: { 
+                          step: 0.125, min: 0.125 
+                      }
+                  }}
+                  label="Length (by 1/8 inch)"
+                  onChange={(e) => handleLengthSelection(index, e)}
+              />
+            </Grid>
+            <Grid item xs={12} sm={3} md={3} lg={3} xl={3}>
+              <TextField 
+                    type="number"
+                    id={"select-catch-girth-" + index}
+                    InputProps={{
+                        inputProps: { 
+                            step: 0.125, min: 0.125 
+                        }
+                    }}
+                    label="Girth (by 1/8 inch)"
+                    onChange={(e) => handleGirthSelection(index, e)}
+                />
+            </Grid>
+            <Grid item xs={12} sm={3} md={3} lg={3} xl={3}>
+              <InputLabel>FIXME: image upload</InputLabel>
             </Grid>
           </Grid>
         }
@@ -365,7 +469,6 @@ const AddCatchModal = (props) => {
       console.log("Input was not valid or there was an error")
     }
   }
-  
 
   return (
     <Dialog open={props.status} onClose={handleClose} fullWidth maxWidth="xl">

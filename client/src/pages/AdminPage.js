@@ -527,9 +527,9 @@ function AdminPage() {
                               <br/>
                             </div>
                           }
-                          { CONFIG_GENERAL_HAS_CATCHES && <h2>Catches</h2>}
-                          { CONFIG_GENERAL_HAS_POTS && <h2>Pots</h2>}
-                          { CONFIG_GENERAL_HAS_AUCTION && <h2>Auction</h2>}
+                          { CONFIG_GENERAL_HAS_CATCHES && <h2></h2>}
+                          { CONFIG_GENERAL_HAS_POTS && <h2></h2>}
+                          { CONFIG_GENERAL_HAS_AUCTION && <h2></h2>}
                         </div>
                       </TabPanel>
                     );
