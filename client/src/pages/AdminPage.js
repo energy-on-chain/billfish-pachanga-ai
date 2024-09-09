@@ -15,7 +15,7 @@ import TabPanel from '@mui/lab/TabPanel';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import AnimatedPage from './AnimatedPage';
-import CrudTable from '../components/CrudTable';
+import CrudTable from '../components/tables/CrudTable';
 import Footer from '../components/Footer';
 import Login from '../components/Login';
 
@@ -25,7 +25,7 @@ import {
   CONFIG_GENERAL_TOURNAMENT_NAME,    // general
   CONFIG_GENERAL_YEAR,    
   CONFIG_GENERAL_HAS_REGISTRATION,
-  CONFIG_GENERAL_HAS_CATCHES,
+  CONFIG_GENERAL_HAS_NEWSFEED,
   CONFIG_GENERAL_HAS_POTS,
   CONFIG_GENERAL_HAS_AUCTION,
   CONFIG_ADMIN_DEFAULT_TAB_NAME,
@@ -41,6 +41,10 @@ import {
   CONFIG_FIREBASE_CATCHES_ID_NAME,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
   CONFIG_CATCHES_STATS_LIST,
+
+  CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,    // announcements
+  CONFIG_FIREBASE_ANNOUNCEMENTS_ID_NAME,
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
 
   CONFIG_FIREBASE_POTS_TABLE_NAME,    // pots
   CONFIG_FIREBASE_POTS_ID_NAME,
@@ -110,6 +114,21 @@ function AdminPage() {
   const openDeleteCatchModal = () => {setIsDeleteCatchModalOpen(true)};
   const closeDeleteCatchModal = () => {setIsDeleteCatchModalOpen(false)};
 
+  // STATE - ANNOUNCEMENTS
+  const [announcementRows, setAnnouncementRows] = useState([]);
+  const [announcementRowsHaveLoaded, setAnnouncementRowsHaveLoaded] = useState(false);
+  const [isAddAnnouncementModalOpen, setIsAddAnnouncementModalOpen] = useState(false);
+  const [isDeleteAnnouncementModalOpen, setIsDeleteAnnouncementModalOpen] = useState(false);
+  const [isEditAnnouncementModalOpen, setIsEditAnnouncementModalOpen] = useState(false);
+  const [deleteAnnouncementInfo, setDeleteAnnouncementInfo] = useState();
+  const [editAnnouncementInfo, setEditAnnouncementInfo] = useState();
+  const openAddAnnouncementModal = () => {setIsAddAnnouncementModalOpen(true)};
+  const closeAddAnnouncementModal = () => {setIsAddAnnouncementModalOpen(false)};
+  const openEditAnnouncementModal = () => {setIsEditAnnouncementModalOpen(true)};
+  const closeEditAnnouncementModal = () => {setIsEditAnnouncementModalOpen(false)};
+  const openDeleteAnnouncementModal = () => {setIsDeleteAnnouncementModalOpen(true)};
+  const closeDeleteAnnouncementModal = () => {setIsDeleteAnnouncementModalOpen(false)};
+
   // FIXME: Pots
   // FIXME: Auction
 
@@ -136,6 +155,8 @@ function AdminPage() {
       setTeamRowsHaveLoaded(false);
       setCatchRows([]);
       setCatchRowsHaveLoaded(false);
+      setAnnouncementRows([]);
+      setAnnouncementRowsHaveLoaded(false);
       // FIXME: pots, auctions
   
       // Define tab settings
@@ -152,6 +173,11 @@ function AdminPage() {
           tableName = CONFIG_FIREBASE_CATCHES_TABLE_NAME;
           idName = CONFIG_FIREBASE_CATCHES_ID_NAME;
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
+          break;
+        case 'Announcements':
+          tableName = CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME;
+          idName = CONFIG_FIREBASE_ANNOUNCEMENTS_ID_NAME;
+          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
           break;
         case 'Pots':
           tableName = CONFIG_FIREBASE_POTS_TABLE_NAME;
@@ -219,7 +245,7 @@ function AdminPage() {
           }
 
           // Catches
-          if (CONFIG_GENERAL_HAS_CATCHES) {
+          if (CONFIG_GENERAL_HAS_NEWSFEED) {
             try {
               // Fetch total fish count as a promise
               const totalFishRes = fetch(`${initialApiUrl}/api/admin_get_total_catch_count`, {
@@ -301,6 +327,9 @@ function AdminPage() {
       } else if (tab === 'Catches') {
         setCatchRows(tempRows);
         setCatchRowsHaveLoaded(true);
+      } else if (tab === 'Announcements') {
+        setAnnouncementRows(tempRows);
+        setAnnouncementRowsHaveLoaded(true);
       } else if (tab === 'Pots') {
         // FIMXE
       } else if (tab === 'Auction') {
@@ -317,6 +346,11 @@ function AdminPage() {
       setIsAddCatchModalOpen(false);   
       setIsEditCatchModalOpen(false);
       setIsDeleteCatchModalOpen(false);
+
+      // Announcements
+      setIsAddAnnouncementModalOpen(false);   
+      setIsEditAnnouncementModalOpen(false);
+      setIsDeleteAnnouncementModalOpen(false);
 
       // Pots FIXME
       // Auction FIXME
@@ -478,7 +512,7 @@ function AdminPage() {
                             </div>
                           }
 
-                          {CONFIG_GENERAL_HAS_CATCHES &&
+                          {CONFIG_GENERAL_HAS_NEWSFEED &&
                             <div>
                               <h2>Catches</h2>
                               {console.log("Rendering catchesStats:", catchesStats)}
@@ -532,7 +566,7 @@ function AdminPage() {
                           }
 
                           {/* NOTE: No catch reports are needed since they can already be exported via the excel function */}
-                          { CONFIG_GENERAL_HAS_CATCHES && <h2></h2>}   
+                          { CONFIG_GENERAL_HAS_NEWSFEED && <h2></h2>}   
 
                           {/* FIXME: Implement these */}
                           { CONFIG_GENERAL_HAS_POTS && <h2></h2>}
@@ -629,6 +663,53 @@ function AdminPage() {
                               setDeleteInfo={setDeleteCatchInfo}
                               openDeleteModal={openDeleteCatchModal}
                               closeDeleteModal={closeDeleteCatchModal}
+                            />
+                          </div>
+                        )}
+                      </TabPanel>
+                    );
+                  } else if (tab === "Announcements") {
+                    return (
+                      <TabPanel key={tab} value={tab}>
+                        {!announcementRowsHaveLoaded ? (
+                          <CircularProgress />
+                        ) : (
+                          <div style={style}> 
+                            <CrudTable
+                              // dates
+                              today={today}
+                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+
+                              // table styling
+                              tableType={tab}
+                              buttonLabel={`Add ${tab} Entry`}
+                              tableProperties={tableProperties}
+                              style={style}
+                              rows={announcementRows || []}
+                              scroll={matches ? desktopScroll : mobileScroll}
+                              initialState={initialState}
+                              pageSizeOptions={pageSizeOptions}
+                              checkboxSelection={true}
+
+                              // add
+                              addStatus={isAddAnnouncementModalOpen}
+                              openAddModal={openAddAnnouncementModal}
+                              closeAddModal={closeAddAnnouncementModal}
+
+                              // edit
+                              editStatus={isEditAnnouncementModalOpen}
+                              editInfo={editAnnouncementInfo}
+                              setEditInfo={setEditAnnouncementInfo}
+                              openEditModal={openEditAnnouncementModal}
+                              closeEditModal={closeEditAnnouncementModal}
+
+                              // delete
+                              deleteStatus={isDeleteAnnouncementModalOpen}
+                              deleteInfo={deleteAnnouncementInfo}
+                              setDeleteInfo={setDeleteAnnouncementInfo}
+                              openDeleteModal={openDeleteAnnouncementModal}
+                              closeDeleteModal={closeDeleteAnnouncementModal}
                             />
                           </div>
                         )}

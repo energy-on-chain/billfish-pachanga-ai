@@ -96,14 +96,6 @@
 [] Production deployment of BFP2025
 [] Production deployment of DSR2025 (don't mess with it too much because it already works!!!!)
 
-CATCHES
-[] Searchable (by team, by type, by species, by date)
-[] Ability to upload a photo with the catch as well
-[] Make sure it is easy to see the sortability!
-- Overall (log, counts)
-- By Team (log, counts)
-- By Species (log, counts)
-
 LEADERBOARD
 [] vars: numLeaderboardRows, hasSpeciesWinners, hasGrandChampion, hasGrandSlam, hasCatchAndReleaseDaily, hasMeatfishDaily, finalResultsTimestamp
 [] Add title mapping (e.g. ?Grand Champion? endpoint can use a different name)
@@ -116,7 +108,6 @@ LEADERBOARD
 [] misc: "largest red snapper", "top lady angler", "best captain", "snapper count"
 
 STYLING
-[] Loading screens for all
 [] Find new template, deviate from Real Time Apps (especially the footer and nav bar!!!)
 [] Move the header and background colors to the config file
 [] Sorting arrows visible on tables

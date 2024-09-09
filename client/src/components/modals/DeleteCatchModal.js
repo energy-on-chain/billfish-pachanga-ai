@@ -71,30 +71,18 @@ const DeleteCatchModal = (props) => {
           <DialogTitle>Delete {props.year} Catch<IconButton onClick={handleClose} style={{float:'right'}}><CloseIcon color="primary"></CloseIcon></IconButton>  </DialogTitle>
           <DialogContent>
               <Stack spacing={2} margin={2}>
-                {catchInfo["speciesType"] === "Catch & Release" ? (
-                  <div>
-                    <InputLabel id="catch-id-label"><strong>Catch ID:</strong>  {catchInfo["catchId"]}</InputLabel>
-                    <InputLabel id="species-label"><strong>Species:</strong>  {catchInfo["species"]}</InputLabel>
-                    <InputLabel id="species-type-label"><strong>Type:</strong>  {catchInfo["speciesType"]}</InputLabel>
-                    <InputLabel id="name-label"><strong>Team:</strong>  {catchInfo["teamName"]}</InputLabel>
-                    <InputLabel id="date-label"><strong>Date Caught:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localDate}</InputLabel>
-                    <InputLabel id="time-label"><strong>Time Caught:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localTime}</InputLabel>
-                    <InputLabel id="points-label"><strong>Points:</strong>  {catchInfo["points"]}</InputLabel>
-                  </div>
-                ) : (
-                  <div>
-                    <InputLabel id="catch-id-label"><strong>Catch ID:</strong>  {catchInfo["catchId"]}</InputLabel>
-                    <InputLabel id="species-label"><strong>Species:</strong>  {catchInfo["species"]}</InputLabel>
-                    <InputLabel id="species-type-label"><strong>Type:</strong>  {catchInfo["speciesType"]}</InputLabel>
-                    <InputLabel id="name-label"><strong>Team:</strong>  {catchInfo["teamName"]}</InputLabel>
-                    <InputLabel id="length-label"><strong>Length:</strong>  {catchInfo["length"]} in</InputLabel>
-                    <InputLabel id="girth-label"><strong>Girth:</strong>  {catchInfo["girth"]} in</InputLabel>
-                    <InputLabel id="weight-label"><strong>Weight:</strong>  {catchInfo["weight"]} lbs</InputLabel>
-                    <InputLabel id="points-label"><strong>Points:</strong>  {catchInfo["points"]}</InputLabel>
-                    <InputLabel id="date-label"><strong>Date Entered:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localDate}</InputLabel>
-                    <InputLabel id="time-label"><strong>Time Entered:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localTime}</InputLabel>
-                  </div>
-                )}
+                <div>
+                  <InputLabel id="catch-id-label"><strong>Catch ID:</strong>  {catchInfo["catchId"]}</InputLabel>
+                  <InputLabel id="species-label"><strong>Species:</strong>  {catchInfo["species"]}</InputLabel>
+                  <InputLabel id="species-type-label"><strong>Type:</strong>  {catchInfo["speciesType"]}</InputLabel>
+                  <InputLabel id="name-label"><strong>Team:</strong>  {catchInfo["teamName"]}</InputLabel>
+                  <InputLabel id="length-label"><strong>Length:</strong>  {catchInfo["length"]} in</InputLabel>
+                  <InputLabel id="girth-label"><strong>Girth:</strong>  {catchInfo["girth"]} in</InputLabel>
+                  <InputLabel id="weight-label"><strong>Weight:</strong>  {catchInfo["weight"]} lbs</InputLabel>
+                  <InputLabel id="points-label"><strong>Points:</strong>  {catchInfo["points"]}</InputLabel>
+                  <InputLabel id="date-label"><strong>Date Entered:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localDate}</InputLabel>
+                  <InputLabel id="time-label"><strong>Time Entered:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localTime}</InputLabel>
+                </div>
                 <br/>
                 <Button color="primary" variant="contained" onClick={handleDelete}>Yes, Delete This Catch</Button>
               </Stack>

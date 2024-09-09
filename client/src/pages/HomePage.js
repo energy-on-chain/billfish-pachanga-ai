@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 import { 
   CONFIG_GENERAL_YEAR,
   CONFIG_GENERAL_HAS_REGISTRATION, 
-  CONFIG_GENERAL_HAS_CATCHES, 
+  CONFIG_GENERAL_HAS_NEWSFEED, 
   CONFIG_GENERAL_HAS_POTS, 
   CONFIG_GENERAL_HAS_AUCTION, 
   CONFIG_HOME_TOURNAMENT_DATE_STRING, 
@@ -90,7 +90,7 @@ function HomePage() {
     }
 
     // Catches
-    if (CONFIG_GENERAL_HAS_CATCHES) {
+    if (CONFIG_GENERAL_HAS_NEWSFEED) {
       fetch(`${apiUrl}/api/get_catch_count_for_homepage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},

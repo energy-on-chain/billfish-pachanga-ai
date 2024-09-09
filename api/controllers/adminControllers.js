@@ -580,7 +580,6 @@ module.exports = ({redisClient}) => {
     }
   };
   
-
   const adminDeleteCatch = async (req, res) => {
     console.log('In api/admin_delete_catch...');
   
@@ -669,7 +668,59 @@ module.exports = ({redisClient}) => {
       res.status(500).json({ error: "Failed to get fish count by species" });
     }
   };
+
+  // Announcements
+  const adminAddAnnouncement = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const { newAnnouncement, announcementYear } = req.body;
   
+      const announcementRef = await db.collection(announcementYear).add(newAnnouncement);
+      await announcementRef.update({ announcementId: announcementRef.id });
+  
+      res.status(200).json({ message: 'Announcement added successfully' });
+    } catch (error) {
+      console.error('Error adding announcement:', error);
+      res.status(500).json({ error: 'Error adding announcement' });
+    }
+  };
+  
+  const adminEditAnnouncement = async (req, res) => {
+    try {
+      console.log("Request Body:", req.body); // Log the request body to verify it's correct
+  
+      const db = getFirestore();
+      const { updatedAnnouncement, announcementYear } = req.body;
+      const { announcementId } = updatedAnnouncement;
+  
+      if (!announcementId) {
+        return res.status(400).json({ error: 'Announcement ID is missing' });
+      }
+  
+      const announcementRef = db.collection(announcementYear).doc(announcementId);
+      await announcementRef.update(updatedAnnouncement);
+  
+      res.status(200).json({ message: 'Announcement updated successfully' });
+    } catch (error) {
+      console.error('Error updating announcement:', error);
+      res.status(500).json({ error: 'Error updating announcement' });
+    }
+  };
+  
+  const adminDeleteAnnouncement = async (req, res) => {
+    try {
+      const db = getFirestore();
+      const { announcementId, announcementYear } = req.body;
+  
+      const announcementRef = db.collection(announcementYear).doc(announcementId);
+      await announcementRef.delete();
+  
+      res.status(200).json({ message: 'Announcement deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting announcement:', error);
+      res.status(500).json({ error: 'Error deleting announcement' });
+    }
+  };  
 
   return {
     adminGetDatabaseCount,
@@ -681,6 +732,9 @@ module.exports = ({redisClient}) => {
     adminAddCatch,
     adminEditCatch,
     adminDeleteCatch,
+    adminAddAnnouncement,
+    adminEditAnnouncement,
+    adminDeleteAnnouncement,
     adminGetTotalCatchCount,
     adminGetTotalCatchCountBySpecies,
     adminGetRegisteredTeamDataForReport,

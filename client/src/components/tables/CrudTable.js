@@ -4,27 +4,33 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
 import dayjs from 'dayjs';
 
-import AddTeamModal from './modals/AddTeamModal';
-import EditTeamModal from './modals/EditTeamModal';
-import DeleteTeamModal from './modals/DeleteTeamModal';
+import AddTeamModal from '../modals/AddTeamModal';
+import EditTeamModal from '../modals/EditTeamModal';
+import DeleteTeamModal from '../modals/DeleteTeamModal';
 
-import AddCatchModal from './modals/AddCatchModal';
-import EditCatchModal from './modals/EditCatchModal';
-import DeleteCatchModal from './modals/DeleteCatchModal';
+import AddCatchModal from '../modals/AddCatchModal';
+import EditCatchModal from '../modals/EditCatchModal';
+import DeleteCatchModal from '../modals/DeleteCatchModal';
 
-import AdminToolbar from './toolbars/AdminToolbar';
+import AddAnnouncementModal from '../modals/AddAnnouncementModal';
+import EditAnnouncementModal from '../modals/EditAnnouncementModal';
+import DeleteAnnouncementModal from '../modals/DeleteAnnouncementModal';
 
-import defaultNoImage from '../images/defaultNoImage.png';
+import AdminToolbar from '../toolbars/AdminToolbar';
+
+import defaultNoImage from '../../images/defaultNoImage.png';
 
 import { 
   CONFIG_GENERAL_YEAR,
   CONFIG_FIREBASE_TEAMS_TABLE_NAME,    // Firebase
   CONFIG_FIREBASE_CATCHES_TABLE_NAME,
+  CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
   CONFIG_FIREBASE_POTS_TABLE_NAME,
   CONFIG_FIREBASE_AUCTION_TABLE_NAME,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
-} from '../config';
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
+} from '../../config';
 
 function CrudTable(props) {
 
@@ -53,6 +59,8 @@ function CrudTable(props) {
       rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
     } else if (props.tableType === "Catches") {
       rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
+    } else if (props.tableType === "Announcements") {
+      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
     }
 
     loadAllData(rawColumns);
@@ -107,8 +115,7 @@ function CrudTable(props) {
 
         if (columnObject.isDateTime) {
           updatedColumn.valueFormatter = (value) => {
-            const dateObj = new Date(value).toLocaleString();
-            return dateObj;
+            return dayjs(value).format('hh:mm A, MMM Do YYYY'); 
           };
         }
 
@@ -230,6 +237,7 @@ function CrudTable(props) {
           catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (deleteInfo && props.tableType === "Catches") && 
@@ -245,6 +253,23 @@ function CrudTable(props) {
           catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+        />
+      }
+      { (deleteInfo && props.tableType === "Announcements") && 
+        <DeleteAnnouncementModal 
+          tableType={props.tableType}
+          tableProperties={tableProperties}
+          deleteInfo={deleteInfo} 
+          status={isDeleteModalOpen} 
+          open={openDeleteModal} 
+          close={closeDeleteModal} 
+          year={CONFIG_GENERAL_YEAR} 
+          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
 
@@ -264,6 +289,7 @@ function CrudTable(props) {
           catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (editInfo && props.tableType === "Catches") && 
@@ -281,6 +307,25 @@ function CrudTable(props) {
           catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
           potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
           auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+        />
+      }
+      { (editInfo && props.tableType === "Announcements") && 
+        <EditAnnouncementModal 
+          tableType={props.tableType}
+          tableProperties={tableProperties}
+          editInfo={editInfo} 
+          status={isEditModalOpen} 
+          open={openEditModal} 
+          close={closeEditModal} 
+          startDate={props.startDate}
+          endDate={props.endDate} 
+          year={CONFIG_GENERAL_YEAR} 
+          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
 
@@ -302,6 +347,7 @@ function CrudTable(props) {
             catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
             potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
             auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
         { (props.tableType === "Catches") && 
@@ -319,6 +365,25 @@ function CrudTable(props) {
             catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
             potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
             auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          />
+        }
+        { (props.tableType === "Announcements") && 
+          <AddAnnouncementModal 
+            isAdmin={true}
+            tableStyle={props.tableStyle}
+            today={props.today} 
+            startDate={props.startDate}
+            endDate={props.endDate} 
+            status={props.addStatus} 
+            open={props.openAddModal} 
+            close={props.closeAddModal}  
+            year={CONFIG_GENERAL_YEAR} 
+            teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
 
