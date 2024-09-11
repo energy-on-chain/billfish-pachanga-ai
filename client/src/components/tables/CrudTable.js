@@ -20,17 +20,20 @@ import AdminToolbar from '../toolbars/AdminToolbar';
 
 import defaultNoImage from '../../images/defaultNoImage.png';
 
-import { 
+import {
   CONFIG_GENERAL_YEAR,
-  CONFIG_FIREBASE_TEAMS_TABLE_NAME,    // Firebase
-  CONFIG_FIREBASE_CATCHES_TABLE_NAME,
-  CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
-  CONFIG_FIREBASE_POTS_TABLE_NAME,
-  CONFIG_FIREBASE_AUCTION_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,    // Firebase
+  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,
+} from '../../config/generalConfig';
+
+import { 
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
-} from '../../config';
+} from '../../config/adminConfig';
 
 function CrudTable(props) {
 
@@ -233,11 +236,11 @@ function CrudTable(props) {
           open={openDeleteModal} 
           close={closeDeleteModal} 
           year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (deleteInfo && props.tableType === "Catches") && 
@@ -249,11 +252,11 @@ function CrudTable(props) {
           open={openDeleteModal} 
           close={closeDeleteModal} 
           year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (deleteInfo && props.tableType === "Announcements") && 
@@ -265,11 +268,11 @@ function CrudTable(props) {
           open={openDeleteModal} 
           close={closeDeleteModal} 
           year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
 
@@ -285,11 +288,11 @@ function CrudTable(props) {
           startDate={props.startDate}
           endDate={props.endDate} 
           year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (editInfo && props.tableType === "Catches") && 
@@ -303,11 +306,11 @@ function CrudTable(props) {
           startDate={props.startDate}
           endDate={props.endDate} 
           year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (editInfo && props.tableType === "Announcements") && 
@@ -321,11 +324,11 @@ function CrudTable(props) {
           startDate={props.startDate}
           endDate={props.endDate} 
           year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
 
@@ -343,11 +346,11 @@ function CrudTable(props) {
             open={props.openAddModal} 
             close={props.closeAddModal}  
             year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
         { (props.tableType === "Catches") && 
@@ -361,11 +364,11 @@ function CrudTable(props) {
             open={props.openAddModal} 
             close={props.closeAddModal}  
             year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
         { (props.tableType === "Announcements") && 
@@ -379,11 +382,11 @@ function CrudTable(props) {
             open={props.openAddModal} 
             close={props.closeAddModal}  
             year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
 

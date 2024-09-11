@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
+
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import AddTeamModal from '../components/modals/AddTeamModal';
+import "./RegisterPage.css";
 
-import { 
+import {
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION,
   CONFIG_REGISTRATION_EARLYBIRD_DATE_STRING,
   CONFIG_REGISTRATION_EARLYBIRD_FEE,
@@ -12,10 +15,8 @@ import {
   CONFIG_REGISTRATION_HAS_DISCLAIMERS,
   CONFIG_REGISTRATION_DISCLAIMERS,
   CONFIG_REGISTRATION_PAID_ADD_ONS,
-} from '../config';
+} from '../config/registrationConfig';
 
-import "./RegisterPage.css";
-import 'react-toastify/dist/ReactToastify.css';
 
 function RegisterPage(props) {   
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);

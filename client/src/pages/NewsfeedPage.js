@@ -11,18 +11,21 @@ import advancedFormat from 'dayjs/plugin/advancedFormat'; // For 'Do' format (li
 
 import CountTable from '../components/tables/CountTable';
 
+import './BasePage.css';
+
 import {
-  CONFIG_FIREBASE_CATCHES_TABLE_NAME,
-  CONFIG_FIREBASE_TEAMS_TABLE_NAME,
-  CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
+} from '../config/generalConfig';
+
+import {
   CONFIG_NEWSFEED_INCLUDE_TYPE_COUNT_TABLE,
   CONFIG_NEWSFEED_INCLUDE_SPECIES_COUNT_TABLE,
   CONFIG_NEWSFEED_INCLUDE_TEAM_COUNT_TABLE,
   CONFIG_NEWSFEED_INCLUDE_DATE_COUNT_TABLE,
   CONFIG_NEWSFEED_INCLUDE_NEWSFEED_TABLE,
-} from '../config';
-
-import './BasePage.css';
+} from '../config/newsfeedConfig';
 
 dayjs.extend(advancedFormat);
 
@@ -61,7 +64,7 @@ function NewsfeedPage() {
         const typeResponse = await fetch(`${apiUrl}/api/get_type_count_data_for_newsfeed_table`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME })
+          body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
         });
         const typeData = await typeResponse.json();
         const typeDataWithIds = typeData.map((row, index) => ({ id: index, ...row }));
@@ -73,7 +76,7 @@ function NewsfeedPage() {
         const speciesResponse = await fetch(`${apiUrl}/api/get_species_count_data_for_newsfeed_table`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME })
+          body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
         });
         const speciesData = await speciesResponse.json();
         const speciesDataWithIds = speciesData.map((row, index) => ({ id: index, ...row }));
@@ -85,7 +88,7 @@ function NewsfeedPage() {
         const teamResponse = await fetch(`${apiUrl}/api/get_team_count_data_for_newsfeed_table`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME })
+          body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
         });
         const teamData = await teamResponse.json();
         const teamDataWithIds = teamData.map((row, index) => ({ id: index, ...row }));
@@ -97,7 +100,7 @@ function NewsfeedPage() {
         const dateResponse = await fetch(`${apiUrl}/api/get_date_count_data_for_newsfeed_table`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME })
+          body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
         });
         const dateData = await dateResponse.json();
         const dateDataWithIds = dateData.map((row, index) => ({ id: index, ...row }));
@@ -110,9 +113,9 @@ function NewsfeedPage() {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ 
-            catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME,
-            teamsYear: CONFIG_FIREBASE_TEAMS_TABLE_NAME,
-            announcementsYear: CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
+            catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+            teamsYear: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
+            announcementsYear: CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
           })
         });
         const newsfeedData = await newsfeedResponse.json();

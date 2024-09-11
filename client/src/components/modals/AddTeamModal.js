@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { InputLabel, Select, MenuItem, Button, FormControl, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, FormControlLabel, Checkbox, Autocomplete } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import {
-  CONFIG_FIREBASE_TEAMS_TABLE_NAME,
-  CONFIG_REGISTRATION_PAST_TEAMS_TABLES_FOR_AUTOCOMPLETE_NAME_LIST,
+  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES,
+} from '../../config/generalConfig';
+
+import {
+  CONFIG_REGISTRATION_PAST_TEAMS_TABLES_FOR_AUTOCOMPLETE_NAME_LIST,
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION,
   CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS,
   CONFIG_REGISTRATION_EARLYBIRD_FEE,
@@ -22,9 +26,8 @@ import {
   CONFIG_REGISTRATION_ADDITIONAL_NON_REQUIRED_BOOLEAN_FIELDS,
   CONFIG_REGISTRATION_ADDITIONAL_NON_REQUIRED_DROPDOWN_FIELDS,
   CONFIG_REGISTRATION_ADDITIONAL_NON_REQUIRED_IMAGE_FIELDS,
-} from '../../config';
+} from '../../config/registrationConfig';
 
-import 'react-toastify/dist/ReactToastify.css';
 
 const AddTeamModal = (props) => {
 
@@ -206,7 +209,7 @@ const AddTeamModal = (props) => {
 };
 
   const onChangeTeamName = (e, newValue) => {
-    setTeamName(newValue || e.target.value);
+    setTeamName(newValue || '');
   }
 
   const handleRequiredFieldChange = (e, type, fieldName) => {
@@ -369,7 +372,7 @@ const AddTeamModal = (props) => {
     }
 
     let metaDataObject = {
-        teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME,
+        teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
         teamName: teamName,
         registrationFee: registrationFee,
         isEarlybird: isEarlybird,
@@ -473,11 +476,13 @@ const AddTeamModal = (props) => {
               required
               options={teamNameOptions}
               value={teamName}
-              onInputChange={onChangeTeamName} // Handling typing in input
-              onChange={onChangeTeamName} // Handling selection from dropdown
-              renderInput={(params) => <TextField {...params} variant="outlined" label="Team name" placeholder='Team name' />}
+              onInputChange={(event, newInputValue) => onChangeTeamName(event, newInputValue)} // Handles typing
+              onChange={(event, newValue) => onChangeTeamName(event, newValue)} // Handles selection from dropdown
+              renderInput={(params) => <TextField {...params} variant="outlined" label="Team name" placeholder="Team name" />}
               freeSolo
+              noOptionsText="No team names found" // Message when there are no options
             />
+
 
             {/* Render additional required fields */}
             {CONFIG_REGISTRATION_ADDITIONAL_REQUIRED_STRING_FIELDS.map((field, index) => (

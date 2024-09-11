@@ -8,7 +8,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 
-import { CONFIG_CATCHES_SPECIES_LIST } from '../../config';
+import { 
+  CONFIG_CATCHES_SPECIES_LIST
+} from '../../config/catchConfig';
 
 const EditCatchModal = (props) => {
   const [day1, setDay1] = useState();

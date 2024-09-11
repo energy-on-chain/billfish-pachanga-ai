@@ -8,9 +8,9 @@ import CloseIcon from "@mui/icons-material/Close"
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import {
-  CONFIG_CATCHES_SPECIES_LIST,
-} from '../../config';
+import { 
+  CONFIG_CATCHES_SPECIES_LIST
+} from '../../config/catchConfig';
 
 const AddCatchModal = (props) => {
 

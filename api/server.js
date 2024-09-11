@@ -14,8 +14,9 @@ const homeRoutes = require('./routes/homeRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const newsfeedRoutes = require('./routes/newsfeedRoutes');
-// const leaderboardRoutes = require('./routes/leaderboardRoutes');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
 // const potRoutes = require('./routes/potRoutes');
+// const auctionRoutes = require('./routes/auctionRoutes');
 
 // ENVIRONMENT
 dotenv.config({ path: '../.env' });
@@ -127,8 +128,9 @@ app.use('/', homeRoutes);
 app.use('/', registrationRoutes({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }));
 app.use('/', adminRoutes ({redisClient}));
 app.use('/', newsfeedRoutes);
-// app.use('/', leaderboardRoutes);
+app.use('/', leaderboardRoutes);
 // app.use('/', potRoutes);
+// app.use('/', auctionRoutes);
 
 
 // REDIRECT

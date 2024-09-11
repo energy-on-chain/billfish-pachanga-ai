@@ -4,8 +4,8 @@ import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 
 import { 
-  CONFIG_CONTACT_FOOTER_EMAIL_STRING,
-} from '../config';
+  CONFIG_GENERAL_CONTACT_FOOTER_EMAIL_STRING,
+} from '../config/generalConfig';
 
 import './HomePage.css';
 import "./RegisterPage.css";
@@ -24,7 +24,7 @@ function RegisterErrorPage(props) {
           <br/>
           <p>Your card has not been charged. Please try again or contact the site administrators listed below for assistance.</p>
           <br/>
-          <p><strong>({CONFIG_CONTACT_FOOTER_EMAIL_STRING})</strong></p>
+          <p><strong>({CONFIG_GENERAL_CONTACT_FOOTER_EMAIL_STRING})</strong></p>
         </section>
       </main>
     </AnimatedPage>

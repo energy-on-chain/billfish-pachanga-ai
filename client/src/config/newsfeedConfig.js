@@ -1,0 +1,11 @@
+/////////////////////////////////////////////////////////////////////////////
+// NEWSFEED SETTINGS ////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+module.exports = {
+  CONFIG_NEWSFEED_INCLUDE_TYPE_COUNT_TABLE: true,
+  CONFIG_NEWSFEED_INCLUDE_SPECIES_COUNT_TABLE: true,
+  CONFIG_NEWSFEED_INCLUDE_TEAM_COUNT_TABLE: true,
+  CONFIG_NEWSFEED_INCLUDE_DATE_COUNT_TABLE: true,
+  CONFIG_NEWSFEED_INCLUDE_NEWSFEED_TABLE: true,
+};
+

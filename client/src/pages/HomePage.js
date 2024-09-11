@@ -5,34 +5,38 @@ import { Link } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import HomeCountdownTimer from '../components/timers/HomeCountdownTimer';
 import Footer from '../components/Footer';
+import './HomePage.css';
+import './RegisterPage.css';
 
-import { 
+import desktopLogo from '../images/HomePageLogoDesktop.png';
+import tabletLogo from '../images/HomePageLogoTablet.png';
+import mobileLogo from '../images/HomePageLogoMobile.png';
+
+import {
   CONFIG_GENERAL_YEAR,
   CONFIG_GENERAL_HAS_REGISTRATION, 
   CONFIG_GENERAL_HAS_NEWSFEED, 
-  CONFIG_GENERAL_HAS_POTS, 
-  CONFIG_GENERAL_HAS_AUCTION, 
+  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME
+} from '../config/generalConfig';
+
+import { 
   CONFIG_HOME_TOURNAMENT_DATE_STRING, 
   CONFIG_HOME_TOURNAMENT_START_IN_LOCAL_TIME_IN_MS,
   CONFIG_HOME_PAST_TOURNAMENT_RESULT_STRINGS,
   CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
   CONFIG_HOME_CATCH_STAT_TYPE,
+} from '../config/homeConfig';
+
+import {
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION,
   CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS,
   CONFIG_REGISTRATION_EARLYBIRD_DATE_STRING,
   CONFIG_REGISTRATION_NORMAL_DATE_STRING,
   CONFIG_REGISTRATION_EARLYBIRD_FEE,
   CONFIG_REGISTRATION_NORMAL_FEE,
-  CONFIG_FIREBASE_TEAMS_TABLE_NAME,
-  CONFIG_FIREBASE_CATCHES_TABLE_NAME,
-  CONFIG_FIREBASE_POTS_TABLE_NAME
-} from '../config';
-
-import './HomePage.css';
-import './RegisterPage.css';
-import desktopLogo from '../images/HomePageLogoDesktop.png';
-import tabletLogo from '../images/HomePageLogoTablet.png';
-import mobileLogo from '../images/HomePageLogoMobile.png';
+} from '../config/registrationConfig';
 
 function HomePage() {
   const [logo, setLogo] = useState(desktopLogo);
@@ -76,7 +80,7 @@ function HomePage() {
       fetch(`${apiUrl}/api/get_registrant_count_for_homepage`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+        body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
       })
       .then(res => res.json())
       .then(data => {
@@ -95,7 +99,7 @@ function HomePage() {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ 
-          catchesTableName: CONFIG_FIREBASE_CATCHES_TABLE_NAME,
+          catchesTableName: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
           speciesTypeList: CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
          })
       })
@@ -114,7 +118,7 @@ function HomePage() {
     // fetch(`${apiUrl}/api/get_all_pots_data`, {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ potYear: CONFIG_FIREBASE_POTS_TABLE_NAME })
+    //   body: JSON.stringify({ potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME })
     // })
     // .then(res => res.json())
     // .then(data => {

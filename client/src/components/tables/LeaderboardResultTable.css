@@ -1,0 +1,10 @@
+.result-table div {
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.Mui-firstRow {
+  background-color: #00FF7F /* Update this to match the text color of "winner take all" */
+}
+

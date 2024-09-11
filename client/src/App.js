@@ -12,8 +12,9 @@ import RegisterSuccessPage from "./pages/RegisterSuccessPage";
 import RegisterErrorPage from "./pages/RegisterErrorPage";
 import AdminPage from "./pages/AdminPage";
 import NewsfeedPage from "./pages/NewsfeedPage";
-// import LeaderboardPage from "./pages/LeaderboardPage";
+import LeaderboardPage from "./pages/LeaderboardPage";
 // import PotsPage from "./pages/PotsPage";
+// import AuctionPage from "./pages/AuctionPage";
 
 
 import './App.css';
@@ -41,7 +42,7 @@ function App() {
         { path: '/registration_error', element: <RegisterErrorPage /> },   
         { path: '/admin', element: <AdminPage/> },    
         { path: '/newsfeed', element: <NewsfeedPage/> },    
-        // { path: '/leaderboard', element: <LeaderboardPage/> },    
+        { path: '/leaderboard', element: <LeaderboardPage/> },    
         // { path: '/pots', element: <PotsPage/> },    
       ],
     },

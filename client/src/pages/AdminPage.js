@@ -18,44 +18,44 @@ import AnimatedPage from './AnimatedPage';
 import CrudTable from '../components/tables/CrudTable';
 import Footer from '../components/Footer';
 import Login from '../components/Login';
-
 import { generateRegistrationReport } from '../generators/registrationReports';
+import "./RegisterPage.css";
 
-import { 
-  CONFIG_GENERAL_TOURNAMENT_NAME,    // general
+import {
+  CONFIG_GENERAL_TOURNAMENT_NAME,
   CONFIG_GENERAL_YEAR,    
   CONFIG_GENERAL_HAS_REGISTRATION,
   CONFIG_GENERAL_HAS_NEWSFEED,
   CONFIG_GENERAL_HAS_POTS,
   CONFIG_GENERAL_HAS_AUCTION,
+  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,   // firebase properties
+  CONFIG_GENERAL_FIREBASE_TEAMS_ID_NAME,   
+  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  
+  CONFIG_GENERAL_FIREBASE_CATCHES_ID_NAME,
+  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,  
+  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_ID_NAME,
+  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,  
+  CONFIG_GENERAL_FIREBASE_POTS_ID_NAME,
+  CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,    
+  CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME,
+} from '../config/generalConfig';
+
+import { 
   CONFIG_ADMIN_DEFAULT_TAB_NAME,
   CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST,
   CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING,
   CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING,
-
-  CONFIG_FIREBASE_TEAMS_TABLE_NAME,   // teams
-  CONFIG_FIREBASE_TEAMS_ID_NAME,    
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,
-
-  CONFIG_FIREBASE_CATCHES_TABLE_NAME,    // catches
-  CONFIG_FIREBASE_CATCHES_ID_NAME,
+  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,    // display properties
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
-  CONFIG_CATCHES_STATS_LIST,
-
-  CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,    // announcements
-  CONFIG_FIREBASE_ANNOUNCEMENTS_ID_NAME,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
-
-  CONFIG_FIREBASE_POTS_TABLE_NAME,    // pots
-  CONFIG_FIREBASE_POTS_ID_NAME,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS,
-
-  CONFIG_FIREBASE_AUCTION_TABLE_NAME,    // auctions
-  CONFIG_FIREBASE_AUCTION_ID_NAME,
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS,
-} from '../config';
+} from '../config/adminConfig';
 
-import "./RegisterPage.css";
+import { 
+  CONFIG_CATCHES_STATS_LIST
+} from '../config/catchConfig';
+
 
 function AdminPage() {   
 
@@ -165,28 +165,28 @@ function AdminPage() {
       let tempTableProperties;
       switch (tab) {   
         case 'Teams':
-          tableName = CONFIG_FIREBASE_TEAMS_TABLE_NAME;
-          idName = CONFIG_FIREBASE_TEAMS_ID_NAME;
+          tableName = CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME;
+          idName = CONFIG_GENERAL_FIREBASE_TEAMS_ID_NAME;
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
           break;
         case 'Catches':
-          tableName = CONFIG_FIREBASE_CATCHES_TABLE_NAME;
-          idName = CONFIG_FIREBASE_CATCHES_ID_NAME;
+          tableName = CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME;
+          idName = CONFIG_GENERAL_FIREBASE_CATCHES_ID_NAME;
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
           break;
         case 'Announcements':
-          tableName = CONFIG_FIREBASE_ANNOUNCEMENTS_TABLE_NAME;
-          idName = CONFIG_FIREBASE_ANNOUNCEMENTS_ID_NAME;
+          tableName = CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME;
+          idName = CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_ID_NAME;
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
           break;
         case 'Pots':
-          tableName = CONFIG_FIREBASE_POTS_TABLE_NAME;
-          idName = CONFIG_FIREBASE_POTS_ID_NAME;
+          tableName = CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME;
+          idName = CONFIG_GENERAL_FIREBASE_POTS_ID_NAME;
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
           break;
         case 'Auction':
-          tableName = CONFIG_FIREBASE_AUCTION_TABLE_NAME;
-          idName = CONFIG_FIREBASE_AUCTION_ID_NAME;
+          tableName = CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME;
+          idName = CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME;
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS;
           break;
         default:    // handles "Stats" and "Reports" tab cases
@@ -204,27 +204,27 @@ function AdminPage() {
               fetch(`${initialApiUrl}/api/registration-get-number-of-registered-teams`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
               fetch(`${initialApiUrl}/api/registration-get-number-of-checked-in-teams`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
               fetch(`${initialApiUrl}/api/registration-get-total-fees-collected`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
               fetch(`${initialApiUrl}/api/registration-get-total-registration-fees-collected`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
               fetch(`${initialApiUrl}/api/registration-get-total-add-on-fees-collected`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               })
             ]);
         
@@ -251,7 +251,7 @@ function AdminPage() {
               const totalFishRes = fetch(`${initialApiUrl}/api/admin_get_total_catch_count`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME })
+                body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
               }).then(res => res.json());
 
               // FIXME: fish count by speciesType
@@ -262,7 +262,7 @@ function AdminPage() {
                 return fetch(`${initialApiUrl}/api/admin_get_total_catch_count_by_species`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ catchYear: CONFIG_FIREBASE_CATCHES_TABLE_NAME, speciesType })
+                  body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME, speciesType })
                 })
                 .then(res => res.json())
                 .then(data => ({ speciesType, count: data.speciesCount }));
@@ -443,7 +443,7 @@ function AdminPage() {
       const response = await fetch(`${apiUrl}/api/admin_get_registered_team_data_for_report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamYear: CONFIG_FIREBASE_TEAMS_TABLE_NAME }),
+        body: JSON.stringify({ teamYear: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME }),
       });
   
       if (!response.ok) {

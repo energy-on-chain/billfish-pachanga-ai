@@ -7,10 +7,7 @@ import {
   CONFIG_GENERAL_INFO_LINK_OBJECT,
   CONFIG_GENERAL_HAS_REGISTRATION, 
   CONFIG_GENERAL_HAS_ADMIN, 
-  CONFIG_GENERAL_HAS_LEADERBOARD, 
-  CONFIG_GENERAL_HAS_NEWSFEED, 
-  CONFIG_GENERAL_HAS_POTS, 
-} from '../config';
+} from '../config/generalConfig';
 
 import './RootNavigation.css';
 import logo from '../images/NavBarLogo.png';
