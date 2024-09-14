@@ -42,6 +42,54 @@ exports.getAllPotData = async (req, res) => {
   }
 };
 
+exports.getTotalPotSizeData = async (req, res) => {
+  console.log('Fetching total pot size data...');
+  const db = getFirestore();
+  const { potYear, boardNames } = req.body;  // Receive the potYear and boardNames from the request body
+
+  try {
+    // Reference to the potYear collection
+    const potCollectionRef = db.collection(potYear);
+    
+    // Fetch all documents in the collection
+    const snapshot = await potCollectionRef.get();
+    
+    if (snapshot.empty) {
+      return res.status(404).json({ error: 'No pots found for this year.' });
+    }
+
+    // Initialize totals
+    let totalPotSize = 0;
+    const boardTotals = {};
+    
+    // Initialize board totals for each board name
+    boardNames.forEach(board => {
+      boardTotals[board] = 0;
+    });
+
+    // Process the snapshot to calculate the total money in each board
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      totalPotSize += parseFloat(data.totalPotFee || 0);
+
+      // Sum the fees for each board
+      boardNames.forEach(board => {
+        // Construct the board fee key dynamically
+        const boardFeeKey = `total${board.replace(/ /g, '')}Fee`; // Remove spaces and special characters
+        console.log('boardFeeKey', boardFeeKey);
+        boardTotals[board] += parseFloat(data[boardFeeKey] || 0);
+      });
+    });
+
+    // Send the pot totals as the response
+    res.status(200).json({ totalPotSize, boardTotals });
+
+  } catch (error) {
+    console.error('Error fetching total pot size data:', error);
+    res.status(500).json({ error: 'Failed to fetch pot size data. Please try again later.' });
+  }
+};
+
 exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga tournament grand champion...');
   try {

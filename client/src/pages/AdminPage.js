@@ -18,7 +18,11 @@ import AnimatedPage from './AnimatedPage';
 import CrudTable from '../components/tables/CrudTable';
 import Footer from '../components/Footer';
 import Login from '../components/Login';
-import { generateRegistrationReport } from '../generators/registrationReports';
+import { fetchAndGenerateRegistrationReport } from '../generators/registrationReports';
+import { fetchAndGenerateCatchesReport } from '../generators/catchesReports';
+import { generateLeaderboardReport } from '../generators/leaderboardReports';
+import { generatePotReport } from '../generators/potReports';
+import { generateAwardsReport } from '../generators/awardReports';
 import "./RegisterPage.css";
 
 import {
@@ -54,9 +58,11 @@ import {
 } from '../config/adminConfig';
 
 import { 
-  CONFIG_CATCHES_STATS_LIST
+  CONFIG_CATCHES_STATS_LIST, 
+  CONFIG_CATCHES_SPECIES_LIST,
 } from '../config/catchConfig';
 
+import { CONFIG_POTS_BOARD_LIST } from '../config/potsConfig';
 
 function AdminPage() {   
 
@@ -74,6 +80,7 @@ function AdminPage() {
   const [style, setStyle] = useState();
   const [initialState, setInitialState] = useState();
   const [pageSizeOptions, setPageSizeOptions] = useState();
+  const [currentApiUrl, setCurrentApiUrl] = useState();
 
   // STATE - TEAMS
   const [teamRows, setTeamRows] = useState([]);
@@ -139,7 +146,8 @@ function AdminPage() {
   const [deletePotInfo, setDeletePotInfo] = useState();
   const [editPotInfo, setEditPotInfo] = useState();
   const [potStats, setPotStats] = useState({
-    // FIXME
+    totalPotSize: 0,
+    boardTotals: {},
   });
   const openAddPotModal = () => {setIsAddPotModalOpen(true)};
   const closeAddPotModal = () => {setIsAddPotModalOpen(false)};
@@ -275,9 +283,6 @@ function AdminPage() {
                 body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
               }).then(res => res.json());
 
-              // FIXME: fish count by speciesType
-              // FIXME: fish count by species
-
               // Fetch fish count by species
               const speciesStatsPromises = CONFIG_CATCHES_STATS_LIST.map((speciesType) => {
                 return fetch(`${initialApiUrl}/api/admin_get_total_catch_count_by_species`, {
@@ -310,9 +315,34 @@ function AdminPage() {
             }
           }         
 
-          // FIXME: Pots 
-          // FIXME: Auction
+          if (CONFIG_GENERAL_HAS_POTS) {
+            try {
+              // Fetch total pot size data
+              const boardNames = CONFIG_POTS_BOARD_LIST.map(board => Object.keys(board)[0]);
+              const potSizeRes = await fetch(`${initialApiUrl}/api/get_total_pot_size_data`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME, boardNames })
+              });
+              const potSizeData = await potSizeRes.json();
           
+              // Parse the results
+              const boardTotals = potSizeData.boardTotals;
+              const totalPotSize = potSizeData.totalPotSize;
+
+              console.log("boardTotals", boardTotals)
+          
+              // Update the state
+              setPotStats({
+                totalPotSize,
+                boardTotals,
+              });
+          
+            } catch (error) {
+              console.error('Error fetching pot data:', error);
+            }
+          }
+
         } catch (error) {
           console.error('Error fetching stats:', error);
         }
@@ -458,51 +488,44 @@ function AdminPage() {
 
   // REPORT GENERATORS
   const handleGenerateRegistrationReport = async (year) => {
+    console.log('In handleGenerateRegistrationReport...');
+    await fetchAndGenerateRegistrationReport(year, CONFIG_GENERAL_TOURNAMENT_NAME, CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS);
+  };
+  
+  const handleGenerateCatchesReport = async (year, type) => {
+    console.log('In handleGenerateCatchesReport...');
+    await fetchAndGenerateCatchesReport(year, type, CONFIG_GENERAL_TOURNAMENT_NAME);
+  };
+
+  const handleGenerateLeaderboardReport = async (year) => {
+    console.log('In handleGenerateLeaderboardReport...');
+
     try {
-      let apiUrl = null;
-      if (process.env.REACT_APP_NODE_ENV === "staging") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-      } else if (process.env.REACT_APP_NODE_ENV === "production") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
-      }
-  
-      const response = await fetch(`${apiUrl}/api/admin_get_registered_team_data_for_report`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamYear: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
-      }
-  
-      const teamData = await response.json();
-      generateRegistrationReport(teamData, year, CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS, CONFIG_GENERAL_TOURNAMENT_NAME);
-  
+      await generateLeaderboardReport(year, CONFIG_GENERAL_TOURNAMENT_NAME);
     } catch (error) {
-      console.error("Error fetching team data or generating PDF:", error);
+      console.error("Error generating leaderboard report:", error);
     }
   };
 
-  const handleGenerateCatchesBySpeciesReport = async (year) => {
-    // FIXME: logic goes here
-  }
-
-  const handleGenerateCatchesByTeamsReport = async (year) => {
-    // FIXME: logic goes here
-  }
-
-  const handleGenerateLeaderboardReport = async (year) => {
-    // FIXME: logic goes here
-  }
-
   const handleGeneratePotsReport = async (year) => {
-    // FIXME: logic goes here
-  }
+    console.log('In handleGeneratePotsReport...');
+  
+    try {
+      await generatePotReport(year, CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating pot report:", error);
+    }
+  };
 
   const handleGenerateAwardsReport = async (year) => {
-    // FIXME: logic goes here
-  }
+    console.log('In handleGenerateAwardsReport...');
+  
+    try {
+      await generateAwardsReport(year, CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating pot report:", error);
+    }
+  };
 
   return (
     <AnimatedPage>
@@ -594,8 +617,31 @@ function AdminPage() {
                             </div>
                           }
 
-                          { CONFIG_GENERAL_HAS_POTS && <h2>FIXME: Pots</h2>}
-                          {/* { CONFIG_GENERAL_HAS_AUCTION && <h2>FIXME: Auction</h2>} */}
+                          {CONFIG_GENERAL_HAS_POTS && (
+                            <div>
+                              <h2>Pots</h2>
+                              {isMobile ? (
+                                <>
+                                  <p><strong>Total Gross Pot:</strong></p>
+                                  <p>-----</p>
+                                  <p>{formatCurrency(potStats.totalPotSize)}</p>
+                                  {Object.keys(potStats.boardTotals).map(board => (
+                                    <p key={board}><strong>{board} Board Total:</strong> {formatCurrency(potStats.boardTotals[board])}</p>
+                                  ))}
+                                </>
+                              ) : (
+                                <>
+                                  <p><strong>Total Gross Pot:</strong> {formatCurrency(potStats.totalPotSize)}</p>
+                                  <p>-----</p>
+                                  {Object.keys(potStats.boardTotals).map(board => (
+                                    <p key={board}><strong>{board} Board Total:</strong> {formatCurrency(potStats.boardTotals[board])}</p>
+                                  ))}
+                                </>
+                              )}
+                              <br />
+                            </div>
+                          )}
+
                         </div>
                       </TabPanel>
                     );
@@ -614,10 +660,10 @@ function AdminPage() {
                           {/* NOTE: No catch reports are needed since they can already be exported via the excel function */}
                           { CONFIG_GENERAL_HAS_NEWSFEED && 
                             <div>
-                              <Button onClick={() => {handleGenerateCatchesBySpeciesReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Catch Log (Species)</Button>
+                              <Button onClick={() => {handleGenerateCatchesReport(CONFIG_GENERAL_YEAR, "Species")}} color="primary" variant="contained">Download Catch Log (Species)</Button>
                               <br/>
                               <br/>
-                              <Button onClick={() => {handleGenerateCatchesByTeamsReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Catch Log (Teams)</Button>
+                              <Button onClick={() => {handleGenerateCatchesReport(CONFIG_GENERAL_YEAR, "Team")}} color="primary" variant="contained">Download Catch Log (Teams)</Button>
                               <br/>
                               <br/>
                             </div>

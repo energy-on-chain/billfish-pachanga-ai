@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getAllPotData,
+  getTotalPotSizeData,
   getBillfishPachangaTournamentGrandChampionPotStandings,
   getBillfishPachangaOverallBillfishChampionPotStandings,
   getBillfishPachangaGrandSlamsPotStandings,
@@ -13,6 +14,7 @@ const {
 } = require('../controllers/potControllers');
 
 router.post('/api/get_all_pot_data', getAllPotData);
+router.post('/api/get_total_pot_size_data', getTotalPotSizeData);
 router.post('/api/get_billfish_pachanga_tournament_grand_champion_pot_standings', getBillfishPachangaTournamentGrandChampionPotStandings);
 router.post('/api/get_billfish_pachanga_overall_billfish_champion_pot_standings', getBillfishPachangaOverallBillfishChampionPotStandings);
 router.post('/api/get_billfish_pachanga_grand_slams_pot_standings', getBillfishPachangaGrandSlamsPotStandings);

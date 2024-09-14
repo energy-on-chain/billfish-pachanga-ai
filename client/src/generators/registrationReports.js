@@ -2,12 +2,17 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
 
+import {
+  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,  
+} from '../config/generalConfig';
+
+
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(10);
-    doc.text(`${i} of ${pageCount}`, doc.internal.pageSize.getWidth() - 10, doc.internal.pageSize.getHeight() - 10);
+    doc.text(`${i} of ${pageCount}`, doc.internal.pageSize.getWidth() - 15, doc.internal.pageSize.getHeight() - 10);
   }
 };
 
@@ -26,8 +31,7 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
 
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Teams registered for ${tournamentName} ${year}`, 10, 10);
-  doc.text(`Teams registered as of ${currentDate}`, 10, 18);
+  doc.text(`Teams registered for ${tournamentName} as of ${currentDate}`, 10, 10);
 
   // Columns to display in the desired order
   const selectedColumns = ['teamName', 'teamEmail', 'teamPhone', 'totalFeePaidAtCheckout', 'hasCheckedIn'];
@@ -53,7 +57,7 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
 
   // Insert a numbering column at the beginning of the column headers
   doc.autoTable({
-    startY: 30,
+    startY: 20,  // Adjust to avoid overlapping with the new header text
     head: [['#', ...tableColumn]],  // Prepend '#' for the numbering column
     body: tableRows,
     theme: 'striped',
@@ -71,14 +75,39 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
       // Add header to each page
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.text(`${tournamentName} ${year}`, 10, 10);
-      doc.text(`Teams registered as of ${currentDate}`, 10, 18);
+      doc.text(`Teams registered for ${tournamentName} as of ${currentDate}`, 10, 10);
     }
   });
 
   addPageNumbers(doc);
 
   // Save the PDF
-  doc.save(`Team Check-In Form (${tournamentName} ${year}).pdf`);
+  doc.save(`${tournamentName} ${year} Team Check-In Form.pdf`);
+};
+
+export const fetchAndGenerateRegistrationReport = async (year, tournamentName, tableProperties) => {
+  console.log('Fetching and generating registration report...');
+  // Environment
+  let apiUrl = null; 
+  if (process.env.REACT_APP_NODE_ENV === "staging") {
+    apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
+  } else if (process.env.REACT_APP_NODE_ENV === "production") {
+    apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+  }
+
+  try { 
+    const response = await fetch(`${apiUrl}/api/admin_get_registered_team_data_for_report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ teamYear: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME }),
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching data: ${response.statusText}`);
+    }
+    const teamData = await response.json();
+    generateRegistrationReport(teamData, year, tableProperties, tournamentName);
+  } catch (error) {
+    console.error("Error fetching team data or generating PDF:", error);
+  }
 };
 

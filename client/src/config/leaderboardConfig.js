@@ -12,6 +12,7 @@ module.exports = {
       title: "Tournament Grand Champion", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_tournament_grand_champion",     
       inputs: [
       ],
@@ -32,6 +33,7 @@ module.exports = {
       title: "Overall Billfish Champion", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_overall_billfish_champion",     
       inputs: [
       ],
@@ -54,6 +56,7 @@ module.exports = {
       title: "Grand Slams", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_grand_slams",     
       inputs: [
       ],
@@ -78,6 +81,7 @@ module.exports = {
       title: "Billfish Champion - Day 1", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_day_champion",     
       inputs: [
         {day: "2024-07-18"}
@@ -99,6 +103,7 @@ module.exports = {
       title: "Billfish Champion - Day 2", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_day_champion",     
       inputs: [
         {day: "2024-07-19"}
@@ -120,6 +125,7 @@ module.exports = {
       title: "Billfish Champion - Day 3", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_day_champion",     
       inputs: [
         {day: "2024-07-20"}
@@ -143,6 +149,7 @@ module.exports = {
       title: "Blue Marlin", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_species_champion",     
       inputs: [
         {species: "Blue Marlin"}
@@ -164,6 +171,7 @@ module.exports = {
       title: "White Marlin", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_species_champion",     
       inputs: [
         {species: "White Marlin"}
@@ -185,6 +193,7 @@ module.exports = {
       title: "Sailfish", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_species_champion",     
       inputs: [
         {species: "Sailfish"}
@@ -208,6 +217,7 @@ module.exports = {
       title: "Dorado", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_meatfish_species_champion",     
       inputs: [
         {species: "Dorado"}
@@ -229,6 +239,7 @@ module.exports = {
       title: "Tuna", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_meatfish_species_champion",     
       inputs: [
         {species: "Tuna"}
@@ -250,6 +261,7 @@ module.exports = {
       title: "Wahoo", 
       subtitle: "",
       numPlaces: 5, 
+      numTrophies: 3, 
       url: "get_billfish_pachanga_meatfish_species_champion",     
       inputs: [
         {species: "Wahoo"}
