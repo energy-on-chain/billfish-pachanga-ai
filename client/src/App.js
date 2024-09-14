@@ -11,6 +11,7 @@ import RegisterPage from './pages/RegisterPage';
 import RegisterSuccessPage from "./pages/RegisterSuccessPage";
 import RegisterErrorPage from "./pages/RegisterErrorPage";
 import AdminPage from "./pages/AdminPage";
+import DashboardPage from "./pages/DashboardPage";
 import NewsfeedPage from "./pages/NewsfeedPage";
 import LeaderboardPage from "./pages/LeaderboardPage";
 import PotsPage from "./pages/PotsPage";
@@ -41,6 +42,7 @@ function App() {
         { path: '/registration_success', element: <RegisterSuccessPage /> },   
         { path: '/registration_error', element: <RegisterErrorPage /> },   
         { path: '/admin', element: <AdminPage/> },    
+        { path: '/dashboard', element: <DashboardPage/> },    
         { path: '/newsfeed', element: <NewsfeedPage/> },    
         { path: '/leaderboard', element: <LeaderboardPage/> },    
         { path: '/pots', element: <PotsPage/> },    

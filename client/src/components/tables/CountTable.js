@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
-import { Tooltip } from '@mui/material';
+import { DataGrid, GridToolbarQuickFilter } from '@mui/x-data-grid';
+import { Tooltip, Box } from '@mui/material';
 
 import { 
   CONFIG_STYLING_LEADERBOARD_TITLE_TEXT_COLOR,
@@ -11,6 +11,15 @@ import {
   CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR,
   CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
 } from '../../config/stylingConfig';
+
+// Custom Toolbar Component
+function QuickSearchToolbar() {
+  return (
+    <Box sx={{ p: 1, display: 'flex', justifyContent: 'flex-end' }}>
+      <GridToolbarQuickFilter />
+    </Box>
+  );
+}
 
 function CountTable(props) {   
   const [style, setStyle] = useState();
@@ -37,6 +46,7 @@ function CountTable(props) {
         rows={props.rows || []}
         columns={props.columns || []}
         columnVisibilityModel={props.visibility}
+        slots={{ toolbar: QuickSearchToolbar }}
         sx={{
           overflowX: 'auto',
           '.MuiDataGrid-row': {
@@ -95,7 +105,6 @@ function CountTable(props) {
         pagination={props.pagination} // Enable pagination if specified
         pageSize={props.pageSize || 100} // Set default page size
         rowsPerPageOptions={props.pageSizeOptions || [100]} // Page size options
-        // disableColumnMenu
         autoHeight
       />
     </div>
@@ -103,4 +112,3 @@ function CountTable(props) {
 }
 
 export default CountTable;
-

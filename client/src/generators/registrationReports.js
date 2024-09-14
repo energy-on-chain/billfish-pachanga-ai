@@ -26,7 +26,7 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
 
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text(`${tournamentName} ${year}`, 10, 10);
+  doc.text(`Teams registered for ${tournamentName} ${year}`, 10, 10);
   doc.text(`Teams registered as of ${currentDate}`, 10, 18);
 
   // Columns to display in the desired order

@@ -38,6 +38,7 @@ import {
   CONFIG_GENERAL_FIREBASE_POTS_ID_NAME,
   CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,    
   CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME,
+  CONFIG_GENERAL_HAS_LEADERBOARD,
 } from '../config/generalConfig';
 
 import { 
@@ -483,6 +484,26 @@ function AdminPage() {
     }
   };
 
+  const handleGenerateCatchesBySpeciesReport = async (year) => {
+    // FIXME: logic goes here
+  }
+
+  const handleGenerateCatchesByTeamsReport = async (year) => {
+    // FIXME: logic goes here
+  }
+
+  const handleGenerateLeaderboardReport = async (year) => {
+    // FIXME: logic goes here
+  }
+
+  const handleGeneratePotsReport = async (year) => {
+    // FIXME: logic goes here
+  }
+
+  const handleGenerateAwardsReport = async (year) => {
+    // FIXME: logic goes here
+  }
+
   return (
     <AnimatedPage>
       <main>
@@ -574,7 +595,7 @@ function AdminPage() {
                           }
 
                           { CONFIG_GENERAL_HAS_POTS && <h2>FIXME: Pots</h2>}
-                          { CONFIG_GENERAL_HAS_AUCTION && <h2>FIXME: Auction</h2>}
+                          {/* { CONFIG_GENERAL_HAS_AUCTION && <h2>FIXME: Auction</h2>} */}
                         </div>
                       </TabPanel>
                     );
@@ -584,18 +605,50 @@ function AdminPage() {
                         <div>
                           { CONFIG_GENERAL_HAS_REGISTRATION && 
                             <div>
-                              <Button onClick={() => {handleGenerateRegistrationReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Team Check-In Form</Button>
+                              <Button onClick={() => {handleGenerateRegistrationReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Check-In Form</Button>
                               <br/>
                               <br/>
                             </div>
                           }
 
                           {/* NOTE: No catch reports are needed since they can already be exported via the excel function */}
-                          { CONFIG_GENERAL_HAS_NEWSFEED && <h2></h2>}   
+                          { CONFIG_GENERAL_HAS_NEWSFEED && 
+                            <div>
+                              <Button onClick={() => {handleGenerateCatchesBySpeciesReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Catch Log (Species)</Button>
+                              <br/>
+                              <br/>
+                              <Button onClick={() => {handleGenerateCatchesByTeamsReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Catch Log (Teams)</Button>
+                              <br/>
+                              <br/>
+                            </div>
+                          }   
 
-                          {/* FIXME: Implement these */}
-                          { CONFIG_GENERAL_HAS_POTS && <h2></h2>}
+                          { CONFIG_GENERAL_HAS_LEADERBOARD &&
+                            <div>
+                              <Button onClick={() => {handleGenerateLeaderboardReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Leaderboard</Button>
+                              <br/>
+                              <br/>
+                            </div>
+                          }
+
+                          { CONFIG_GENERAL_HAS_POTS && 
+                            <div>
+                              <Button onClick={() => {handleGeneratePotsReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Pot Standings</Button>
+                              <br/>
+                              <br/>
+                            </div>
+                          }
+
+                          { (CONFIG_GENERAL_HAS_LEADERBOARD && CONFIG_GENERAL_HAS_POTS) && 
+                            <div>
+                              <Button onClick={() => {handleGenerateAwardsReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Awards</Button>
+                              <br/>
+                              <br/>
+                            </div>
+                          }
+
                           { CONFIG_GENERAL_HAS_AUCTION && <h2></h2>}
+
                         </div>
                       </TabPanel>
                     );

@@ -19,6 +19,10 @@ module.exports = {
     "https://www.billfishpachanga.com/",
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES:
     "https://www.billfishpachanga.com/rules/",
+  CONFIG_GENERAL_INFO_LINK_OBJECT: {
+    "Tournament Site": "https://www.billfishpachanga.com/",
+    Rules: "https://www.billfishpachanga.com/rules/",
+  },
   CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT: {
     Register: "/register",
     Newsfeed: "/newsfeed",
@@ -26,11 +30,10 @@ module.exports = {
     Pots: "/pots",
     // "Auction": "/auction",
   },
-  CONFIG_GENERAL_INFO_LINK_OBJECT: {
-    "Tournament Site": "https://www.billfishpachanga.com/",
-    Rules: "https://www.billfishpachanga.com/rules/",
+  CONFIG_GENERAL_ADMIN_LINK_OBJECT: {
+    Settings: "/admin",
+    Dashboard: "/dashboard",
   },
-
   // CONTACT INFO
   CONFIG_GENERAL_CONTACT_FOOTER_LOCATION_STRING: "Austin, TX    -    New Orleans, LA", // Contact info
   CONFIG_GENERAL_CONTACT_FOOTER_PHONE_STRING: "Phone / Text: (903) 235-5195",

@@ -3,8 +3,9 @@ import { Link, NavLink } from 'react-router-dom';
 
 import { 
   CONFIG_GENERAL_HAS_INFO, 
-  CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT,
   CONFIG_GENERAL_INFO_LINK_OBJECT,
+  CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT,
+  CONFIG_GENERAL_ADMIN_LINK_OBJECT,
   CONFIG_GENERAL_HAS_REGISTRATION, 
   CONFIG_GENERAL_HAS_ADMIN, 
 } from '../config/generalConfig';
@@ -131,11 +132,31 @@ function RootNavigation(props) {
           ))
         )}
 
-        {CONFIG_GENERAL_HAS_ADMIN && (
+        {!isMobile && (
+          <div className="dropdown">
+            <button className="dropbtn">Admin <i className="fa fa-caret-down nav-icon"></i></button>
+            <div className="dropdown-content">
+              {Object.entries(CONFIG_GENERAL_ADMIN_LINK_OBJECT).map(([label, url]) => (
+                <li>
+                  <NavLink to={url} className={({ isActive }) => isActive ? "active" : undefined}>{label}</NavLink>
+                </li>
+              ))}
+            </div>
+          </div>
+        )}
+        {isMobile && (
+          Object.entries(CONFIG_GENERAL_ADMIN_LINK_OBJECT).map(([label, url]) => (
+            <li key={label}>
+              <NavLink to={url} className={({ isActive }) => isActive ? "active" : undefined}>{label}</NavLink>
+            </li>
+          ))
+        )}
+
+        {/* {CONFIG_GENERAL_HAS_ADMIN && (
           <li>
             <NavLink to="/admin" className={({ isActive }) => isActive ? "active" : undefined}>Admin</NavLink>
           </li>
-        )}
+        )} */}
 
         {CONFIG_GENERAL_HAS_REGISTRATION && (
           <li className="navButtonHamburgerToggle">
