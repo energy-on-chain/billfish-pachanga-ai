@@ -140,23 +140,31 @@ function HomePage() {
       })
       .then(res => res.json())
       .then(data => {
-        if (data.totalPotSize == 0) {
+        console.log('potData', data);
+        if (data.totalPotSize == 0 || data.totalPotSize == undefined || data.totalPotSize == null) {
           setPotTotal("TBD");
         } else {
           setPotTotal(data.totalPotSize);
         }
       })
-      .catch(e => console.error(e));
+      .catch(e => {
+        setPotTotal("TBD");
+        console.error(e);
+      });
     }
   }, []); // <-- Missing dependency array
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+    if (value === "TBD") {
+      return "TBD";
+    } else {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(value);
+    };
   };
 
   return (

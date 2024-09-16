@@ -859,25 +859,30 @@ function PotsPage() {
             }
 
             {/* PAYOUTS - BY TEAM */}
-            { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "List") && (tournamentHasStarted) ) &&
-            (!hasLoaded ? (
-              <div>
-                <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
-            ) : (
-              <>
-                <br/>
-                <PotsResultTable
-                  style={{ width: '100%' }}
-                  title="Team Payout Summary"
-                  rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
-                  columns={matches ? CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
-                  scroll={matches ? null : "scroll"}
-                  density="compact"
-                />
-              </>
-            ))}
+            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "List") && (tournamentHasStarted) && (
+              !hasLoaded ? (
+                <div>
+                  <h1 style={{ color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>Loading...</h1>
+                  <CircularProgress />
+                </div>
+              ) : (
+                <>
+                  <br />
+                  {payoutsTeamResultSummary.length > 0 ? (
+                    <PotsResultTable
+                      style={{ width: '100%' }}
+                      title="Team Payout Summary"
+                      rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
+                      columns={matches ? CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
+                      scroll={matches ? null : "scroll"}
+                      density="compact"
+                    />
+                  ) : (
+                    <h1 style={{ color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>No payout data available.</h1>
+                  )}
+                </>
+              )
+            )}
 
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
             (!hasLoaded ? (

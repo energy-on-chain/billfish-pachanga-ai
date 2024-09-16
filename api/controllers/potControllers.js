@@ -54,8 +54,21 @@ exports.getTotalPotSizeData = async (req, res) => {
     // Fetch all documents in the collection
     const snapshot = await potCollectionRef.get();
     
-    if (snapshot.empty) {
-      return res.status(404).json({ error: 'No pots found for this year.' });
+    // If the collection does not exist or is empty
+    if (!snapshot || snapshot.empty) {
+      // Initialize totals to 0
+      let totalPotSize = 0;
+      const boardTotals = {};
+
+      // Set totals for each board name to 0
+      boardNames.forEach(board => {
+        boardTotals[board] = 0;
+      });
+
+      return res.status(200).json({
+        totalPotSize,
+        boardTotals
+      });
     }
 
     // Initialize totals
@@ -81,12 +94,15 @@ exports.getTotalPotSizeData = async (req, res) => {
       });
     });
 
-    // Send the pot totals as the response
-    res.status(200).json({ totalPotSize, boardTotals });
+    // Return the total pot size and board totals
+    return res.status(200).json({
+      totalPotSize,
+      boardTotals
+    });
 
   } catch (error) {
     console.error('Error fetching total pot size data:', error);
-    res.status(500).json({ error: 'Failed to fetch pot size data. Please try again later.' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 

@@ -4,7 +4,7 @@
 module.exports = {
 
   // VISUAL
-  CONFIG_GENERAL_TOURNAMENT_NAME: "Billfish Pachanga",
+  CONFIG_GENERAL_TOURNAMENT_NAME: "Toledo Bend Army Rec Site Monthly Bass Tournament",
   CONFIG_GENERAL_YEAR: "2025",
   CONFIG_GENERAL_HAS_INFO: true,
   CONFIG_GENERAL_HAS_REGISTRATION: true,
@@ -16,12 +16,12 @@ module.exports = {
   CONFIG_GENERAL_HAS_POTS: true,
   CONFIG_GENERAL_HAS_AUCTION: false,
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_WEBSITE:
-    "https://www.billfishpachanga.com/",
+    "https://toledobendlakecountry.com/",
   CONFIG_GENERAL_LINK_TO_TOURNAMENT_RULES:
-    "https://www.billfishpachanga.com/rules/",
+    "https://toledobendlakecountry.com/event/toledo-bend-army-rec-site-monthly-bass-tournament-25",
   CONFIG_GENERAL_INFO_LINK_OBJECT: {
-    "Tournament Site": "https://www.billfishpachanga.com/",
-    Rules: "https://www.billfishpachanga.com/rules/",
+    "Tournament Site": "https://toledobendlakecountry.com/",
+    "Rules": "https://toledobendlakecountry.com/event/toledo-bend-army-rec-site-monthly-bass-tournament-25",
   },
   CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT: {
     Register: "/register",
