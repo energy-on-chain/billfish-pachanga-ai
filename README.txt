@@ -90,8 +90,8 @@
   [x] Enable automatic deployment for the "develop" branch
   [x] Go to the "deploy" tab and "Create new pipeline". Start with the "staging" stage. The name will be "project-name-staging".
     [x] Go to resources tab and enable Heroku Redis (mini, $3/mo) for your project.
-    [] Enter all variables from .env file to config_vars tab for staging
-    [] Setup Stripe (staging) webhook(s) for registration, pots
+    [x] Enter all variables from .env file to config_vars tab for staging (make sure you remove the final "/" at the end of the heroku server url!!!)
+    [x] Setup Stripe (staging) webhook(s) for registration, pots... make sure the secret keys for each webhook are added to the heroku config variables
   [] Go to the project dashboard and "Add app" to set up "project-name-production" to auto-deploy when the main branch is pushed
     [] Go to resources tab and enable Heroku Redis (mini, $3/mo) for your project.
     [] Setup Stripe (production) webhook(s) for registration, pots

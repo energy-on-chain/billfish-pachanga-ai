@@ -8,7 +8,7 @@ module.exports = {
       logo: './ToledoBendLogo2025.png',
       title: "TB Monthly Bass Tournament",
       dates: "2025 (All Year)",
-      home: "/home",
+      home: "/",
       register: "/register",
       leaderboard: "/leaderboard",
       pots: "/pots", 
