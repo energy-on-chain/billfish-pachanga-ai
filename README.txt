@@ -1,17 +1,13 @@
 ###############################################################################
-# PROJECT: Fishing Tournament Template (V3)
-# DATE STARTED: 2-August-2024
-# DESCRIPTION: This is the third iteration of the "angler tourney application"
-# based on customer feedback and lessons learned during the 2024 tournament
-# season. This repo is meant to be "copy pasted" and customized / adapted for 
-# individual tournaments. The potential functionality includes: catch tracking,
-# realtime scoring (leaderboard), fish pots, linked merch sites, online 
-# registration and payment, sponsor advertisement, auctions, and more.
+# PROJECT: Toledo Bend
+# DATE STARTED: 16-September-2024
+# DESCRIPTION: This is codebase for all Toledo Bend angler tournament
+# solutions. It usese V3 of the angler tournament template. 
 ###############################################################################
 ###############################################################################
 ###############################################################################
 # CHANGELOG
-# v3.0.0
+# v1.0.0
 # Initial commit of the project. 
 ###############################################################################
 ###############################################################################
@@ -22,24 +18,25 @@
 ###############################################################################
 ###############################################################################
 # NEW TOURNAMENT SETUP
-1. Clone new github repo for tournament from template 
-  [] Repo: https://github.com/energy-on-chain/fishing-tournament-app-template-v3
+1. Create a codebase for the project 
+  [x] Create a local copy of the latest template repo: https://github.com/energy-on-chain/fishing-tournament-app-template-v3
+  [] Push that copy to a new named repo for the project (e.g. "billfish-pachanga", "toledo-bend", etc.)
+  [] Create a master branch and dev branch
 2. Update client artwork (use https://imageresizer.com/)
-  [x] Homepage logo for desktop (location="client/src/images/HomePageLogoDesktop.png" maxWidth=1020px)
-  [x] Homepage logo for tablet (location="client/src/images/HomePageLogoTablet.png" maxWidth=750px)
-  [x] Homepage logo for mobile (location="client/src/images/HomePageLogoMobile.png" location= maxWidth=350px)
-  [x] Navbar logo for all devices (location="client/src/images/NavBarLogo.png" size=125px wide by 63px tall or smaller)
-  [x] Favicon logo for all devices (location="client/public/favicon.ico" size=48px by 48px )
-  [x] Add all necessary logos to the src/components/dashboard folder for display on the dashboard page
-3. Update the client/public folder
-  [x] Add client title to index.html 
-4. Setup project Stripe services
+  [] Homepage logo for desktop (location="client/src/images/HomePageLogoDesktop.png" maxWidth=1020px)
+  [] Homepage logo for tablet (location="client/src/images/HomePageLogoTablet.png" maxWidth=750px)
+  [] Homepage logo for mobile (location="client/src/images/HomePageLogoMobile.png" location= maxWidth=350px)
+  [] Navbar logo for all devices (location="client/src/images/NavBarLogo.png" size=125px wide by 63px tall or smaller)
+  [] Favicon logo for all devices (location="client/public/favicon.ico" size=48px by 48px )
+  [] Add all necessary logos to the src/components/dashboard folder for display on the dashboard page
+  [] Add client title to index.html 
+3. Setup Stripe
   [] Get email and password from client
   [] Add client logo to the "payment receipt" template
   [] Setup staging webhook(s) for registration, pots
   [] Setup production webhook(s) for registration, pots
   [] Save project secred info to put into .env file (e.g. private key, webhook key)
-5. Setup project Firebase services
+4. Setup Firebase
   [] Authentication (add admin emails and passwords)
   [] Firestore Database
   [] Storage (for images)
@@ -59,14 +56,13 @@
         }
       }
     }
-6. Setup google cloud services
+5. Setup Google Cloud
   [] Go to the google cloud console for the project and enable Cloud Storage
   [] Go to the settings tab for your storage bucked (staging and production), then create a new member called "allUsers" who is a "Storage Object Viewer"
-7. Update the .env file in the main project directory
-  [] Add client stripe info 
-  [] Add client firebase info
-  [] FIXME: Add google cloud info...?
-8. Update all config files 
+6. Update project config files
+  [] Add client stripe info to .env
+  [] Add client firebase info to .env
+  [] Add google cloud info to .env...?
   [] adminConfig.js
   [] catchConfig.js
   [] dashboardConfig.js
@@ -77,11 +73,11 @@
   [] potsConfig.js
   [] registrationConfig.js
   [] stylingConfig.js
-9. Deploy to heroku
+7. Setup Heroku
   [] Enable automatic re-deployment via github push for staging and production
   [] Enter all variables from .env file to config_vars tab for staging and production
   [] FIXME: Redis?
-10. Testing
+8. Test
   [] Stripe webhook urls for staging and production environment
   [] FIXME: additional testing...?
 ###############################################################################
