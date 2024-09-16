@@ -21,6 +21,7 @@ client/data
 
 # misc
 *.env
+*.json
 .DS_Store
 .env.local
 .env.development.local

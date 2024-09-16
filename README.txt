@@ -20,45 +20,47 @@
 # NEW TOURNAMENT SETUP
 1. Create a codebase for the project 
   [x] Create a local copy of the latest template repo: https://github.com/energy-on-chain/fishing-tournament-app-template-v3
-  [] Push that copy to a new named repo for the project (e.g. "billfish-pachanga", "toledo-bend", etc.)
-  [] Create a master branch and dev branch
-2. Update client artwork (use https://imageresizer.com/)
-  [] Homepage logo for desktop (location="client/src/images/HomePageLogoDesktop.png" maxWidth=1020px)
-  [] Homepage logo for tablet (location="client/src/images/HomePageLogoTablet.png" maxWidth=750px)
-  [] Homepage logo for mobile (location="client/src/images/HomePageLogoMobile.png" location= maxWidth=350px)
-  [] Navbar logo for all devices (location="client/src/images/NavBarLogo.png" size=125px wide by 63px tall or smaller)
-  [] Favicon logo for all devices (location="client/public/favicon.ico" size=48px by 48px )
-  [] Add all necessary logos to the src/components/dashboard folder for display on the dashboard page
-  [] Add client title to index.html 
-3. Setup Stripe
+  [x] Push that copy to a new named repo for the project (e.g. "billfish-pachanga", "toledo-bend", etc.)
+2. Setup Firebase
+  [x] Create new instance for "project-name-staging"
+  [x] Add Authentication microservice ("Email/Password" option, do not include "Email link (passwordless sign-in)")
+  [x] Add Cloud Firestore microservice (select "Start in produtcion mode" option)
+  [x] Add Storage microservice for image handling (storage rules below)
+
+      rules_version = '2';
+      // Craft rules based on data in your Firestore database
+      // allow write: if firestore.get(
+      //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+      service firebase.storage {
+        match /b/{bucket}/o {
+          match /{allPaths=**} {
+            // Allow anyone to read
+            allow read: if true;
+            // Allow only authenticated users to write
+            allow write: if request.auth != null;
+          }
+        }
+      }
+
+  [x] Click the "Add Firebase to your web app" button on the dashboard, generate your secrets, add them to project .env files
+  [] Repeat this setup process for "project-name-prodution"
+3. Setup Google Cloud
+  [] Go to the google cloud console for the project and enable Cloud Storage
+  [] Go to the settings tab for your storage bucked (staging and production), then create a new member called "allUsers" who is a "Storage Object Viewer"
+4. Setup Stripe
   [] Get email and password from client
   [] Add client logo to the "payment receipt" template
   [] Setup staging webhook(s) for registration, pots
   [] Setup production webhook(s) for registration, pots
   [] Save project secred info to put into .env file (e.g. private key, webhook key)
-4. Setup Firebase
-  [] Authentication (add admin emails and passwords)
-  [] Firestore Database
-  [] Storage (for images)
-  [] Save project secret info to put into .env file
-  [] Set the Storage "Rules" as follows:
-    rules_version = '2';
-    // Craft rules based on data in your Firestore database
-    // allow write: if firestore.get(
-    //    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
-    service firebase.storage {
-      match /b/{bucket}/o {
-        match /{allPaths=**} {
-          // Allow anyone to read
-          allow read: if true;
-          // Allow only authenticated users to write
-          allow write: if request.auth != null;
-        }
-      }
-    }
-5. Setup Google Cloud
-  [] Go to the google cloud console for the project and enable Cloud Storage
-  [] Go to the settings tab for your storage bucked (staging and production), then create a new member called "allUsers" who is a "Storage Object Viewer"
+5. Update client artwork (use https://imageresizer.com/)
+  [x] Homepage logo for desktop (location="client/src/images/HomePageLogoDesktop.png" maxWidth=1020px)
+  [x] Homepage logo for tablet (location="client/src/images/HomePageLogoTablet.png" maxWidth=750px)
+  [x] Homepage logo for mobile (location="client/src/images/HomePageLogoMobile.png" location= maxWidth=350px)
+  [x] Navbar logo for all devices (location="client/src/images/NavBarLogo.png" size=125px wide by 63px tall or smaller)
+  [x] Favicon logo for all devices (location="client/public/favicon.ico" size=48px by 48px )
+  [x] Add all necessary logos to the src/components/dashboard folder for display on the dashboard page
+  [x] Add client title to index.html 
 6. Update project config files
   [] Add client stripe info to .env
   [] Add client firebase info to .env
@@ -74,6 +76,7 @@
   [] registrationConfig.js
   [] stylingConfig.js
 7. Setup Heroku
+  [] Create a dev branch for the repo
   [] Enable automatic re-deployment via github push for staging and production
   [] Enter all variables from .env file to config_vars tab for staging and production
   [] FIXME: Redis?
