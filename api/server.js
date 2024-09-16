@@ -93,9 +93,10 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
 };
 
 // REDIS
+// REDIS
+const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379'; // Use REDIS_URL from environment or default to local Redis
 const redisClient = redis.createClient({
-  host: redisHost, // or your Redis server hostname
-  port: 6379,        // default Redis port
+  url: redisUrl
 });
 redisClient.on('error', (err) => console.error('Redis Client Error', err));
 redisClient.on('connect', () => console.log('Connected to Redis'));

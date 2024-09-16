@@ -89,11 +89,13 @@
   [x] Select "GitHub" as deployment method and connect the "energy-on-chain/project-name" repo
   [x] Enable automatic deployment for the "develop" branch
   [x] Go to the "deploy" tab and "Create new pipeline". Start with the "staging" stage. The name will be "project-name-staging".
-  [] Enter all variables from .env file to config_vars tab for staging
-  [] Setup Stripe (staging) webhook(s) for registration, pots
+    [x] Go to resources tab and enable Heroku Redis (mini, $3/mo) for your project.
+    [] Enter all variables from .env file to config_vars tab for staging
+    [] Setup Stripe (staging) webhook(s) for registration, pots
   [] Go to the project dashboard and "Add app" to set up "project-name-production" to auto-deploy when the main branch is pushed
-  [] Setup Stripe (production) webhook(s) for registration, pots
-  [] Enter all variables from .env file to config_vars tab for production
+    [] Go to resources tab and enable Heroku Redis (mini, $3/mo) for your project.
+    [] Setup Stripe (production) webhook(s) for registration, pots
+    [] Enter all variables from .env file to config_vars tab for production
 
 8. Test
   [x] Local test (don't forget to start local stripe webhook in terminal!!!)
