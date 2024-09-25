@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField } from "@mui/material";
+import { useParams } from 'react-router-dom';
+import { Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import dayjs from 'dayjs';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const AddAnnouncementModal = (props) => {
+  const { year } = useParams();
   const [subject, setSubject] = useState('');
   const [hyperlink, setHyperlink] = useState('');
   const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);  // Track if form is being submitted
+  const [isSubmitted, setIsSubmitted] = useState(false);    // Track if form was successfully submitted
 
   useEffect(() => {}, []);
 
@@ -16,6 +20,8 @@ const AddAnnouncementModal = (props) => {
     setSubject('');
     setHyperlink('');
     setMessage('');
+    setIsSubmitting(false);
+    setIsSubmitted(false);
     props.close();
   };
 
@@ -41,6 +47,8 @@ const AddAnnouncementModal = (props) => {
   const handleCreateAnnouncement = async () => {
     if (!validateUserInput()) return;
 
+    setIsSubmitting(true);  // Start submission
+
     try {
       let apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
         ? process.env.REACT_APP_SERVER_URL_STAGING
@@ -56,24 +64,27 @@ const AddAnnouncementModal = (props) => {
         hyperlink,
       };
 
-      const response = await fetch(`${apiUrl}/api/admin_add_announcement`, {
+      const response = await fetch(`${apiUrl}/api/${year}/admin_add_announcement`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           newAnnouncement,
-          announcementYear: props.announcementYear, // Pass announcementYear
+          announcementYear: `announcements${year}`, // Pass announcementYear
         }),
       });
 
       if (response.ok) {
         toast.success("Announcement created successfully.");
+        setIsSubmitted(true);  // Mark as submitted
         delayRefresh();
       } else {
         toast.error("Error creating announcement.");
+        setIsSubmitting(false);  // Reset submission state if failed
       }
     } catch (error) {
       console.error("Error creating announcement:", error);
       toast.error("Error creating announcement.");
+      setIsSubmitting(false);  // Reset submission state if failed
     }
   };
 
@@ -90,9 +101,22 @@ const AddAnnouncementModal = (props) => {
           <TextField label="Subject" value={subject} onChange={(e) => setSubject(e.target.value)} fullWidth />
           <TextField label="Hyperlink" value={hyperlink} onChange={(e) => setHyperlink(e.target.value)} fullWidth />
           <TextField label="Message" value={message} onChange={(e) => setMessage(e.target.value)} multiline rows={4} fullWidth />
-          <Button color="primary" variant="contained" onClick={handleCreateAnnouncement}>
-            Submit
-          </Button>
+          
+          {/* Submit button */}
+          {!isSubmitted ? (
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={handleCreateAnnouncement}
+              disabled={isSubmitting || isSubmitted}  // Disable during submission or after it's submitted
+              startIcon={isSubmitting ? <CircularProgress size={20} /> : null}  // Show spinner while submitting
+            >
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </Button>
+          ) : (
+            <h3>Submitted!</h3>
+          )}
+
         </Stack>
       </DialogContent>
     </Dialog>

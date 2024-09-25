@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
   CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER: true,
-  CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1767247200000",    // Thursday, 1-January-2026 00:00 AM
+  CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1721538000000",    // Sunday, 21-July-2024 at 00:00 AM
   // CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1753074000000",    // TEST: Monday, 21-July-2025 00:00 AM
   // CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1721538000000",    // TEST: Sunday, 21-July-2024 00:00 AM
   CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS: [
@@ -25,73 +25,77 @@ module.exports = {
     { field: 'payout', headerName: 'Payout', width: 125, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
   ],
   CONFIG_POTS_BOARD_LIST: [
-    // {"Captain & Mate": [
-    //   {title: "Mates Pot ($250)", amount: 250, tournamentCut: 0.08},
-    //   {title: "Captains Pot ($500)", amount: 500, tournamentCut: 0.08},
-    // ]},
-    // {"Billfish": [
-    //   {title: "Blue Marlin ($1,000)", amount: 1000, tournamentCut: 0.08},
-    //   {title: "Blue Marlin ($2,000)", amount: 2000, tournamentCut: 0.08},
-    //   {title: "Blue Marlin ($3,000)", amount: 3000, tournamentCut: 0.08},
-    //   {title: "White Marlin or Spearfish ($1,000)", amount: 1000, tournamentCut: 0.08},
-    //   {title: "White Marlin or Spearfish ($2,000)", amount: 2000, tournamentCut: 0.08},
-    //   {title: "White Marlin or Spearfish ($3,000)", amount: 3000, tournamentCut: 0.08},
-    //   {title: "Sailfish ($1,000)", amount: 1000, tournamentCut: 0.08},
-    //   {title: "Sailfish ($2,000)", amount: 2000, tournamentCut: 0.08},
-    //   {title: "Sailfish ($3,000)", amount: 3000, tournamentCut: 0.08},
-    //   {title: "Overall Billfish ($1,000)", amount: 1000, tournamentCut: 0.08},
-    //   {title: "Overall Billfish ($2,000)", amount: 2000, tournamentCut: 0.08},
-    //   {title: "Overall Billfish ($3,000)", amount: 3000, tournamentCut: 0.08},
-    //   {title: "Grand Slam ($3,000)", amount: 3000, tournamentCut: 0.08},
-    //   {title: "Grand Overall ($3,000)", amount: 3000, tournamentCut: 0.08},
-    //   {title: "Overall Billfish Dailies - Day 1 ($3,500)", amount: 3500, tournamentCut: 0.08},
-    //   {title: "Overall Billfish Dailies - Day 2 ($3,500)", amount: 3500, tournamentCut: 0.08},
-    //   {title: "Overall Billfish Dailies - Day 3 ($3,500)", amount: 3500, tournamentCut: 0.08},
-    //   {title: "Non-Sonar Billfish Release ($1,500)", amount: 1500, tournamentCut: 0.08},
-    //   {title: "Non-Sonar Billfish Release ($2,000)", amount: 2000, tournamentCut: 0.08},
-    //   {title: "Non-Sonar Billfish Release ($3,000)", amount: 3000, tournamentCut: 0.08},
-    // ]},
+    {"Captain & Mate": [
+      {title: "Mates Pot ($250)", amount: 250, tournamentCut: 0.08},
+      {title: "Captains Pot ($500)", amount: 500, tournamentCut: 0.08},
+    ]},
+    {"Billfish": [
+      {title: "Blue Marlin ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "Blue Marlin ($2,000)", amount: 2000, tournamentCut: 0.08},
+      {title: "Blue Marlin ($3,000)", amount: 3000, tournamentCut: 0.08},
+      {title: "White Marlin or Spearfish ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "White Marlin or Spearfish ($2,000)", amount: 2000, tournamentCut: 0.08},
+      {title: "White Marlin or Spearfish ($3,000)", amount: 3000, tournamentCut: 0.08},
+      {title: "Sailfish ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "Sailfish ($2,000)", amount: 2000, tournamentCut: 0.08},
+      {title: "Sailfish ($3,000)", amount: 3000, tournamentCut: 0.08},
+      {title: "Overall Billfish ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "Overall Billfish ($2,000)", amount: 2000, tournamentCut: 0.08},
+      {title: "Overall Billfish ($3,000)", amount: 3000, tournamentCut: 0.08},
+      {title: "Grand Slam ($3,000)", amount: 3000, tournamentCut: 0.08},
+      {title: "Grand Overall ($3,000)", amount: 3000, tournamentCut: 0.08},
+      {title: "Overall Billfish Dailies - Day 1 ($3,500)", amount: 3500, tournamentCut: 0.08},
+      {title: "Overall Billfish Dailies - Day 2 ($3,500)", amount: 3500, tournamentCut: 0.08},
+      {title: "Overall Billfish Dailies - Day 3 ($3,500)", amount: 3500, tournamentCut: 0.08},
+      {title: "Non-Sonar Billfish Release ($1,500)", amount: 1500, tournamentCut: 0.08},
+      {title: "Non-Sonar Billfish Release ($2,000)", amount: 2000, tournamentCut: 0.08},
+      {title: "Non-Sonar Billfish Release ($3,000)", amount: 3000, tournamentCut: 0.08},
+    ]},
     {"Meatfish": [
-      {title: "Largemouth Bass ($100)", amount: 100, tournamentCut: 0.1},
-      {title: "Crappie ($100)", amount: 100, tournamentCut: 0.1},
-      {title: "Catfish ($100)", amount: 100, tournamentCut: 0.1},
-      {title: "White Bass ($100)", amount: 100, tournamentCut: 0.1},
-      {title: "Striped Bass ($100)", amount: 100, tournamentCut: 0.1},
+      {title: "Dorado ($500)", amount: 500, tournamentCut: 0.08},
+      {title: "Dorado ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "Dorado ($1,500)", amount: 1500, tournamentCut: 0.08},
+      {title: "Wahoo ($500)", amount: 500, tournamentCut: 0.08},
+      {title: "Wahoo ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "Wahoo ($1,500)", amount: 1500, tournamentCut: 0.08},
+      {title: "Tuna ($500)", amount: 500, tournamentCut: 0.08},
+      {title: "Tuna ($1,000)", amount: 1000, tournamentCut: 0.08},
+      {title: "Tuna ($1,500)", amount: 1500, tournamentCut: 0.08},
     ]},
 
   ],
   CONFIG_POTS_CATEGORIES: [
 
     // Tournament Grand Champion
-    // { 
-    //   title: "Tournament Grand Champion", 
-    //   subtitle: "",
-    //   potName: "Grand Overall ($3,000)",
-    //   entryAmount: 3000,
-    //   tournamentCut: 0.08,
-    //   payoutStructure: {
-    //     1: 1.0,
-    //     2: 0.0,
-    //     3: 0.0,
-    //     4: 0.0,
-    //     5: 0.0,
-    //   },
-    //   url: "get_billfish_pachanga_tournament_grand_champion_pot_standings",     
-    //   inputs: [
-    //   ],
-    //   desktopColumns: [
-    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
-    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
-    //     { field: 'points', headerName: 'Points', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
-    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-    //   ],
-    //   mobileColumns: [
-    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
-    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
-    //     { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},  
-    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-    //   ]
-    // },
+    { 
+      title: "Tournament Grand Champion", 
+      subtitle: "",
+      potName: "Grand Overall ($3,000)",
+      entryAmount: 3000,
+      tournamentCut: 0.08,
+      payoutStructure: {
+        1: 1.0,
+        2: 0.0,
+        3: 0.0,
+        4: 0.0,
+        5: 0.0,
+      },
+      url: "get_billfish_pachanga_tournament_grand_champion_pot_standings",     
+      inputs: [
+      ],
+      desktopColumns: [
+        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
+        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
+        { field: 'points', headerName: 'Points', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
+        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+      ],
+      mobileColumns: [
+        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
+        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},
+        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: false},  
+        { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+      ]
+    },
 
     // Overall Billfish Champion
     // { 
@@ -707,166 +711,295 @@ module.exports = {
     // },
 
     // Meatfish Species Champions
-    { 
-      title: "Largemouth Bass ($100)", 
-      subtitle: "",
-      potName: "Largemouth Bass ($100)",
-      entryAmount: 100,
-      tournamentCut: 0.1,
-      payoutStructure: {
-        1: 1.0,
-        2: 0.0,
-        3: 0.0,
-        4: 0.0,
-        5: 0.0,
-      },
-      url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
-      inputs: [
-        {species: "Largemouth Bass"}
-      ],
-      desktopColumns: [
-        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ],
-      mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ]
-    },
-    { 
-      title: "Crappie ($100)", 
-      subtitle: "",
-      potName: "Crappie ($100)",
-      entryAmount: 100,
-      tournamentCut: 0.1,
-      payoutStructure: {
-        1: 1.0,
-        2: 0.0,
-        3: 0.0,
-        4: 0.0,
-        5: 0.0,
-      },
-      url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
-      inputs: [
-        {species: "Crappie"}
-      ],
-      desktopColumns: [
-        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ],
-      mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ]
-    },
-    { 
-      title: "Catfish ($100)", 
-      subtitle: "",
-      potName: "Catfish ($100)",
-      entryAmount: 100,
-      tournamentCut: 0.1,
-      payoutStructure: {
-        1: 1.0,
-        2: 0.0,
-        3: 0.0,
-        4: 0.0,
-        5: 0.0,
-      },
-      url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
-      inputs: [
-        {species: "Catfish"}
-      ],
-      desktopColumns: [
-        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ],
-      mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ]
-    },
-    { 
-      title: "White Bass ($100)", 
-      subtitle: "",
-      potName: "White Bass ($100)",
-      entryAmount: 100,
-      tournamentCut: 0.1,
-      payoutStructure: {
-        1: 1.0,
-        2: 0.0,
-        3: 0.0,
-        4: 0.0,
-        5: 0.0,
-      },
-      url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
-      inputs: [
-        {species: "White Bass"}
-      ],
-      desktopColumns: [
-        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ],
-      mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ]
-    },
-    { 
-      title: "Striped Bass ($100)", 
-      subtitle: "",
-      potName: "Striped Bass ($100)",
-      entryAmount: 100,
-      tournamentCut: 0.1,
-      payoutStructure: {
-        1: 1.0,
-        2: 0.0,
-        3: 0.0,
-        4: 0.0,
-        5: 0.0,
-      },
-      url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
-      inputs: [
-        {species: "Striped Bass"}
-      ],
-      desktopColumns: [
-        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ],
-      mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ]
-    },
+    // { 
+    //   title: "Dorado ($500)", 
+    //   subtitle: "",
+    //   potName: "Dorado ($500)",
+    //   entryAmount: 500,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Dorado"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Dorado ($1,000)", 
+    //   subtitle: "",
+    //   potName: "Dorado ($1,000)",
+    //   entryAmount: 1000,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Dorado"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Dorado ($1,500)", 
+    //   subtitle: "",
+    //   potName: "Dorado ($1,500)",
+    //   entryAmount: 1500,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Dorado"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Wahoo ($500)", 
+    //   subtitle: "",
+    //   potName: "Wahoo ($500)",
+    //   entryAmount: 500,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Wahoo"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Wahoo ($1,000)", 
+    //   subtitle: "",
+    //   potName: "Wahoo ($1,000)",
+    //   entryAmount: 1000,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Wahoo"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Wahoo ($1,500)", 
+    //   subtitle: "",
+    //   potName: "Wahoo ($1,500)",
+    //   entryAmount: 1500,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Wahoo"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Tuna ($500)", 
+    //   subtitle: "",
+    //   potName: "Tuna ($500)",
+    //   entryAmount: 500,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Tuna"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Tuna ($1,000)", 
+    //   subtitle: "",
+    //   potName: "Tuna ($1,000)",
+    //   entryAmount: 1000,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Tuna"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    // { 
+    //   title: "Tuna ($1,500)", 
+    //   subtitle: "",
+    //   potName: "Tuna ($1,500)",
+    //   entryAmount: 1500,
+    //   tournamentCut: 0.08,
+    //   payoutStructure: {
+    //     1: 0.7,
+    //     2: 0.3,
+    //     3: 0.0,
+    //     4: 0.0,
+    //     5: 0.0,
+    //   },
+    //   url: "get_billfish_pachanga_meatfish_species_champion_pot_standings",     
+    //   inputs: [
+    //     {species: "Tuna"}
+    //   ],
+    //   desktopColumns: [
+    //     { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ],
+    //   mobileColumns: [
+    //     { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+    //     { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+    //     { field: 'payout', headerName: 'Payout', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
+    //   ]
+    // },
+    
     
     
     // Captain & Mate Pots

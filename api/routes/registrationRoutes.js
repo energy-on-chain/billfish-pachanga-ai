@@ -15,17 +15,17 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
     upload  
   } = require('../controllers/registrationControllers')({ clientUrl, serverUrl, stripe, webhookSecret, redisClient });
 
-  router.post('/api/registration-get-past-team-name-list', registrationGetPastTeamNameList);
-  router.post('/api/registration-checkout-session', upload.fields([
+  router.post('/api/:year/registration_get_past_team_name_list', registrationGetPastTeamNameList);
+  router.post('/api/:year/registration_checkout_session', upload.fields([
     { name: 'requiredImageUploads', maxCount: 10 },
     { name: 'imageUploads', maxCount: 10 }
   ]), registrationCheckoutSession);
-  router.post('/api/registration-webhook', bodyParser.raw({ type: 'application/json' }), registrationWebhook);
-  router.post('/api/registration-get-number-of-registered-teams', registrationGetNumberOfRegisteredTeams);
-  router.post('/api/registration-get-number-of-checked-in-teams', registrationGetNumberOfCheckedInTeams);
-  router.post('/api/registration-get-total-fees-collected', registrationGetTotalFeesCollected);
-  router.post('/api/registration-get-total-registration-fees-collected', registrationGetTotalRegistrationFeesCollected);
-  router.post('/api/registration-get-total-add-on-fees-collected', registrationGetTotalAddOnFeesCollected);
+  router.post('/api/registration_webhook', bodyParser.raw({ type: 'application/json' }), registrationWebhook);
+  router.post('/api/:year/registration_get_number_of_registered_teams', registrationGetNumberOfRegisteredTeams);
+  router.post('/api/:year/registration_get_number_of_checked_in_teams', registrationGetNumberOfCheckedInTeams);
+  router.post('/api/:year/registration_get_total_fees_collected', registrationGetTotalFeesCollected);
+  router.post('/api/:year/registration_get_total_registration_fees_collected', registrationGetTotalRegistrationFeesCollected);
+  router.post('/api/:year/registration_get_total_add_on_fees_collected', registrationGetTotalAddOnFeesCollected);
 
   return router;
 };

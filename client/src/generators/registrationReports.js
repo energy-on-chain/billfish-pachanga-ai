@@ -1,11 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
-
-import {
-  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,  
-} from '../config/generalConfig';
-
+import { loadConfigForYear } from '../config/masterConfig'; // Dynamic config loader
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -87,7 +83,11 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
 
 export const fetchAndGenerateRegistrationReport = async (year, tournamentName, tableProperties) => {
   console.log('Fetching and generating registration report...');
-  // Environment
+
+  // Load dynamic config for the specific year
+  const config = await loadConfigForYear(year);
+
+  // Define environment
   let apiUrl = null; 
   if (process.env.REACT_APP_NODE_ENV === "staging") {
     apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
@@ -96,10 +96,10 @@ export const fetchAndGenerateRegistrationReport = async (year, tournamentName, t
   }
 
   try { 
-    const response = await fetch(`${apiUrl}/api/admin_get_registered_team_data_for_report`, {
+    const response = await fetch(`${apiUrl}/api/${year}/admin_get_registered_team_data_for_report`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ teamYear: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME }),
+      body: JSON.stringify({ teamYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME }), // Use dynamic table name
     });
     if (!response.ok) {
       throw new Error(`Error fetching data: ${response.statusText}`);

@@ -2,61 +2,66 @@
 // DASHBOARD SETTINGS ///////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
+  firebaseStagingConfig: {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_STAGING,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_STAGING,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_STAGING,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
+    messagingSenderId:
+      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_STAGING,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID_STAGING,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_STAGING,
+  },
+  firebaseProductionConfig: {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_PRODUCTION,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_PRODUCTION,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
+    messagingSenderId:
+      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID_PRODUCTION,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_PRODUCTION,
+  },
   CONFIG_DASHBOARD_UPCOMING_AND_ACTIVE_TOURNAMENT_DATA: [
-
     {
-      logo: './ToledoBendLogo2025.png',
-      title: "TB Monthly Bass Tournament",
-      dates: "2025 (All Year)",
-      home: "/",
-      register: "/register",
-      leaderboard: "/leaderboard",
-      pots: "/pots", 
-      newsfeed: "/newsfeed",
+      logo: './BillfishPachangaLogo2025.png',
+      title: "Billfish Pachanga 2025",
+      dates: "Dates Coming Soon!",
+      home: "/2025/home",
+      register: "/2025/register",
+      leaderboard: "/2025/leaderboard",
+      pots: "/2025/pots", 
+      newsfeed: "/2025/newsfeed",
       auction: null,
-      admin: "/admin",
+      admin: "/2025/admin",
     },
-    {
-      logo: './OilmensClassicLogo2024.png',
-      title: "2024 Oilmen's Bass Classic",
-      dates: "September 20th - 21st 2024",
-      home: "/dashboard",
-      register: "/dashboard",
-      leaderboard: "/dashboard",
-      pots: "/dashboard", 
-      newsfeed: "/dashboard",
-      auction: "/dashboard",
-      admin: "/dashboard",
-    },
-
   ],
-  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA: [
 
+  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA: [
     {
       logo: './BillfishPachangaLogo2024.png',
       title: "Billfish Pachanga 2024",
       dates: "July 17th - 20th 2024",
-      home: "https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com/",
-      register: "https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com/register",
-      leaderboard: "https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com/leaderboard",
-      pots: "https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com/pots", 
-      newsfeed: "https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com/catches",
+      home: "/2024/home",
+      register: "/2024/register",
+      leaderboard: "/2024/leaderboard",
+      pots: "/2024/pots", 
+      newsfeed: "/2024/newsfeed",
       auction: null,
-      admin: "https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com/admin",
+      admin: "/2024/admin",
     },
     {
-      logo: './DeepseaRoundupLogo2024.jpg',
-      title: "Deepsea Roundup 2024",
-      dates: "July 11th - 14th 2024",
-      home: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/",
-      register: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/register",
-      leaderboard: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/leaderboard",
-      pots: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/pots", 
-      newsfeed: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/catches",
-      auction: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/auction",
-      admin: "https://deepsea-roundup-2024-prod-6256254360bf.herokuapp.com/admin",
+      logo: './BillfishPachangaLogo2023.png',
+      title: "Billfish Pachanga 2023",
+      dates: "July 12th - 15th 2023",
+      home: "/2023/home",
+      register: "/2023/register",
+      leaderboard: "/2023/leaderboard",
+      pots: "/2023/pots", 
+      newsfeed: "/2023/newsfeed",
+      auction: null,
+      admin: "/2023/admin",
     },
-
   ],
 };
 

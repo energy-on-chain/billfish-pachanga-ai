@@ -4,9 +4,11 @@ exports.getRegistrantCountForHomepage = async (req, res) => {
   console.log('In api/get_registrant_count_for_homepage...');
 
   try {
+    const year = req.params.year;
+
     let counter = 0;
     const db = getFirestore();
-    const snapshot = await db.collection(req.body.teamTableName).get(); 
+    const snapshot = await db.collection(`teams${year}`).get(); 
 
     // Count number of teams
     snapshot.forEach(() => counter++);
@@ -22,12 +24,14 @@ exports.getCatchCountForHomepage = async (req, res) => {
   console.log('In api/get_catch_count_for_homepage...');
 
   try {
+    const year = req.params.year;
+    
     let counter = 0;
     const db = getFirestore();
     const { catchesTableName, speciesTypeList } = req.body;
 
     // Get all catches from the specified table
-    const snapshot = await db.collection(catchesTableName).get();
+    const snapshot = await db.collection(`catches${year}`).get();
 
     // Filter catches based on speciesType
     snapshot.forEach(doc => {

@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import { useParams } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import Box from '@mui/material/Box';
@@ -8,47 +9,54 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import dayjs from 'dayjs';
+import advancedFormat from 'dayjs/plugin/advancedFormat';
 
 import ToggleSliderButton from '../components/buttons/ToggleSliderButton';
 import PotCarousel from '../components/PotCarousel';
 import PotsResultTable from '../components/tables/PotsResultTable';
 import './BasePage.css';
 
-import {
-  CONFIG_GENERAL_YEAR,
-  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
-  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
-} from '../config/generalConfig';
+import { loadConfigForYear } from '../config/masterConfig';
 
-import {
-  CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
-  CONFIG_STYLING_BANNER_TEXT_COLOR,
-  CONFIG_STYLING_POTS_TIMESTAMP_TEXT_COLOR,
-  CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
-  CONFIG_STYLING_SECTION_BACKGROUND_COLOR,
-  CONFIG_STYLING_SECTION_TEXT_COLOR,
-  CONFIG_STYLING_H2_COLOR,
-} from '../config/stylingConfig';
+dayjs.extend(advancedFormat);
 
-import {
-  CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
-} from '../config/homeConfig';
+// import {
+//   CONFIG_GENERAL_YEAR,
+//   CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+//   CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+//   CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
+// } from '../config/generalConfig';
 
-import {
-  CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
-  CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
-  CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
-  CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
-  CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER,
-  CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS,
-  CONFIG_POTS_CATEGORIES,
-  CONFIG_POTS_BOARD_LIST,
-} from '../config/potsConfig';
+// import {
+//   CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
+//   CONFIG_STYLING_BANNER_TEXT_COLOR,
+//   CONFIG_STYLING_POTS_TIMESTAMP_TEXT_COLOR,
+//   CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
+//   CONFIG_STYLING_SECTION_BACKGROUND_COLOR,
+//   CONFIG_STYLING_SECTION_TEXT_COLOR,
+//   CONFIG_STYLING_H2_COLOR,
+// } from '../config/stylingConfig';
+
+// import {
+//   CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
+// } from '../config/homeConfig';
+
+// import {
+//   CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
+//   CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
+//   CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
+//   CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
+//   CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER,
+//   CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS,
+//   CONFIG_POTS_CATEGORIES,
+//   CONFIG_POTS_BOARD_LIST,
+// } from '../config/potsConfig';
 
 function PotsPage() {
 
   // STATE - GENERAL
+  const { year } = useParams();
+  const [config, setConfig] = useState(null);
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("md"));
   const [timestamp, setTimestamp] = useState('');
@@ -60,119 +68,160 @@ function PotsPage() {
   // STATE - ENTRIES
   const [potEntryData, setPotEntryData] = useState();    // data
   const [potEntryDataHasLoaded, setPotEntryDataHasLoaded] = useState(false);
-
   const displayOptions = ["Entries", "Payouts"];    // display options
   const [displaySelection, setDisplaySelection] = useState("Payouts");
-
   const entriesViewOptions = ["Board", "By Pot", "By Team"]    // for entries
   const [entriesViewSelection, setEntriesViewSelection] = useState("Board");
-
-  const entriesBoardOptions = CONFIG_POTS_BOARD_LIST.map(boardObj => Object.keys(boardObj)[0]);
+  const [entriesBoardOptions, setEntriesBoardOptions] = useState();
   const [entriesBoardSelection, setBoardSelection] = useState();
-
   const [registeredTeamList, setRegisteredTeamList] = useState([]);
   const [registeredTeamNameList, setRegisteredTeamNameList] = useState([]);
   const [teamNameListIsLoaded, setTeamNameListIsLoaded] = useState(false);
   const [entriesTeamSelection, setEntriesTeamSelection] = useState();
-
-  const entriesPotOptions = CONFIG_POTS_BOARD_LIST.flatMap(boardObj => {
-    const boardName = Object.keys(boardObj)[0];  // Extract the board name
-    return boardObj[boardName].map(pot => pot.title);  // Extract the pot titles for each board
-  });  
+  const [entriesPotOptions, setEntriesPotOptions] = useState();
   const [entriesPotSelection, setEntriesPotSelection] = useState();
 
   // STATE - PAYOUTS
   const payoutsViewOptions = ["By Pot", "By Team"];    // for payouts
   const [payoutsViewSelection, setPayoutsViewSelection] = useState("By Pot");
-
   const payoutsDisplayOptions = ["List", "Select", "Slideshow"];
   const [payoutsDisplaySelection, setPayoutsDisplaySelection] = useState("List");
-
   const [payoutsSelectedResult, setPayoutsSelectedResult] = useState([]);
   const [payoutsHasSelectedResult, setPayoutsHasSelectedResult] = useState(false);
   const [payoutsResultArray, setPayoutsResultArray] = useState([]);
-
   const [payoutsTeamResultSummary, setPayoutsTeamResultSummary] = useState([]);
   const [payoutsTeamSelection, setPayoutsTeamSelection] = useState();
   const [payoutsTeamResultObject, setPayoutsTeamResultObject] = useState([]);
-
   const [totalGrossPot, setTotalGrossPot] = useState(0);
 
   useEffect(() => {
+    fetchConfigAndData();
+  }, [year]);
 
-    // Assess and set preliminary result status
-    if (CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER) {
-      let now = dayjs().valueOf();
-      setIsPreliminaryResults(parseInt(CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS) > now);
-      setTimestamp(generateTimestamp());
-    } else {
-      setIsPreliminaryResults(false);
-    };
-
-    // Define environment
-    let apiUrl = null;
-    if (process.env.REACT_APP_NODE_ENV === "staging") {
-      apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-    } else if (process.env.REACT_APP_NODE_ENV === "production") {
-      apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+  useEffect(() => {
+    if (potEntryData) {
+      const totalPot = potEntryData.reduce((acc, entry) => {
+        return acc + (entry.totalPotFee || 0); // Sum totalPotFee from each entry
+      }, 0);
+      setTotalGrossPot(totalPot);
     }
+  }, [potEntryData]); // Runs this effect whenever potEntryData is updated
 
-    // Build queries for payouts
-    const queries = CONFIG_POTS_CATEGORIES.map((item) => {
+  const fetchConfigAndData = async () => {
+    try {
+      const loadedConfig = await loadConfigForYear(year); // Load config dynamically
+      setConfig(loadedConfig); // Store the loaded config
+      
+      const {
+        generalConfig: {
+          CONFIG_GENERAL_YEAR,
+          CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+          CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+          CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
+        },
+        stylingConfig: {
+          CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
+          CONFIG_STYLING_BANNER_TEXT_COLOR,
+          CONFIG_STYLING_POTS_TIMESTAMP_TEXT_COLOR,
+          CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
+          CONFIG_STYLING_SECTION_BACKGROUND_COLOR,
+          CONFIG_STYLING_SECTION_TEXT_COLOR,
+          CONFIG_STYLING_H2_COLOR,
+        },
+        homeConfig: {
+          CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
+        },
+        potsConfig: {
+          CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
+          CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
+          CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
+          CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
+          CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER,
+          CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS,
+          CONFIG_POTS_CATEGORIES,
+          CONFIG_POTS_BOARD_LIST,
+        },
+      } = loadedConfig;
 
-      // Basic data
-      let bodyData = { 
-        catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
-        potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-        isReport: false, 
-        title: item.title,
-        subtitle: item.subtitle || "",
-        potName: item.potName,
-        entryAmount: item.entryAmount,
-        tournamentCut: item.tournamentCut,
-        payoutStructure: item.payoutStructure,
-        numPlaces: Object.keys(item.payoutStructure).length,
+      // Set toggle menu options
+      setEntriesBoardOptions(CONFIG_POTS_BOARD_LIST.map(boardObj => Object.keys(boardObj)[0]));
+      setEntriesPotOptions(CONFIG_POTS_BOARD_LIST.flatMap(boardObj => {
+        const boardName = Object.keys(boardObj)[0];  // Extract the board name
+        return boardObj[boardName].map(pot => pot.title);  // Extract the pot titles for each board
+      }))
+
+      // Assess and set preliminary result status
+      if (CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER) {
+        let now = dayjs().valueOf();
+        setIsPreliminaryResults(parseInt(CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS) > now);
+        setTimestamp(generateTimestamp());
+      } else {
+        setIsPreliminaryResults(false);
       };
-    
-      // Add any extra inputs required (e.g. specific date)
-      if (item.inputs && item.inputs.length > 0) {
-        item.inputs.forEach(input => {
-          Object.keys(input).forEach(param => {
-            bodyData[param] = input[param];
-          });
-        })
-      }
-    
-      // Return above info, including rest of query items
-      return {
-        url: item.url,
-        body: JSON.stringify(bodyData),
-        title: item.title,
-        subtitle: item.subtitle || "",
-        numPlaces: Object.keys(item.payoutStructure).length,
-        desktopColumns: item.desktopColumns,
-        mobileColumns: item.mobileColumns,
-      };
-    });    
 
-    // Execute data retrieval
-    confirmTournamentStarted(apiUrl);
-    fetchData(apiUrl, queries, setPayoutsResultArray);
-    setHasLoaded(true);
+      const apiUrl = process.env.REACT_APP_NODE_ENV === "production"
+      ? process.env.REACT_APP_SERVER_URL_PRODUCTION
+      : process.env.REACT_APP_SERVER_URL_STAGING;
 
-  }, []);
+      // Build queries for payouts
+      const queries = CONFIG_POTS_CATEGORIES.map((item) => {
+
+        // Basic data
+        let bodyData = { 
+          catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+          potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+          isReport: false, 
+          title: item.title,
+          subtitle: item.subtitle || "",
+          potName: item.potName,
+          entryAmount: item.entryAmount,
+          tournamentCut: item.tournamentCut,
+          payoutStructure: item.payoutStructure,
+          numPlaces: Object.keys(item.payoutStructure).length,
+        };
+      
+        // Add any extra inputs required (e.g. specific date)
+        if (item.inputs && item.inputs.length > 0) {
+          item.inputs.forEach(input => {
+            Object.keys(input).forEach(param => {
+              bodyData[param] = input[param];
+            });
+          })
+        }
+      
+        // Return above info, including rest of query items
+        return {
+          url: item.url,
+          body: JSON.stringify(bodyData),
+          title: item.title,
+          subtitle: item.subtitle || "",
+          numPlaces: Object.keys(item.payoutStructure).length,
+          desktopColumns: item.desktopColumns,
+          mobileColumns: item.mobileColumns,
+        };
+      });    
+
+      // Execute data retrieval
+      confirmTournamentStarted(apiUrl, loadedConfig);
+      fetchData(apiUrl, queries, setPayoutsResultArray);
+      setHasLoaded(true);
+
+  } catch (error) {
+    console.error('Error loading config or fetching data:', error);
+  }
+  };
 
   const fetchData = async (apiUrl, queries, setResults) => {
 
     try {
 
       // ENTRIES - Get registered team list
-      fetch(`${apiUrl}/api/admin_get_database_list`, {    
+      fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {    
         method: 'POST',    
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({table: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME})
+        body: JSON.stringify({tableName: `teams${year}`})
       })
       .then(res => res.json())
       .then(data => {
@@ -194,12 +243,12 @@ function PotsPage() {
       });
 
       // ENTRIES - Get all pot data
-      fetch(`${apiUrl}/api/get_all_pot_data`, {    
+      fetch(`${apiUrl}/api/${year}/get_all_pot_data`, {    
         method: 'POST',    
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME})
+        body: JSON.stringify({potYear: `pots${year}`})
       })
       .then(res => res.json())
       .then(data => {
@@ -210,7 +259,7 @@ function PotsPage() {
 
       // PAYOUTS - Fetch pot results for all categories
       const res = await Promise.all(queries.map((query) => {
-        return fetch(`${apiUrl}/api/${query.url}`, {
+        return fetch(`${apiUrl}/api/${year}/${query.url}`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: query.body
@@ -278,49 +327,37 @@ function PotsPage() {
     } catch (error) {
       console.log('There was an error loading initial data from the server in the admin add pots component: ' + error);
     }
-  }
+  };
 
-  const confirmTournamentStarted = async (apiUrl) => {
-
+  const confirmTournamentStarted = async (apiUrl ,loadedConfig) => {
+    const { CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME } = loadedConfig.generalConfig;
+    const { CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT } = loadedConfig.homeConfig;
     try {
-      fetch(`${apiUrl}/api/get_catch_count_for_homepage`, {
+      fetch(`${apiUrl}/api/${year}/get_catch_count_for_homepage`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           catchesTableName: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
           speciesTypeList: CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT,
-         })
+        })
       })
       .then(res => res.json())
       .then(data => {
-        if (data.count == 0) {
-          console.log("Tournament has NOT started yet because there are no catches.");
+        if (data.count === 0) {
           setTournamentHasStarted(false);
         } else {
-          console.log("Tournament has begun, there are catches entered.");
           setTournamentHasStarted(true);
         }
       })
       .catch(e => console.error(e));
-
     } catch (error) {
       console.error('Error confirming whether tournament has started: ', error);
     }
-  }
+  };
 
-  useEffect(() => {
-    if (potEntryData) {
-      const totalPot = potEntryData.reduce((acc, entry) => {
-        return acc + (entry.totalPotFee || 0); // Sum totalPotFee from each entry
-      }, 0);
-      setTotalGrossPot(totalPot);
-    }
-  }, [potEntryData]); // Runs this effect whenever potEntryData is updated
-
-  // HELPERS
   const generateTimestamp = () => {
     const now = dayjs();
-    const timeString = now.format('hh:mm A'); // Adjust the format as needed
+    const timeString = now.format('hh:mm A');
     const dateString = now.format('DD MMMM YYYY');
     return `Preliminary pot standings as of: ${timeString} on ${dateString}.`;
   };
@@ -372,8 +409,8 @@ function PotsPage() {
       <main>
 
         {/* BANNER */}
-        <section style={{ backgroundColor: CONFIG_STYLING_BANNER_BACKGROUND_COLOR }} className="section-banner">
-          <h1 style={{ color: CONFIG_STYLING_BANNER_TEXT_COLOR }}>Pots</h1>
+        <section style={{ backgroundColor: config?.stylingConfig?.CONFIG_STYLING_BANNER_BACKGROUND_COLOR }} className="section-banner">
+          <h1 style={{ color: config?.stylingConfig?.CONFIG_STYLING_BANNER_TEXT_COLOR }}>Pots</h1>
         </section>
 
         {/* SELECT VIEW ENTRIES OR PAYOUTS */}
@@ -453,8 +490,8 @@ function PotsPage() {
               (
                 <div>
                   <br/>
-                  <h1 style={{ fontSize: '30px', marginBottom: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>Total Pot Value: {formatCurrency(totalGrossPot)}</h1>
-                  <h3 className="timestamp-text" style={{color: CONFIG_STYLING_POTS_TIMESTAMP_TEXT_COLOR}}><em>{timestamp}</em></h3>
+                  <h1 style={{ fontSize: '30px', marginBottom: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>Total Pot Value: {formatCurrency(totalGrossPot)}</h1>
+                  <h3 className="timestamp-text" style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TIMESTAMP_TEXT_COLOR}}><em>{timestamp}</em></h3>
                 </div>
               ) : (
                 <div>
@@ -465,7 +502,7 @@ function PotsPage() {
             {/* Holdover message if there are no catches yet */}
             { (!tournamentHasStarted && displaySelection === "Payouts") &&
               <div>
-                <h2 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>The {CONFIG_GENERAL_YEAR} tournament will begin soon!</h2>
+                <h2 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>The {year} tournament will begin soon!</h2>
               </div>
             }
 
@@ -474,7 +511,7 @@ function PotsPage() {
               <>
                 <br/>
                 <br/>
-                <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading, one moment please...</h1>
+                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading, one moment please...</h1>
                 <CircularProgress/>
               </>
             }
@@ -488,14 +525,14 @@ function PotsPage() {
                 {/* Board Table Display */}
                 <div className="board-display">
 
-                  <h3 style={{fontStyle: "italic", color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}} >Scroll bar at bottom if needed</h3>
+                  <h3 style={{fontStyle: "italic", color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}} >Scroll bar at bottom if needed</h3>
                   <br/>
 
                   {potEntryData ? (
                     (() => {
                       // Step 1: Get all pot names from all boards
                       let allPots = [];
-                      CONFIG_POTS_BOARD_LIST.forEach(boardObj => {
+                      config?.potsConfig?.CONFIG_POTS_BOARD_LIST.forEach(boardObj => {
                         Object.values(boardObj).forEach(potArray => {
                           potArray.forEach(pot => {
                             allPots.push(pot.title); // Add pot titles
@@ -529,7 +566,7 @@ function PotsPage() {
                         position: 'sticky',
                         top: 0,
                         zIndex: 2,
-                        color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
+                        color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
                       };
 
                       const teamCellStyle = {
@@ -541,7 +578,7 @@ function PotsPage() {
                         backgroundColor: '#fff',
                         zIndex: 1,
                         fontWeight: 'bold',
-                        color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
+                        color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
                       };
 
                       const tableCellStyle = {
@@ -549,7 +586,7 @@ function PotsPage() {
                         padding: '8px',
                         textAlign: 'center',
                         fontSize: '14px',
-                        color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
+                        color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR,
                       };
 
                       return (
@@ -598,7 +635,7 @@ function PotsPage() {
                       );
                     })()
                   ) : (
-                    <p style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No pot entry data available.</p>
+                    <p style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No pot entry data available.</p>
                   )}
                 </div>
 
@@ -636,7 +673,7 @@ function PotsPage() {
                         let potAmount = 0;    // Default in case not found
 
                         // Find the tournamentCut from CONFIG_POTS_BOARD_LIST based on the selected pot.
-                        CONFIG_POTS_BOARD_LIST.forEach(boardObj => {
+                        config?.potsConfig?.CONFIG_POTS_BOARD_LIST.forEach(boardObj => {
                           Object.values(boardObj).forEach(potArray => {
                             potArray.forEach(pot => {
                               if (pot.title === entriesPotSelection) {
@@ -664,19 +701,19 @@ function PotsPage() {
 
                         return (
                           <div>
-                            <p style={{ fontSize: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Pot Name:</strong> {entriesPotSelection}</p>
-                            <p style={{ fontSize: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Total Payout:</strong> {formatCurrency(netTotal)}</p>
-                            <p style={{ fontSize: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Teams Entered ({selectedPotTeams.length})</strong></p>
+                            <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Pot Name:</strong> {entriesPotSelection}</p>
+                            <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Total Payout:</strong> {formatCurrency(netTotal)}</p>
+                            <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Teams Entered ({selectedPotTeams.length})</strong></p>
                             <ul>
                               {selectedPotTeams.map((team, index) => (
-                                <p key={index} style={{ fontSize: '18px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>{team}</p>
+                                <p key={index} style={{ fontSize: '18px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>{team}</p>
                               ))}
                             </ul>
                           </div>
                         );
                       })()
                     ) : (
-                      <p style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No entries found for this pot.</p>
+                      <p style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No entries found for this pot.</p>
                     )}
                   </>
                 )}
@@ -713,7 +750,7 @@ function PotsPage() {
                 {entriesTeamSelection && (
                   <>
                     {/* Team Name */}
-                    <p style={{ fontSize: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Team Name:</strong> {entriesTeamSelection}</p>
+                    <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}><strong>Team Name:</strong> {entriesTeamSelection}</p>
 
                     {potEntryData ? (
                       potEntryData
@@ -734,25 +771,25 @@ function PotsPage() {
                           return (
                             <div key={index}>
                               {/* Total Pot Fee */}
-                              <p style={{ fontSize: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>
+                              <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>
                                 <strong>Total Wagered:</strong> {formatCurrency(totalPotFee)}
                               </p>
 
                               {/* Pots Entered */}
-                              <p style={{ fontSize: '20px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>
+                              <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>
                                 <strong>Pots Entered ({potsEntered.length}):</strong>
                               </p>
 
                               <ul>
                                 {potsEntered.map((pot, potIndex) => (
-                                  <p key={potIndex} style={{ fontSize: '18px', color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>{pot}</p>
+                                  <p key={potIndex} style={{ fontSize: '18px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>{pot}</p>
                                 ))}
                               </ul>
                             </div>
                           );
                         })
                     ) : (
-                      <p style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No entries found for this team.</p>
+                      <p style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No entries found for this team.</p>
                     )}
                   </>
                 )}
@@ -764,7 +801,7 @@ function PotsPage() {
             { (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "List") && tournamentHasStarted &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
                   <CircularProgress />
                 </div>
               ) : (
@@ -795,7 +832,7 @@ function PotsPage() {
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
                   <CircularProgress />
                 </div>
               ) : (
@@ -809,7 +846,7 @@ function PotsPage() {
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
                   <CircularProgress />
                 </div>
                 ) : (
@@ -822,7 +859,7 @@ function PotsPage() {
                         value={payoutsSelectedResult[0]?.title || ''}
                         onChange={handlePayoutsSelectResult}
                       >
-                        {CONFIG_POTS_CATEGORIES.map((category) => (
+                        {config?.potsConfig?.CONFIG_POTS_CATEGORIES.map((category) => (
                           <MenuItem key={category.title} value={category.title}>
                             {category.title}
                           </MenuItem>
@@ -846,12 +883,12 @@ function PotsPage() {
                               density="compact"
                             />
                           ) : (
-                            <h1 key={result.title} style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No results yet.</h1>
+                            <h1 key={result.title} style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No results yet.</h1>
                           )
                         ))}
                       </div>
                     ) : (
-                      <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Please select a category</h1>
+                      <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Please select a category</h1>
                     )}
                   </div>
                 )
@@ -859,35 +896,30 @@ function PotsPage() {
             }
 
             {/* PAYOUTS - BY TEAM */}
-            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "List") && (tournamentHasStarted) && (
-              !hasLoaded ? (
-                <div>
-                  <h1 style={{ color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>Loading...</h1>
-                  <CircularProgress />
-                </div>
-              ) : (
-                <>
-                  <br />
-                  {payoutsTeamResultSummary.length > 0 ? (
-                    <PotsResultTable
-                      style={{ width: '100%' }}
-                      title="Team Payout Summary"
-                      rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
-                      columns={matches ? CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
-                      scroll={matches ? null : "scroll"}
-                      density="compact"
-                    />
-                  ) : (
-                    <h1 style={{ color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>No payout data available.</h1>
-                  )}
-                </>
-              )
-            )}
+            { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "List") && (tournamentHasStarted) ) &&
+            (!hasLoaded ? (
+              <div>
+                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                <CircularProgress />
+              </div>
+            ) : (
+              <>
+                <br/>
+                <PotsResultTable
+                  style={{ width: '100%' }}
+                  title="Team Payout Summary"
+                  rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
+                  columns={matches ? config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
+                  scroll={matches ? null : "scroll"}
+                  density="compact"
+                />
+              </>
+            ))}
 
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
             (!hasLoaded ? (
               <div>
-                <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
                 <CircularProgress />
               </div>
               ) : (
@@ -915,7 +947,7 @@ function PotsPage() {
                   <br/>  
 
                   {!payoutsTeamSelection && (
-                    <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Please select a team</h1>
+                    <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Please select a team</h1>
                   )}
 
                   {payoutsTeamSelection && (
@@ -929,12 +961,12 @@ function PotsPage() {
                             id: index,
                             place: formatPlace(result.place)  // Format the place value
                           }))}
-                          columns={matches ? CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
+                          columns={matches ? config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
                           scroll={matches ? null : "scroll"}
                           density="compact"
                         />
                       ) : (
-                        <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>{payoutsTeamSelection} has no payouts.</h1>
+                        <h1 style={{color: config?.potsConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>{payoutsTeamSelection} has no payouts.</h1>
                       )}
                     </>
                   )}
@@ -945,7 +977,7 @@ function PotsPage() {
             {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) && 
             (!hasLoaded ? (
               <div>
-                <h1 style={{color: CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
                 <CircularProgress />
               </div>
             ) : (
@@ -953,8 +985,8 @@ function PotsPage() {
                 <br/>
                 <PotCarousel
                     results={Object.keys(payoutsTeamResultObject).map((teamName) => ({
-                    desktopColumns: CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
-                    mobileColumns: CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
+                    desktopColumns: config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS,
+                    mobileColumns: config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS,
                     title: `${teamName} Payout: ${formatCurrency(
                       payoutsTeamResultObject[teamName]?.reduce((sum, result) => sum + result.payout, 0) || 0
                     )}`,

@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import { useParams } from 'react-router-dom';
 import {auth} from "../firebase";
 import {signOut, signInWithEmailAndPassword} from "firebase/auth";
 import { toast } from 'react-toastify';
@@ -21,64 +22,22 @@ import Login from '../components/Login';
 import { fetchAndGenerateRegistrationReport } from '../generators/registrationReports';
 import { fetchAndGenerateCatchesReport } from '../generators/catchesReports';
 import { generateLeaderboardReport } from '../generators/leaderboardReports';
-import { generatePotReport } from '../generators/potReports';
+import { generatePotsReport } from '../generators/potReports';
 import { generateAwardsReport } from '../generators/awardReports';
 import "./RegisterPage.css";
-
-import {
-  CONFIG_GENERAL_TOURNAMENT_NAME,
-  CONFIG_GENERAL_YEAR,    
-  CONFIG_GENERAL_HAS_REGISTRATION,
-  CONFIG_GENERAL_HAS_NEWSFEED,
-  CONFIG_GENERAL_HAS_POTS,
-  CONFIG_GENERAL_HAS_AUCTION,
-  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,   // firebase properties
-  CONFIG_GENERAL_FIREBASE_TEAMS_ID_NAME,   
-  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  
-  CONFIG_GENERAL_FIREBASE_CATCHES_ID_NAME,
-  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,  
-  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_ID_NAME,
-  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,  
-  CONFIG_GENERAL_FIREBASE_POTS_ID_NAME,
-  CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,    
-  CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME,
-  CONFIG_GENERAL_HAS_LEADERBOARD,
-} from '../config/generalConfig';
-
-import { 
-  CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
-  CONFIG_STYLING_BANNER_TEXT_COLOR,
-  CONFIG_STYLING_LOGIN_TEXT_COLOR,
-  CONFIG_STYLING_STATS_TEXT_COLOR,
-} from '../config/stylingConfig';
-
-import { 
-  CONFIG_ADMIN_DEFAULT_TAB_NAME,
-  CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST,
-  CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING,
-  CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,    // display properties
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS,
-} from '../config/adminConfig';
-
-import { 
-  CONFIG_CATCHES_STATS_LIST, 
-  CONFIG_CATCHES_SPECIES_LIST,
-} from '../config/catchConfig';
-
-import { CONFIG_POTS_BOARD_LIST } from '../config/potsConfig';
+import { loadConfigForYear } from '../config/masterConfig';
 
 function AdminPage() {   
 
   // STATE - GENERAL
+  const { year } = useParams();
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
   const theme = useTheme();    // device size
   const matches = useMediaQuery(theme.breakpoints.up("md"));  
   const isMobile = !matches; // Detect if the user is on mobile
   const currentUser = JSON.parse(window.localStorage.getItem('user'));    // login status
-  const [tabName, setTabName] = useState(window.localStorage.getItem('selectedTab') || (CONFIG_ADMIN_DEFAULT_TAB_NAME)); 
+  const [tabName, setTabName] = useState(window.localStorage.getItem('selectedTab') || "Catches"); 
   const [tableProperties, setTableProperties] = useState([])
   const [apiUrl, setApiUrl] = useState();
   const today = new Date();
@@ -87,7 +46,6 @@ function AdminPage() {
   const [style, setStyle] = useState();
   const [initialState, setInitialState] = useState();
   const [pageSizeOptions, setPageSizeOptions] = useState();
-  const [currentApiUrl, setCurrentApiUrl] = useState();
 
   // STATE - TEAMS
   const [teamRows, setTeamRows] = useState([]);
@@ -166,23 +124,77 @@ function AdminPage() {
   // STATE - AUCTION
   // FIXME
 
+  // REPORTS
+  const [isRegistrationReportLoading, setIsRegistrationReportLoading] = useState(false);
+  const [isCatchesSpeciesReportLoading, setIsCatchesSpeciesReportLoading] = useState(false);
+  const [isCatchesTeamReportLoading, setIsCatchesTeamReportLoading] = useState(false);
+  const [isLeaderboardReportLoading, setIsLeaderboardReportLoading] = useState(false);
+  const [isPotsReportLoading, setIsPotsReportLoading] = useState(false);
+  const [isAwardsReportLoading, setIsAwardsReportLoading] = useState(false);
+
   // INITIALIZE
   useEffect(() => {
-    const selectedTab = tabName || CONFIG_ADMIN_DEFAULT_TAB_NAME;  // Ensure fallback to the default tab
-    fetchData(selectedTab);
-  }, [tabName]);  // add tabName as a dependency to re-fetch when the tab changes
+    const selectedTab = tabName || "Catches";  // Ensure fallback to the default tab
+    fetchConfigAndData(tabName); // Load config and fetch data
+  }, [year, tabName]);  // add tabName as a dependency to re-fetch when the tab changes
 
-  const fetchData = async (tab) => {
+  const fetchConfigAndData = async (tab) => {
+
+    setLoading(true);
 
     try {
+      const loadedConfig = await loadConfigForYear(year); // Load the config dynamically
+      setConfig(loadedConfig); // Set the loaded configuration
 
-      // Environment
-      let initialApiUrl = null; 
-      if (process.env.REACT_APP_NODE_ENV === "staging") {
-        initialApiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-      } else if (process.env.REACT_APP_NODE_ENV === "production") {
-        initialApiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
-      }
+      const {
+        generalConfig: {
+          CONFIG_GENERAL_TOURNAMENT_NAME,
+          CONFIG_GENERAL_YEAR,    
+          CONFIG_GENERAL_HAS_REGISTRATION,
+          CONFIG_GENERAL_HAS_NEWSFEED,
+          CONFIG_GENERAL_HAS_POTS,
+          CONFIG_GENERAL_HAS_AUCTION,
+          CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,   // firebase properties
+          CONFIG_GENERAL_FIREBASE_TEAMS_ID_NAME,   
+          CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  
+          CONFIG_GENERAL_FIREBASE_CATCHES_ID_NAME,
+          CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,  
+          CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_ID_NAME,
+          CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,  
+          CONFIG_GENERAL_FIREBASE_POTS_ID_NAME,
+          CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,    
+          CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME,
+          CONFIG_GENERAL_HAS_LEADERBOARD,
+        },
+        stylingConfig: {
+          CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
+          CONFIG_STYLING_BANNER_TEXT_COLOR,
+          CONFIG_STYLING_LOGIN_TEXT_COLOR,
+          CONFIG_STYLING_STATS_TEXT_COLOR,
+        },
+        adminConfig: {
+          CONFIG_ADMIN_DEFAULT_TAB_NAME,
+          CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST,
+          CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING,
+          CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,    // display properties
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS,
+        },
+        catchConfig: {
+          CONFIG_CATCHES_STATS_LIST, 
+          CONFIG_CATCHES_SPECIES_LIST,
+        },
+        potsConfig: {
+          CONFIG_POTS_BOARD_LIST,
+        },
+      } = loadedConfig;
+
+      const apiUrl = process.env.REACT_APP_NODE_ENV === 'production'
+        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
+        : process.env.REACT_APP_SERVER_URL_STAGING;
 
       // Clear all row data
       setTeamRows([]);
@@ -201,9 +213,9 @@ function AdminPage() {
       let tempTableProperties;
       switch (tab) {   
         case 'Teams':
-          tableName = CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME;
-          idName = CONFIG_GENERAL_FIREBASE_TEAMS_ID_NAME;
-          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
+          tableName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME;
+          idName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_ID_NAME;
+          tempTableProperties = loadedConfig.adminConfig.CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
           break;
         case 'Catches':
           tableName = CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME;
@@ -211,19 +223,19 @@ function AdminPage() {
           tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
           break;
         case 'Announcements':
-          tableName = CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME;
-          idName = CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_ID_NAME;
-          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
+          tableName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME;
+          idName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_ID_NAME;
+          tempTableProperties = loadedConfig.adminConfig.CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
           break;
         case 'Pots':
-          tableName = CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME;
-          idName = CONFIG_GENERAL_FIREBASE_POTS_ID_NAME;
-          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
+          tableName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME;
+          idName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_ID_NAME;
+          tempTableProperties = loadedConfig.adminConfig.CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
           break;
         case 'Auction':
-          tableName = CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME;
-          idName = CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME;
-          tempTableProperties = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS;
+          tableName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME;
+          idName = loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_AUCTION_ID_NAME;
+          tempTableProperties = loadedConfig.adminConfig.CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS;
           break;
         default:    // handles "Stats" and "Reports" tab cases
           break;
@@ -235,35 +247,35 @@ function AdminPage() {
         try {
 
           // Registration
-          if (CONFIG_GENERAL_HAS_REGISTRATION) {
+          if (loadedConfig.generalConfig.CONFIG_GENERAL_HAS_REGISTRATION) {
             const [totalTeamsRes, checkedInTeamsRes, totalFeesRes, totalRegistrationFeesRes, totalAddOnFeesRes] = await Promise.all([
-              fetch(`${initialApiUrl}/api/registration-get-number-of-registered-teams`, {
+              fetch(`${apiUrl}/api/${year}/registration_get_number_of_registered_teams`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
-              fetch(`${initialApiUrl}/api/registration-get-number-of-checked-in-teams`, {
+              fetch(`${apiUrl}/api/${year}/registration_get_number_of_checked_in_teams`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
-              fetch(`${initialApiUrl}/api/registration-get-total-fees-collected`, {
+              fetch(`${apiUrl}/api/${year}/registration_get_total_fees_collected`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
-              fetch(`${initialApiUrl}/api/registration-get-total-registration-fees-collected`, {
+              fetch(`${apiUrl}/api/${year}/registration_get_total_registration_fees_collected`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               }),
-              fetch(`${initialApiUrl}/api/registration-get-total-add-on-fees-collected`, {
+              fetch(`${apiUrl}/api/${year}/registration_get_total_add_on_fees_collected`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teamTableName: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
+                body: JSON.stringify({ teamTableName: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
               })
             ]);
-        
+
             const totalTeams = await totalTeamsRes.json();
             const checkedInTeams = await checkedInTeamsRes.json();
             const totalFees = await totalFeesRes.json();
@@ -281,21 +293,21 @@ function AdminPage() {
           }
 
           // Catches
-          if (CONFIG_GENERAL_HAS_NEWSFEED) {
+          if (loadedConfig.generalConfig.CONFIG_GENERAL_HAS_NEWSFEED) {
             try {
               // Fetch total fish count as a promise
-              const totalFishRes = fetch(`${initialApiUrl}/api/admin_get_total_catch_count`, {
+              const totalFishRes = fetch(`${apiUrl}/api/${year}/admin_get_total_catch_count`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
+                body: JSON.stringify({ catchYear: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME })
               }).then(res => res.json());
 
               // Fetch fish count by species
-              const speciesStatsPromises = CONFIG_CATCHES_STATS_LIST.map((speciesType) => {
-                return fetch(`${initialApiUrl}/api/admin_get_total_catch_count_by_species`, {
+              const speciesStatsPromises = loadedConfig.catchConfig.CONFIG_CATCHES_STATS_LIST.map((speciesType) => {
+                return fetch(`${apiUrl}/api/${year}/admin_get_total_catch_count_by_species`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME, speciesType })
+                  body: JSON.stringify({ catchYear: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME, speciesType })
                 })
                 .then(res => res.json())
                 .then(data => ({ speciesType, count: data.speciesCount }));
@@ -322,14 +334,14 @@ function AdminPage() {
             }
           }         
 
-          if (CONFIG_GENERAL_HAS_POTS) {
+          if (loadedConfig.generalConfig.CONFIG_GENERAL_HAS_POTS) {
             try {
               // Fetch total pot size data
-              const boardNames = CONFIG_POTS_BOARD_LIST.map(board => Object.keys(board)[0]);
-              const potSizeRes = await fetch(`${initialApiUrl}/api/get_total_pot_size_data`, {
+              const boardNames = loadedConfig.potsConfig.CONFIG_POTS_BOARD_LIST.map(board => Object.keys(board)[0]);
+              const potSizeRes = await fetch(`${apiUrl}/api/${year}/get_total_pot_size_data`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME, boardNames })
+                body: JSON.stringify({ potYear: loadedConfig.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME, boardNames })
               });
               const potSizeData = await potSizeRes.json();
           
@@ -353,11 +365,11 @@ function AdminPage() {
         } catch (error) {
           console.error('Error fetching stats:', error);
         }
-      } else {
-        const res = await fetch(`${initialApiUrl}/api/admin_get_database_list`, {
+      } else if (tab !== "Reports") {
+        const res = await fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ table: tableName })
+          body: JSON.stringify({ tableName: tableName })
         });
         await res.json().then(result => {
           Object.keys(result).forEach((elementKey, i) => {
@@ -372,7 +384,7 @@ function AdminPage() {
       }
       
       // Set general state
-      setApiUrl(initialApiUrl);
+      setApiUrl(apiUrl);
       setTableProperties(tempTableProperties);
       setStyle({ height: 800, width: '100%' });
       setInitialState({ pagination: { paginationModel: { page: 0, pageSize: 10 } } });
@@ -420,7 +432,9 @@ function AdminPage() {
   
     } catch (error) {
       console.log('There was an error loading the server data for the default tab on the admin page: ' + error);
-    }
+    } finally {
+      setLoading(false);
+    };
   } 
   
   // HELPERS
@@ -436,7 +450,7 @@ function AdminPage() {
   const handleTabChange = (event, newTab) => {
     setTabName(newTab);
     window.localStorage.setItem('selectedTab', newTab); // Save the selected tab to local storage
-    fetchData(newTab);
+    fetchConfigAndData(newTab);
   };
 
   const delayRefresh = () => {
@@ -495,42 +509,74 @@ function AdminPage() {
 
   // REPORT GENERATORS
   const handleGenerateRegistrationReport = async (year) => {
-    console.log('In handleGenerateRegistrationReport...');
-    await fetchAndGenerateRegistrationReport(year, CONFIG_GENERAL_TOURNAMENT_NAME, CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS);
+    setIsRegistrationReportLoading(true); // Set the loading state
+    try {
+      console.log('In handleGenerateRegistrationReport...');
+      await fetchAndGenerateRegistrationReport(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME, config?.adminConfig?.CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS);
+    } catch (error) {
+      console.error("Error generating registration report:", error);
+    } finally {
+      setIsRegistrationReportLoading(false); // Reset the loading state after completion
+    }
   };
-  
-  const handleGenerateCatchesReport = async (year, type) => {
-    console.log('In handleGenerateCatchesReport...');
-    await fetchAndGenerateCatchesReport(year, type, CONFIG_GENERAL_TOURNAMENT_NAME);
+
+  const handleGenerateCatchesReportSpecies = async (year) => {
+    setIsCatchesSpeciesReportLoading(true);
+    try {
+      console.log('In handleGenerateCatchesReport (Species)...');
+      await fetchAndGenerateCatchesReport(year, "Species", config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating catches report (Species):", error);
+    } finally {
+      setIsCatchesSpeciesReportLoading(false);
+    }
+  };
+
+  const handleGenerateCatchesReportTeams = async (year) => {
+    setIsCatchesTeamReportLoading(true);
+    try {
+      console.log('In handleGenerateCatchesReport (Teams)...');
+      await fetchAndGenerateCatchesReport(year, "Team", config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating catches report (Teams):", error);
+    } finally {
+      setIsCatchesTeamReportLoading(false);
+    }
   };
 
   const handleGenerateLeaderboardReport = async (year) => {
-    console.log('In handleGenerateLeaderboardReport...');
-
+    setIsLeaderboardReportLoading(true);
     try {
-      await generateLeaderboardReport(year, CONFIG_GENERAL_TOURNAMENT_NAME);
+      console.log('In handleGenerateLeaderboardReport...');
+      await generateLeaderboardReport(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
     } catch (error) {
       console.error("Error generating leaderboard report:", error);
+    } finally {
+      setIsLeaderboardReportLoading(false);
     }
   };
 
   const handleGeneratePotsReport = async (year) => {
-    console.log('In handleGeneratePotsReport...');
-  
+    setIsPotsReportLoading(true);
     try {
-      await generatePotReport(year, CONFIG_GENERAL_TOURNAMENT_NAME);
+      console.log('In handleGeneratePotsReport...');
+      await generatePotsReport(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
     } catch (error) {
-      console.error("Error generating pot report:", error);
+      console.error("Error generating pots report:", error);
+    } finally {
+      setIsPotsReportLoading(false);
     }
   };
 
   const handleGenerateAwardsReport = async (year) => {
-    console.log('In handleGenerateAwardsReport...');
-  
+    setIsAwardsReportLoading(true);
     try {
-      await generateAwardsReport(year, CONFIG_GENERAL_TOURNAMENT_NAME);
+      console.log('In handleGenerateAwardsReport...');
+      await generateAwardsReport(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
     } catch (error) {
-      console.error("Error generating pot report:", error);
+      console.error("Error generating awards report:", error);
+    } finally {
+      setIsAwardsReportLoading(false);
     }
   };
 
@@ -539,14 +585,14 @@ function AdminPage() {
       <main>
 
         {/* BANNER */}
-        <section style={{ backgroundColor: CONFIG_STYLING_BANNER_BACKGROUND_COLOR }} className="section-banner">
-          <h1 style={{ color: CONFIG_STYLING_BANNER_TEXT_COLOR }}>Settings</h1>
+        <section style={{ backgroundColor: config?.stylingConfig?.CONFIG_STYLING_BANNER_BACKGROUND_COLOR }} className="section-banner">
+          <h1 style={{ color: config?.stylingConfig?.CONFIG_STYLING_BANNER_TEXT_COLOR }}>Settings</h1>
         </section>
 
         <section className="section-logout">
           {(!(currentUser === undefined) && !(currentUser === null)) && 
             <Box sx={{ width: '90%', typography: 'body1' }}>
-              <p style={{color: CONFIG_STYLING_LOGIN_TEXT_COLOR}}>{`You are currently logged in as: ${currentUser.email}`}</p>
+              <p style={{color: config?.stylingConfig?.CONFIG_STYLING_LOGIN_TEXT_COLOR}}>{`You are currently logged in as: ${currentUser.email}`}</p>
               <br/>
 
               <Button onClick={handleLogout} color="primary" variant="contained" fullwidth >Logout</Button>  
@@ -557,19 +603,19 @@ function AdminPage() {
 
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                   <TabList variant="scrollable" onChange={handleTabChange} aria-label="lab API tabs example">
-                    {CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => (
+                    {config?.adminConfig?.CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => (
                       <Tab key={tab} label={tab} value={tab} />
                     ))}
                   </TabList>
                 </Box>
 
-                {CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => {
+                {config?.adminConfig?.CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => {
                   if (tab === "Stats") {
                     return (
                       <TabPanel key="Stats" value="Stats">
                         <div>
-                          { CONFIG_GENERAL_HAS_REGISTRATION && 
-                            <div style={{color: CONFIG_STYLING_STATS_TEXT_COLOR}}>
+                          { config?.generalConfig?.CONFIG_GENERAL_HAS_REGISTRATION && 
+                            <div style={{color: config?.stylingConfig?.CONFIG_STYLING_STATS_TEXT_COLOR}}>
                               <h2>Registration</h2>
                               {isMobile ? (
                                 <>
@@ -590,8 +636,8 @@ function AdminPage() {
                             </div>
                           }
 
-                          {CONFIG_GENERAL_HAS_NEWSFEED &&
-                            <div style={{color: CONFIG_STYLING_STATS_TEXT_COLOR}}>
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_NEWSFEED &&
+                            <div style={{color: config?.stylingConfig?.CONFIG_STYLING_STATS_TEXT_COLOR}}>
                               <h2>Catches</h2>
                               {console.log("Rendering catchesStats:", catchesStats)}
                               {isMobile ? (
@@ -626,8 +672,8 @@ function AdminPage() {
                             </div>
                           }
 
-                          {CONFIG_GENERAL_HAS_POTS && (
-                            <div style={{color: CONFIG_STYLING_STATS_TEXT_COLOR}}>
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_POTS && (
+                            <div style={{color: config?.stylingConfig?.CONFIG_STYLING_STATS_TEXT_COLOR}}>
                               <h2>Pots</h2>
                               {isMobile ? (
                                 <>
@@ -658,52 +704,85 @@ function AdminPage() {
                     return (
                       <TabPanel key="Reports" value="Reports">
                         <div>
-                          { CONFIG_GENERAL_HAS_REGISTRATION && 
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_REGISTRATION && (
                             <div>
-                              <Button onClick={() => {handleGenerateRegistrationReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Check-In Form</Button>
-                              <br/>
-                              <br/>
+                              <Button
+                                onClick={() => handleGenerateRegistrationReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isRegistrationReportLoading} // Disable while loading
+                              >
+                                {isRegistrationReportLoading ? "Processing..." : "Download Check-In Form"}
+                              </Button>
+                              <br /><br />
                             </div>
-                          }
+                          )}
 
-                          {/* NOTE: No catch reports are needed since they can already be exported via the excel function */}
-                          { CONFIG_GENERAL_HAS_NEWSFEED && 
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_NEWSFEED && (
                             <div>
-                              <Button onClick={() => {handleGenerateCatchesReport(CONFIG_GENERAL_YEAR, "Species")}} color="primary" variant="contained">Download Catch Log (Species)</Button>
-                              <br/>
-                              <br/>
-                              <Button onClick={() => {handleGenerateCatchesReport(CONFIG_GENERAL_YEAR, "Team")}} color="primary" variant="contained">Download Catch Log (Teams)</Button>
-                              <br/>
-                              <br/>
+                              <Button
+                                onClick={() => handleGenerateCatchesReportSpecies(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isCatchesSpeciesReportLoading}
+                              >
+                                {isCatchesSpeciesReportLoading ? "Processing..." : "Download Catch Log (Species)"}
+                              </Button>
+                              <br /><br />
+                              <Button
+                                onClick={() => handleGenerateCatchesReportTeams(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isCatchesTeamReportLoading}
+                              >
+                                {isCatchesTeamReportLoading ? "Processing..." : "Download Catch Log (Teams)"}
+                              </Button>
+                              <br /><br />
                             </div>
-                          }   
+                          )}
 
-                          { CONFIG_GENERAL_HAS_LEADERBOARD &&
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_LEADERBOARD && (
                             <div>
-                              <Button onClick={() => {handleGenerateLeaderboardReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Leaderboard</Button>
-                              <br/>
-                              <br/>
+                              <Button
+                                onClick={() => handleGenerateLeaderboardReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isLeaderboardReportLoading}
+                              >
+                                {isLeaderboardReportLoading ? "Processing..." : "Download Leaderboard"}
+                              </Button>
+                              <br /><br />
                             </div>
-                          }
+                          )}
 
-                          { CONFIG_GENERAL_HAS_POTS && 
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_POTS && (
                             <div>
-                              <Button onClick={() => {handleGeneratePotsReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Pot Standings</Button>
-                              <br/>
-                              <br/>
+                              <Button
+                                onClick={() => handleGeneratePotsReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isPotsReportLoading}
+                              >
+                                {isPotsReportLoading ? "Processing..." : "Download Pot Standings"}
+                              </Button>
+                              <br /><br />
                             </div>
-                          }
+                          )}
 
-                          { (CONFIG_GENERAL_HAS_LEADERBOARD && CONFIG_GENERAL_HAS_POTS) && 
-                            <div>
-                              <Button onClick={() => {handleGenerateAwardsReport(CONFIG_GENERAL_YEAR)}} color="primary" variant="contained">Download Awards</Button>
-                              <br/>
-                              <br/>
-                            </div>
-                          }
-
-                          { CONFIG_GENERAL_HAS_AUCTION && <h2></h2>}
-
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_LEADERBOARD &&
+                            config?.generalConfig?.CONFIG_GENERAL_HAS_POTS && (
+                              <div>
+                                <Button
+                                  onClick={() => handleGenerateAwardsReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isAwardsReportLoading}
+                                >
+                                  {isAwardsReportLoading ? "Processing..." : "Download Awards"}
+                                </Button>
+                                <br /><br />
+                              </div>
+                            )}
                         </div>
                       </TabPanel>
                     );
@@ -717,12 +796,12 @@ function AdminPage() {
                             <CrudTable
                               // dates
                               today={today}
-                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
-                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+                              startDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
 
                               // table styling
                               tableType={tab}
-                              buttonLabel={`Add ${tab} Entry`}
+                              buttonLabel={`Add ${tab}`}
                               tableProperties={tableProperties}
                               style={style}
                               rows={teamRows || []}
@@ -764,12 +843,12 @@ function AdminPage() {
                             <CrudTable
                               // dates
                               today={today}
-                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
-                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+                              startDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
 
                               // table styling
                               tableType={tab}
-                              buttonLabel={`Add ${tab} Entry`}
+                              buttonLabel={`Add ${tab}`}
                               tableProperties={tableProperties}
                               style={style}
                               rows={catchRows || []}
@@ -811,12 +890,12 @@ function AdminPage() {
                             <CrudTable
                               // dates
                               today={today}
-                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
-                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+                              startDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
 
                               // table styling
                               tableType={tab}
-                              buttonLabel={`Add ${tab} Entry`}
+                              buttonLabel={`Add ${tab}`}
                               tableProperties={tableProperties}
                               style={style}
                               rows={announcementRows || []}
@@ -858,12 +937,12 @@ function AdminPage() {
                             <CrudTable
                               // dates
                               today={today}
-                              startDate={CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
-                              endDate={CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
+                              startDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING}
+                              endDate={config?.adminConfig?.CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING}
 
                               // table styling
                               tableType={tab}
-                              buttonLabel={`Add ${tab} Entry`}
+                              buttonLabel={`Add ${tab}`}
                               tableProperties={tableProperties}
                               style={style}
                               rows={potRows || []}

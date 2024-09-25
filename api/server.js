@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const path = require('path');
 const dotenv = require('dotenv');
 const admin = require("firebase-admin");    // firebase
-const {firebaseStagingConfig, firebaseProductionConfig} = require("../client/src/config/generalConfig.js");
+const {firebaseStagingConfig, firebaseProductionConfig} = require("../client/src/config/dashboardConfig.js");
 const session = require('express-session');
 const RedisStore = require('connect-redis').default; // Corrected way to import connect-redis
 const redis = require('redis');
@@ -93,7 +93,6 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
 };
 
 // REDIS
-// REDIS
 const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379'; // Use REDIS_URL from environment or default to local Redis
 const redisClient = redis.createClient({
   url: redisUrl
@@ -111,7 +110,28 @@ redisClient.on('end', () => console.log('Redis client disconnected'));
 })();
 
 // MIDDLEWARE
-app.use(cors({ origin: clientUrl }));
+const allowedOrigins = [
+  clientUrl,
+  serverUrl,
+  'https://www.billfishpachanga.customtournamentsolutions.com',
+  'https://billfishpachanga.customtournamentsolutions.com',
+  'https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com'
+];
+// app.use(cors({ origin: clientUrl }));
+app.use(cors({
+  origin: (origin, callback) => {
+    console.log('Origin: ', origin);
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true); // Origin is allowed
+    } else {
+      callback(new Error('Not allowed by CORS')); // Origin not allowed
+    }
+  },
+  credentials: true // Allow cookies and credentials to be sent in the requests
+}));
 app.use(bodyParser.json({ verify: (req, res, buf, encoding) => { req.rawBody = buf.toString() }}));
 app.use(session({
   store: new RedisStore({ client: redisClient }),

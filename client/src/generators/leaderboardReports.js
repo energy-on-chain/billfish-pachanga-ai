@@ -1,14 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
-
-import {
-  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  
-} from '../config/generalConfig';
-
-import { 
-  CONFIG_LEADERBOARD_CATEGORIES 
-} from '../config/leaderboardConfig';
+import { loadConfigForYear } from '../config/masterConfig'; // Dynamic config loader
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -31,8 +24,10 @@ const formatCurrency = (value) => {
 export const generateLeaderboardReport = async (year, tournamentName) => {
   const doc = new jsPDF('landscape');
   const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
-  
-  // Define environment
+
+  // Load dynamic config for the specific year
+  const config = await loadConfigForYear(year);
+
   let apiUrl = null;
   if (process.env.REACT_APP_NODE_ENV === "staging") {
     apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
@@ -42,14 +37,14 @@ export const generateLeaderboardReport = async (year, tournamentName) => {
 
   // Fetch and process leaderboard data
   try {
-    // Build queries for leaderboard categories
-    const queries = CONFIG_LEADERBOARD_CATEGORIES.map(item => ({
+    // Build queries for leaderboard categories dynamically from config
+    const queries = config.leaderboardConfig.CONFIG_LEADERBOARD_CATEGORIES.map(item => ({
       title: item.title,
       subtitle: item.subtitle || "",
       numPlaces: item.numPlaces,
       url: item.url,
       body: JSON.stringify({
-        catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME, // Dynamic table name
         numPlaces: item.numPlaces,
         isReport: true,  // Fetch all rows for the report
         ...(item.inputs && item.inputs.length > 0
@@ -61,7 +56,7 @@ export const generateLeaderboardReport = async (year, tournamentName) => {
     }));
 
     const res = await Promise.all(queries.map(query =>
-      fetch(`${apiUrl}/api/${query.url}`, {
+      fetch(`${apiUrl}/api/${year}/${query.url}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: query.body
@@ -101,12 +96,7 @@ export const generateLeaderboardReport = async (year, tournamentName) => {
     });
 
     // Add page numbers
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.text(`${i} of ${pageCount}`, doc.internal.pageSize.getWidth() - 25, doc.internal.pageSize.getHeight() - 10);
-    }
+    addPageNumbers(doc);
 
     doc.save(`${tournamentName} ${year} Leaderboard Report.pdf`);
   } catch (error) {

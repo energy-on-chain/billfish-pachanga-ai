@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { DataGrid, GridToolbarQuickFilter } from '@mui/x-data-grid';
 import { Tooltip, Box } from '@mui/material';
-
-import { 
-  CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
-  CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
-  CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR,
-  CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
-} from '../../config/stylingConfig';
+import { loadConfigForYear } from '../../config/masterConfig';
+import CircularProgress from '@mui/material/CircularProgress';
 
 // Custom Toolbar Component
 function QuickSearchToolbar() {
@@ -18,14 +14,34 @@ function QuickSearchToolbar() {
   );
 }
 
-function CountTable(props) {   
+function CountTable(props) {
+  const { year } = useParams(); 
   const [style, setStyle] = useState();
-  const [rows, setRows] = useState();
-  const [columns, setColumns] = useState();
-  const [visibility, setVisibility] = useState();
-  const [scroll, setScroll] = useState();
-  const [initialState, setInitialState] = useState();
-  const [pageSizeOptions, setPageSizeOptions] = useState();
+  const [rows, setRows] = useState([]);
+  const [columns, setColumns] = useState([]);
+  const [visibility, setVisibility] = useState({});
+  const [scroll, setScroll] = useState({});
+  const [initialState, setInitialState] = useState({});
+  const [pageSizeOptions, setPageSizeOptions] = useState([100]);
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true); // Add a loading state
+
+  useEffect(() => {
+    const loadConfigs = async () => {
+      try {
+        const loadedConfig = await loadConfigForYear(year);
+        if (loadedConfig) {
+          setConfig(loadedConfig);
+        }
+      } catch (error) {
+        console.error('Error loading config:', error);
+      } finally {
+        setLoading(false); // Stop the loading state
+      }
+    };
+
+    loadConfigs();
+  }, [year]);
 
   useEffect(() => {
     setStyle(props.style);
@@ -35,14 +51,22 @@ function CountTable(props) {
     setScroll(props.scroll);
     setInitialState(props.initialState);
     setPageSizeOptions(props.pageSizeOptions);
-  }, []);
+  }, [props]);
+
+  if (loading) {
+    return <CircularProgress />; // Show a loader while config is being loaded
+  }
+
+  if (!config) {
+    return <div>Error loading configuration</div>; // Handle case where config fails to load
+  }
 
   return (
     <div style={style}>
       <DataGrid
-        rows={props.rows || []}
-        columns={props.columns || []}
-        columnVisibilityModel={props.visibility}
+        rows={rows || []}
+        columns={columns || []}
+        columnVisibilityModel={visibility}
         slots={{ toolbar: QuickSearchToolbar }}
         sx={{
           overflowX: 'auto',
@@ -51,42 +75,30 @@ function CountTable(props) {
             fontSize: '16px',
           },
           '.MuiDataGrid-row.Mui-odd': {
-            backgroundColor: 'white !important',
+            backgroundColor: config.stylingConfig.CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR + ' !important',
           },
-          // Set the background color of the entire column header
           '.MuiDataGrid-columnHeaders': {
             justifyContent: 'center',
             textAlign: 'center',
-            backgroundColor: CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
-            color: CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
+            backgroundColor: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
+            color: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
           },
-          // Ensure search and filter icons section gets the correct color
           '.MuiDataGrid-columnHeaderTitleContainer': {
             justifyContent: 'center',
-            backgroundColor: CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,  // Set your desired background color
+            backgroundColor: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
             fontSize: '16px',
-            color: CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
+            color: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
             ".MuiSvgIcon-root": {
-              color: CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
+              color: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
             }
           },
-          // Correct class to target the filter/search icons background
           '.MuiDataGrid-iconButtonContainer': {
-            backgroundColor: CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR + ' !important',  // Ensure it's applied with `!important`
-            color: CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
-          },
-          '& .MuiDataGrid-cell': {
-            justifyContent: 'center',  
-            textAlign: 'center',
-            fontSize: '16px',
-          },
-          // Change the color of the icons themselves (filter/search buttons)
-          '.MuiSvgIcon-root': {
-            // color: 'white !important',  // Ensure icon color is white
+            backgroundColor: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR + ' !important',
+            color: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
           },
           '& .super-app-theme--header': {
             justifyContent: 'center',
-            backgroundColor: CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
+            backgroundColor: config.stylingConfig.CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
             fontSize: '16px',
             color: 'white'
           },
@@ -94,14 +106,14 @@ function CountTable(props) {
             justifyContent: 'center',
             textAlign: 'center',
             fontSize: '16px',
-            color: CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
+            color: config.stylingConfig.CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
           },
         }}
         density='compact'
         hideFooter={props.hideFooter} // Hide footer if specified
         pagination={props.pagination} // Enable pagination if specified
         pageSize={props.pageSize || 100} // Set default page size
-        rowsPerPageOptions={props.pageSizeOptions || [100]} // Page size options
+        rowsPerPageOptions={pageSizeOptions || [100]} // Page size options
         autoHeight
       />
     </div>
@@ -109,3 +121,4 @@ function CountTable(props) {
 }
 
 export default CountTable;
+

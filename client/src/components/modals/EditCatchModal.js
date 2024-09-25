@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { InputLabel, Grid, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField } from "@mui/material";
+import { useParams } from 'react-router-dom';
+import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, CircularProgress } from "@mui/material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers';
@@ -7,12 +8,10 @@ import dayjs from 'dayjs';
 import CloseIcon from "@mui/icons-material/Close";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
-
-import { 
-  CONFIG_CATCHES_SPECIES_LIST
-} from '../../config/catchConfig';
+import { loadConfigForYear } from '../../config/masterConfig';
 
 const EditCatchModal = (props) => {
+  const { year } = useParams();
   const [day1, setDay1] = useState();
   const [day2, setDay2] = useState();
   const [today, setToday] = useState();
@@ -23,32 +22,40 @@ const EditCatchModal = (props) => {
   const [dateTime, setDateTime] = useState();
   const [catchPhoto, setCatchPhoto] = useState();
   const [catchPhotoUrl, setCatchPhotoUrl] = useState();
-  const [speciesConfig, setSpeciesConfig] = useState(null); // Default to null initially
+  const [speciesConfig, setSpeciesConfig] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);  // New state to track submission
+  const [isSubmitted, setIsSubmitted] = useState(false);    // New state to track successful submission
 
   useEffect(() => {
-    console.log('In EditCatchModal...');
-    console.log(props.editInfo);
+    const fetchConfigs = async () => {
+      const config = await loadConfigForYear(year);
+      if (config) {
+        setDay1(props.startDate);
+        setDay2(props.endDate);
+        setToday(props.today);
 
-    setDay1(props.startDate);
-    setDay2(props.endDate);
-    setToday(props.today);
+        setLength(props.editInfo.length);
+        setGirth(props.editInfo.girth);
+        setWeight(props.editInfo.weight);
+        setPoints(props.editInfo.points);
+        setDateTime(props.editInfo.dateTime);
+        setCatchPhoto(null);
+        setCatchPhotoUrl(props.editInfo.catchPhoto);
 
-    setLength(props.editInfo.length);
-    setGirth(props.editInfo.girth);
-    setWeight(props.editInfo.weight);
-    setPoints(props.editInfo.points);
-    setDateTime(props.editInfo.dateTime);
-    setCatchPhoto(null);
-    setCatchPhotoUrl(props.editInfo.catchPhoto);
+        const speciesMatch = config.catchConfig.CONFIG_CATCHES_SPECIES_LIST.find(
+          (species) => species.label === props.editInfo.species
+        );
+        setSpeciesConfig(speciesMatch || {});
+      }
+    };
 
-    // Search for the species in CONFIG_CATCHES_SPECIES_LIST
-    const speciesMatch = CONFIG_CATCHES_SPECIES_LIST.find(species => species.label === props.editInfo.species);
-    setSpeciesConfig(speciesMatch || {});
-
-  }, [props]);
+    fetchConfigs();
+  }, [props, year]);
 
   const handleClose = () => {
     props.close();
+    setIsSubmitting(false);
+    setIsSubmitted(false);
   };
 
   const delayRefresh = () => {
@@ -60,7 +67,6 @@ const EditCatchModal = (props) => {
   const validateUserInput = () => {
     let inputIsValid = true;
 
-    // Safely access speciesConfig properties
     if (!dateTime && speciesConfig?.dateTimeIsRequired) {
       toast.warning("Please enter a date and time for the catch");
       inputIsValid = false;
@@ -86,6 +92,8 @@ const EditCatchModal = (props) => {
 
   const handleEdit = async () => {
     if (validateUserInput()) {
+      setIsSubmitting(true); // Start submission
+
       try {
         let apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
           ? process.env.REACT_APP_SERVER_URL_STAGING
@@ -104,19 +112,25 @@ const EditCatchModal = (props) => {
           formData.append("catchPhoto", catchPhoto);
         }
 
-        await fetch(`${apiUrl}/api/admin_edit_catch`, {
+        await fetch(`${apiUrl}/api/${year}/admin_edit_catch`, {
           method: 'POST',
           body: formData
         }).then(response => {
           if (response.ok) {
             toast.success('The catch was successfully updated! Redirecting...');
+            setIsSubmitted(true); // Mark as submitted
             delayRefresh();
+          } else {
+            toast.error('Error while attempting to update the catch.');
+            setIsSubmitting(false); // Reset submission state if failed
           }
         }).catch(error => {
           toast.error('There was an error while attempting to update the catch.');
+          setIsSubmitting(false); // Reset submission state if failed
         });
       } catch (error) {
         console.log('Error editing the catch:', error);
+        setIsSubmitting(false); // Reset submission state if failed
       }
     }
   };
@@ -161,7 +175,6 @@ const EditCatchModal = (props) => {
         <DialogContent>
           <Stack spacing={2} margin={2}>
             
-            {/* Species, Type, Caught By */}
             <InputLabel><strong>Species: </strong>{props.editInfo.species}</InputLabel>
             <InputLabel><strong>Type: </strong>{props.editInfo.speciesType}</InputLabel>
             <InputLabel><strong>Caught By: </strong>{props.editInfo.teamName}</InputLabel>
@@ -234,7 +247,21 @@ const EditCatchModal = (props) => {
               </div>
             }
 
-            <Button color="primary" variant="contained" onClick={handleEdit}>Update Catch Info</Button>
+            {/* Submit button */}
+            {!isSubmitted ? (
+              <Button
+                color="primary"
+                variant="contained"
+                onClick={handleEdit}
+                disabled={isSubmitting || isSubmitted}  // Disable during submission or after it's submitted
+                startIcon={isSubmitting ? <CircularProgress size={20} /> : null}  // Show spinner while submitting
+              >
+                {isSubmitting ? "Submitting..." : "Update Catch Info"}
+              </Button>
+            ) : (
+              <h3>Submitted!</h3>
+            )}
+            
           </Stack>
         </DialogContent>
       </form>

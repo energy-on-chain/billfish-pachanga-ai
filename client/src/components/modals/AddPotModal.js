@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { InputLabel, Select, MenuItem, Button, FormControl, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, FormControlLabel, Checkbox, Autocomplete } from "@mui/material";
+import { useParams } from 'react-router-dom';
+import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, FormControlLabel, Checkbox, Autocomplete } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CircularProgress from '@mui/material/CircularProgress';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import {
-  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-} from '../../config/generalConfig';
-
-import { 
-  CONFIG_POTS_BOARD_LIST,
-} from '../../config/potsConfig';
+import { loadConfigForYear } from '../../config/masterConfig';
 
 const AdminAddPotModal = (props) => {
+
+  const { year } = useParams();
+  const [config, setConfig] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State to track submission
+  const [isSubmitted, setIsSubmitted] = useState(false); // State to track if the form has been submitted
 
   // State
   const [isLoaded, setIsLoaded] = useState(false);
@@ -25,34 +24,28 @@ const AdminAddPotModal = (props) => {
   const [boardSelections, setBoardSelections] = useState([]);
   const [isValidInput, setIsValidInput] = useState(false);
 
+  // INITIALIZE
   useEffect(() => {
-    console.log('In AddPotModal...');
-    fetchData();
-  }, []);
+    fetchConfigAndData(); // Load config and fetch data
+  }, [year]);  // add tabName as a dependency to re-fetch when the tab changes
 
-  const delayRefresh = () => {
-    setTimeout(() => {
-      console.log('Delaying page refresh...');
-      window.location.reload();
-    }, 2000);
-  }
+  const fetchConfigAndData = async () => {
 
-  const fetchData = async () => {
     try {
-      let apiUrl = null;
-      if (process.env.REACT_APP_NODE_ENV === "staging") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-      } else if (process.env.REACT_APP_NODE_ENV === "production") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
-      }
+      const loadedConfig = await loadConfigForYear(year); // Load the config dynamically
+      setConfig(loadedConfig); // Set the loaded configuration
+
+      const apiUrl = process.env.REACT_APP_NODE_ENV === 'production'
+        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
+        : process.env.REACT_APP_SERVER_URL_STAGING;
 
       // Get registered (eligible) teams
-      fetch(`${apiUrl}/api/admin_get_database_list`, {    
+      fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {    
         method: 'POST',    
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({table: props.teamYear})
+        body: JSON.stringify({tableName: `teams${year}`})
       })
       .then(res => res.json())
       .then(data => {
@@ -67,7 +60,7 @@ const AdminAddPotModal = (props) => {
           tempNameObject["label"]= data[teamKey].teamName;
           tempList.push(tempObject);
           tempNameList.push(tempNameObject);
-        })
+        });
   
         setRegisteredTeamList(tempList);
         setRegisteredTeamNameList(tempNameList);
@@ -78,7 +71,13 @@ const AdminAddPotModal = (props) => {
     } catch (error) {
       console.log('There was an error loading initial data from the server in the admin add pots component: ' + error);
     }
-  }
+  };
+
+  const delayRefresh = () => {
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  };
 
   const handleClose = () => {
     setIsValidInput(false);
@@ -89,8 +88,10 @@ const AdminAddPotModal = (props) => {
     setBoardSelections([]);
     setRegisteredTeamList([]);
     setRegisteredTeamNameList([]);
+    setIsSubmitting(false);
+    setIsSubmitted(false); // Reset isSubmitted state on close
     props.close();
-  }
+  };
 
   const validateUserInput = () => {
 
@@ -106,10 +107,12 @@ const AdminAddPotModal = (props) => {
 
     setIsValidInput(true);
     return true;
-  }
+  };
 
   const handleFormSubmission = async () => {
     if (validateUserInput()) {
+      setIsSubmitting(true);
+
       let apiUrl = null;
       if (process.env.REACT_APP_NODE_ENV === "staging") {
         apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
@@ -119,13 +122,13 @@ const AdminAddPotModal = (props) => {
   
       // Check for duplicate teamId in the current potYear collection
       try {
-        const checkDuplicateResponse = await fetch(`${apiUrl}/api/admin_add_pot_check_for_duplicate_entries`, {
+        const checkDuplicateResponse = await fetch(`${apiUrl}/api/${year}/admin_add_pot_check_for_duplicate_entries`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+            potYear: `pots${year}`,
             teamId,
           }),
         });
@@ -134,22 +137,24 @@ const AdminAddPotModal = (props) => {
   
         if (duplicateData.exists) {
           toast.warning('This team has already been added to the pot for the selected year.');
+          setIsSubmitting(false);
           return; // Stop the submission if a duplicate entry is found
         }
       } catch (error) {
         console.error('Error checking for duplicate teamId:', error);
         toast.error('Error checking for duplicate entry. Please try again.');
+        setIsSubmitting(false);
         return; // Stop further execution if there's an error in duplicate check
       }
   
       let formData = {
-        potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,  // Pot year
+        potYear: `pots${year}`,  // Pot year
         teamId,
         teamName,
       };
   
       // Add board selections
-      const allBoardSelections = CONFIG_POTS_BOARD_LIST.map((boardObj) => {
+      const allBoardSelections = config?.potsConfig?.CONFIG_POTS_BOARD_LIST.map((boardObj) => {
         const boardName = Object.keys(boardObj)[0];
         const selectedBoard = boardSelections.find(selection => selection.board === boardName);
   
@@ -169,7 +174,7 @@ const AdminAddPotModal = (props) => {
       });
   
       try {
-        fetch(`${apiUrl}/api/admin_add_pot`, {
+        fetch(`${apiUrl}/api/${year}/admin_add_pot`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',  // Ensures we're sending JSON
@@ -179,7 +184,7 @@ const AdminAddPotModal = (props) => {
           .then((res) => {
             if (res.ok) {
               toast.success('Successfully added new pot entry! Page refreshing...');
-              handleClose();
+              setIsSubmitted(true); // Set the submission as complete to hide the button
               delayRefresh();
             }
           })
@@ -188,12 +193,17 @@ const AdminAddPotModal = (props) => {
             toast.error('Error while attempting to save pot entry to the database. Please try again or contact the site administrator.');
             delayRefresh();
             handleClose();
+          })
+          .finally(() => {
+            setIsSubmitting(false); // Reset submission state
           });
       } catch (e) {
         console.log('There was an error while attempting to save the pot entry to the database:', e);
+        setIsSubmitting(false); // Reset submission state
       }
     } else {
       console.log('Input was not valid or there was an error');
+      setIsSubmitting(false); // Reset submission state
     }
   };
   
@@ -213,7 +223,7 @@ const AdminAddPotModal = (props) => {
 
   const handleBoardSelection = (boardName, isSelected) => {
     const newSelections = [...boardSelections];
-    const pots = CONFIG_POTS_BOARD_LIST.find(board => board[boardName])[boardName];
+    const pots = config?.potsConfig?.CONFIG_POTS_BOARD_LIST.find(board => board[boardName])[boardName];
     const totalFee = pots.reduce((acc, pot) => acc + pot.amount, 0);
   
     const currentBoardIndex = newSelections.findIndex(selection => selection.board === boardName);
@@ -272,8 +282,7 @@ const AdminAddPotModal = (props) => {
     }
   
     setBoardSelections(newSelections);
-  };
-  
+  }; 
 
   return (
     <Dialog open={props.status} onClose={handleClose} fullWidth maxWidth="sm">
@@ -298,7 +307,7 @@ const AdminAddPotModal = (props) => {
             }            
 
             {/* Select pots */}
-            {CONFIG_POTS_BOARD_LIST.map((boardObj, boardIndex) => {
+            {config?.potsConfig?.CONFIG_POTS_BOARD_LIST.map((boardObj, boardIndex) => {
               const boardName = Object.keys(boardObj)[0];
               const pots = boardObj[boardName];
               const isBoardSelected = boardSelections.find(selection => selection.board === boardName);
@@ -346,7 +355,19 @@ const AdminAddPotModal = (props) => {
             </div>
 
             {/* Submit button */}
-            <Button color="primary" variant="contained" disabled={boardSelections.length === 0} onClick={handleFormSubmission}>Submit</Button>
+            {!isSubmitted ? (
+              <Button
+                color="primary"
+                variant="contained"
+                disabled={boardSelections.length === 0 || isSubmitting}
+                onClick={handleFormSubmission}
+                startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Button>
+            ) : (
+              <h3>Submitted!</h3>
+            )}
 
           </Stack>
         </DialogContent>

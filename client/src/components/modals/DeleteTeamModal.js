@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack } from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import CloseIcon from "@mui/icons-material/Close";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import dayjs from 'dayjs';  // Import dayjs for date-time formatting
 
 const DeleteTeamModal = (props) => {
+  const { year } = useParams();
   const [info, setInfo] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);  // Track submission state
+  const [isSubmitted, setIsSubmitted] = useState(false);    // Track if form is submitted
 
   useEffect(() => {
     setInfo(props.deleteInfo);
-    console.log("In DeleteTeamModal, here are the props.tableProperties...");
-    console.log(props.tableProperties);
   }, [props.deleteInfo]);
 
   const delayRefresh = () => {
@@ -34,16 +37,20 @@ const DeleteTeamModal = (props) => {
   };
 
   const handleClose = () => {
+    setIsSubmitting(false);  // Reset submission state on close
+    setIsSubmitted(false);   // Reset submitted state on close
     props.close();
   }
 
   const handleDelete = async () => {
+    setIsSubmitting(true); // Start the loading state
+
     try {
       let apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
         ? process.env.REACT_APP_SERVER_URL_STAGING
         : process.env.REACT_APP_SERVER_URL_PRODUCTION;
 
-      const response = await fetch(`${apiUrl}/api/admin_delete_team`, {
+      const response = await fetch(`${apiUrl}/api/${year}/admin_delete_team`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,15 +61,19 @@ const DeleteTeamModal = (props) => {
           auctionYear: props.auctionYear
         })
       });
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
+
       toast.success('The team was successfully deleted! Redirecting...');
+      setIsSubmitted(true);  // Mark as submitted after successful deletion
       delayRefresh();
-      
+
     } catch (error) {
       console.log('There was an error while attempting to delete this database entry: ' + error);
       toast.error('There was an error while attempting to delete the team. Page will refresh now. Please try again.');
+      setIsSubmitting(false);  // Reset submitting state if an error occurs
     }
   }
 
@@ -77,7 +88,7 @@ const DeleteTeamModal = (props) => {
     <div>
       {info &&
         <Dialog open={props.status} onClose={handleClose} fullWidth maxWidth="sm">
-          <form action="/" method="POST" onSubmit={(e) => { e.preventDefault(); alert('Submitted form!'); this.handleClose(); }}>
+          <form action="/" method="POST" onSubmit={(e) => { e.preventDefault(); handleClose(); }}>
             <DialogTitle>
               Delete {props.year} {props.tableType}
               <IconButton onClick={handleClose} style={{ float: 'right' }}><CloseIcon color="primary"></CloseIcon></IconButton>
@@ -106,6 +117,29 @@ const DeleteTeamModal = (props) => {
                           value = formatDateTime(value);
                         }
 
+                        // Check if the field is an image URL from Firebase storage
+                        if (typeof value === 'string' && value.startsWith('https://storage.googleapis.com/')) {
+                          return (
+                            <div key={index} style={{ textAlign: 'left' }}>
+                              <InputLabel><strong>{formatLabel(property.field)}:</strong></InputLabel>
+                              <img 
+                                src={value} 
+                                alt={`${property.field} Preview`} 
+                                style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain' }} 
+                              />
+                            </div>
+                          );
+                        }
+
+                        // If the field is expected to be an image but doesn't exist, show "N/A"
+                        if (property.isImage && !value) {
+                          return (
+                            <InputLabel key={index}>
+                              <strong>{formatLabel(property.field)}:</strong> N/A
+                            </InputLabel>
+                          );
+                        }
+
                         return (
                           <InputLabel key={index}>
                             <strong>{formatLabel(property.field)}:</strong> {String(value)}
@@ -118,9 +152,20 @@ const DeleteTeamModal = (props) => {
                 <InputLabel style={{ fontWeight: 'bold', color: 'red' }}>
                   Are you sure? Associated data will also be deleted.
                 </InputLabel>
-                <Button color="primary" variant="contained" onClick={handleDelete}>
-                  Yes, Delete
-                </Button>
+
+                { !isSubmitted ? ( // Only show the button if the form has not been submitted
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    onClick={handleDelete}
+                    disabled={isSubmitting} // Disable button when submitting
+                    startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+                  >
+                    {isSubmitting ? "Deleting..." : "Yes, Delete"}
+                  </Button>
+                ) : (
+                  <h3>Submitted!</h3>
+                )}
               </Stack>
             </DialogContent>
           </form>
@@ -131,4 +176,3 @@ const DeleteTeamModal = (props) => {
 };
 
 export default DeleteTeamModal;
-

@@ -9,12 +9,13 @@ dayjs.extend(timezone);
 
 exports.getAllPotData = async (req, res) => {
   console.log('Fetching all pot data...');
+  const year = req.params.year;
   const db = getFirestore();
   const { potYear } = req.body;  // Receive the potYear from the request body
 
   try {
     // Reference to the potYear collection
-    const potCollectionRef = db.collection(potYear);
+    const potCollectionRef = db.collection(`pots${year}`);
     
     // Fetch all documents in the collection
     const snapshot = await potCollectionRef.get();
@@ -44,12 +45,13 @@ exports.getAllPotData = async (req, res) => {
 
 exports.getTotalPotSizeData = async (req, res) => {
   console.log('Fetching total pot size data...');
+  const year = req.params.year;
   const db = getFirestore();
   const { potYear, boardNames } = req.body;  // Receive the potYear and boardNames from the request body
 
   try {
     // Reference to the potYear collection
-    const potCollectionRef = db.collection(potYear);
+    const potCollectionRef = db.collection(`pots${year}`);
     
     // Fetch all documents in the collection
     const snapshot = await potCollectionRef.get();
@@ -109,11 +111,15 @@ exports.getTotalPotSizeData = async (req, res) => {
 exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga tournament grand champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
+    console.log(year);
+    console.log(req.body);
+
     // Fetch all catches for the given year
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.get();
 
     if (snapshot.empty) {
@@ -155,7 +161,7 @@ exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -217,11 +223,12 @@ exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res
 exports.getBillfishPachangaOverallBillfishChampionPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga overall billfish champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
     // Fetch all catches for the given year and speciesType "Catch & Release"
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -257,7 +264,7 @@ exports.getBillfishPachangaOverallBillfishChampionPotStandings = async (req, res
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -320,11 +327,12 @@ exports.getBillfishPachangaOverallBillfishChampionPotStandings = async (req, res
 exports.getBillfishPachangaGrandSlamsPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga grand slams...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
     // Fetch all catches for the given year
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -384,7 +392,7 @@ exports.getBillfishPachangaGrandSlamsPotStandings = async (req, res) => {
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -449,6 +457,7 @@ exports.getBillfishPachangaGrandSlamsPotStandings = async (req, res) => {
 exports.getBillfishPachangaBillfishDayChampionPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga billfish day champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, day, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
@@ -456,7 +465,7 @@ exports.getBillfishPachangaBillfishDayChampionPotStandings = async (req, res) =>
     const dayString = new Date(day).toISOString().split('T')[0];
 
     // Fetch all catches for the given year and speciesType "Catch & Release" that match the given day
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -498,7 +507,7 @@ exports.getBillfishPachangaBillfishDayChampionPotStandings = async (req, res) =>
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -561,11 +570,12 @@ exports.getBillfishPachangaBillfishDayChampionPotStandings = async (req, res) =>
 exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga billfish species champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, species, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
     // Fetch all catches for the given year and species
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('species', '==', species).get();
 
     if (snapshot.empty) {
@@ -601,7 +611,7 @@ exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -664,11 +674,12 @@ exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res
 exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga overall billfish non sonar champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
     // Fetch all catches for the given year and speciesType "Catch & Release"
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -704,7 +715,7 @@ exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -767,11 +778,12 @@ exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res
 exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga meatfish species champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, species, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
     // Fetch all catches for the given year and species
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('species', '==', species).get();
 
     if (snapshot.empty) {
@@ -816,7 +828,7 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];
@@ -881,11 +893,12 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
 exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
   console.log('Fetching billfish pachanga captain and mate pot winners...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, potYear, isReport, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
     // Fetch all catches for the given year
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.get();
 
     if (snapshot.empty) {
@@ -927,7 +940,7 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
     });
 
     // Fetch all teams that entered the given pot
-    const potRef = db.collection(potYear);
+    const potRef = db.collection(`pots${year}`);
     const potSnapshot = await potRef.get();
 
     let teamsInPot = [];

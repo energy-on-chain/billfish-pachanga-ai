@@ -1,31 +1,36 @@
-import React, {useState, useEffect } from 'react';
-import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close"
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, CircularProgress } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 
-
 const DeleteCatchModal = (props) => {
-
+  const { year } = useParams();
   const [catchInfo, setCatchInfo] = useState();
+  const [isSubmitting, setIsSubmitting] = useState(false);  // New state to track submission
+  const [isSubmitted, setIsSubmitted] = useState(false);    // New state to track successful submission
 
   useEffect(() => {
     console.log('In DeleteCatchModal component...');
     setCatchInfo(props.deleteInfo);
-  }, []);
+  }, [props.deleteInfo]);
 
   const delayRefresh = () => {
     setTimeout(() => {
       console.log('Delaying page refresh...');
       window.location.reload();
     }, 2000);
-  }
+  };
 
   const handleClose = () => {
     props.close();
-  }
+    setIsSubmitting(false);  // Reset state
+    setIsSubmitted(false);   // Reset state
+  };
 
   const handleDelete = async () => {
+    setIsSubmitting(true); // Start submission
 
     try {
       let apiUrl = null;
@@ -35,7 +40,7 @@ const DeleteCatchModal = (props) => {
         apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
       }
 
-      const response = await fetch(`${apiUrl}/api/admin_delete_catch`, {
+      const response = await fetch(`${apiUrl}/api/${year}/admin_delete_catch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -49,26 +54,28 @@ const DeleteCatchModal = (props) => {
       }
 
       toast.success('The catch was successfully deleted! Redirecting...');
+      setIsSubmitted(true);  // Mark as submitted
       delayRefresh();
     } catch (error) {
       console.log('There was an error while attempting to delete this database entry: ' + error);
       toast.error('There was an error while attempting to delete the catch. Page will refresh now. Please try again.');
+      setIsSubmitting(false); // Reset submission state if failed
     }
-  }
+  };
 
   const formatLocalDateTime = (utcDateTime) => {
     const dateObj = new Date(utcDateTime);
     const localDate = dateObj.toLocaleDateString(); // Convert to local date string
     const localTime = dateObj.toLocaleTimeString(); // Convert to local time string
     return { localDate, localTime };
-  }
+  };
 
   return (
     <div>
     { catchInfo &&
       <Dialog open={props.status} onClose={handleClose} fullWidth maxWidth="sm">
-        <form action="/" method="POST" onSubmit={(e) => { e.preventDefault(); alert('Submitted form!'); this.handleClose(); } }>
-          <DialogTitle>Delete {props.year} Catch<IconButton onClick={handleClose} style={{float:'right'}}><CloseIcon color="primary"></CloseIcon></IconButton>  </DialogTitle>
+        <form action="/" method="POST" onSubmit={(e) => { e.preventDefault(); alert('Submitted form!'); this.handleClose(); }}>
+          <DialogTitle>Delete {props.year} Catch<IconButton onClick={handleClose} style={{float:'right'}}><CloseIcon color="primary" /></IconButton></DialogTitle>
           <DialogContent>
               <Stack spacing={2} margin={2}>
                 <div>
@@ -84,7 +91,21 @@ const DeleteCatchModal = (props) => {
                   <InputLabel id="time-label"><strong>Time Entered:</strong>  {formatLocalDateTime(catchInfo["dateTime"]).localTime}</InputLabel>
                 </div>
                 <br/>
-                <Button color="primary" variant="contained" onClick={handleDelete}>Yes, Delete This Catch</Button>
+                
+                {/* Submit button */}
+                {!isSubmitted ? (
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    onClick={handleDelete}
+                    disabled={isSubmitting || isSubmitted}  // Disable during submission or after it's submitted
+                    startIcon={isSubmitting ? <CircularProgress size={20} /> : null}  // Show spinner while submitting
+                  >
+                    {isSubmitting ? "Submitting..." : "Yes, Delete This Catch"}
+                  </Button>
+                ) : (
+                  <h3>Submitted!</h3>
+                )}
               </Stack>
           </DialogContent>
         </form>

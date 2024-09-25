@@ -1,5 +1,7 @@
 import React, {useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { InputLabel, Select, MenuItem, Divider, Button, Grid, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Autocomplete} from "@mui/material";
+import CircularProgress from '@mui/material/CircularProgress';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers';
@@ -7,12 +9,12 @@ import dayjs from 'dayjs';
 import CloseIcon from "@mui/icons-material/Close"
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
-import { 
-  CONFIG_CATCHES_SPECIES_LIST
-} from '../../config/catchConfig';
+import { loadConfigForYear } from '../../config/masterConfig';
 
 const AddCatchModal = (props) => {
+
+  const { year } = useParams();
+  const [config, setConfig] = useState(null);
 
   const [day1, setDay1] = useState();
   const [day2, setDay2] = useState();
@@ -26,51 +28,69 @@ const AddCatchModal = (props) => {
   const [registeredTeamNameList, setRegisteredTeamNameList] = useState([]);
   const [catchData, setCatchData] = useState([]);
   const [speciesList, setSpeciesList] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);  // New state to track submission
+  const [isSubmitted, setIsSubmitted] = useState(false);    // New state to track successful submission
 
+  // INITIALIZE
   useEffect(() => {
+    fetchConfigAndData(); // Load config and fetch data
+  }, [year]);  // add tabName as a dependency to re-fetch when the tab changes
 
-    let apiUrl = null;
-    if (process.env.REACT_APP_NODE_ENV === "staging") {
-      apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-    } else if (process.env.REACT_APP_NODE_ENV === "production") {
-      apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
-    }
+  const fetchConfigAndData = async () => {
 
-    fetch(`${apiUrl}/api/admin_get_database_list`, {    // get list of registered teams
-      method: 'POST',    
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({table: props.teamYear})
-    })
-    .then(res => res.json())
-    .then(data => {
-      var tempList = [];
-      var tempNameList = [];
-      Object.keys(data).map((teamKey, i) => {
-        let tempObject = {};
-        let tempNameObject = {};
-        tempObject[teamKey] = data[teamKey]
-        tempNameObject["teamKey"] = teamKey;
-        tempNameObject["teamData"] = data[teamKey];
-        tempNameObject["label"]= data[teamKey].teamName;
-        tempList.push(tempObject);
-        tempNameList.push(tempNameObject);
+    try {
+      const loadedConfig = await loadConfigForYear(year); // Load the config dynamically
+      setConfig(loadedConfig); // Set the loaded configuration
+
+      const {
+        catchConfig: {
+          CONFIG_CATCHES_SPECIES_LIST,
+        },
+      } = loadedConfig;
+
+      const apiUrl = process.env.REACT_APP_NODE_ENV === 'production'
+        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
+        : process.env.REACT_APP_SERVER_URL_STAGING;
+
+      fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {    // get list of registered teams
+        method: 'POST',    
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({tableName: `teams${year}`})
+      })
+      .then(res => res.json())
+      .then(data => {
+        var tempList = [];
+        var tempNameList = [];
+        Object.keys(data).map((teamKey, i) => {
+          let tempObject = {};
+          let tempNameObject = {};
+          tempObject[teamKey] = data[teamKey]
+          tempNameObject["teamKey"] = teamKey;
+          tempNameObject["teamData"] = data[teamKey];
+          tempNameObject["label"]= data[teamKey].teamName;
+          tempList.push(tempObject);
+          tempNameList.push(tempNameObject);
+        })
+
+        setRegisteredTeamList(tempList);
+        setRegisteredTeamNameList(tempNameList);
+        setToday(props.today);
+        setDay1(props.startDate);
+        setDay2(props.endDate);
+        setSpeciesList(CONFIG_CATCHES_SPECIES_LIST);
+
+      })
+      .catch(e => {
+        console.error(e.error);
       })
 
-      setRegisteredTeamList(tempList);
-      setRegisteredTeamNameList(tempNameList);
-      setToday(props.today);
-      setDay1(props.startDate);
-      setDay2(props.endDate);
-      setSpeciesList(CONFIG_CATCHES_SPECIES_LIST);
+    } catch (error) {
+      console.log('There was an error loading the data for the addCatchModal: ' + error);
+    };
 
-    })
-    .catch(e => {
-      console.error(e.error);
-    })
-
-  }, []);
+  };
 
   const handleClose = () => {
     setRegisteredTeamList([]);
@@ -80,6 +100,8 @@ const AddCatchModal = (props) => {
     setTeamIsSelected(false);
     setNumCatches(0);
     setCatchData([]);
+    setIsSubmitting(false);
+    setIsSubmitted(false);
     props.close();
   }
 
@@ -464,6 +486,7 @@ const AddCatchModal = (props) => {
   const handleCreateCatches = () => {
     if (validateUserInput()) {
       console.log('Input validated! Writing to catch database now...');
+      setIsSubmitting(true);
   
       const formData = new FormData();
   
@@ -501,23 +524,25 @@ const AddCatchModal = (props) => {
         apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
       }
   
-      fetch(`${apiUrl}/api/admin_add_catch`, {
+      fetch(`${apiUrl}/api/${year}/admin_add_catch`, {
         method: 'POST',
-        body: formData, // FormData object
+        body: formData,
       })
-        .then((res) => {
-          if (res.ok) {
-            toast.success(`Successfully added ${numCatches} catches! Page refreshing...`);
-            handleClose();
-            delayRefresh();
-          }
-        })
-        .catch((e) => {
-          console.error(e);
-          toast.error('Error while attempting to save catches to database. Please try again or contact the site administrator.');
+      .then((res) => {
+        if (res.ok) {
+          toast.success(`Successfully added ${numCatches} catches! Page refreshing...`);
+          setIsSubmitted(true); // Mark as submitted
           delayRefresh();
-          handleClose();
-        });
+        } else {
+          toast.error('Error while attempting to save catches.');
+          setIsSubmitting(false); // Reset submission state if failed
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        toast.error('Error while attempting to save catches to database.');
+        setIsSubmitting(false); // Reset submission state if failed
+      });
     } else {
       console.log('Input was not valid or there was an error');
     }
@@ -528,6 +553,7 @@ const AddCatchModal = (props) => {
       <form action="/" method="POST" onSubmit={(e) => { e.preventDefault(); alert('Submitted form!'); this.handleClose(); } }>
         <DialogTitle>Add {props.year} Catches<IconButton onClick={handleClose} style={{float:'right'}}><CloseIcon color="primary"></CloseIcon></IconButton>  </DialogTitle>
         <DialogContent>
+        {/* <DialogContent style={{ height: '200px', overflowY: 'auto' }}> */}
             <Stack xs spacing={2} margin={2}>
               <InputLabel required id="angler-label">Select team</InputLabel>
               <Autocomplete
@@ -538,37 +564,30 @@ const AddCatchModal = (props) => {
                 onChange={handleTeamSelection}
               />
 
-              { teamIsSelected &&
-                <div>
-                  <InputLabel required id="num-catches-label">Select number of catches to add</InputLabel>
-                  <Select labelId="num-catches-label" id="num-catches" value={numCatches} onChange={(e) => handleChangeNumberOfCatches(e)}>
-                    <MenuItem value={"0"}>0</MenuItem>
-                    <MenuItem value={"1"}>1</MenuItem>
-                    <MenuItem value={"2"}>2</MenuItem>
-                    <MenuItem value={"3"}>3</MenuItem>
-                    <MenuItem value={"4"}>4</MenuItem>
-                    <MenuItem value={"5"}>5</MenuItem>
-                    <MenuItem value={"6"}>6</MenuItem>
-                    <MenuItem value={"7"}>7</MenuItem>
-                    <MenuItem value={"8"}>8</MenuItem>
-                    <MenuItem value={"9"}>9</MenuItem>
-                    <MenuItem value={"10"}>10</MenuItem>
-                  </Select>
-                  { catchData.length ? (
-                    <div>
-                      {addCatches()}
-                    </div>
-                  ) : null
-                  }
-                </div>
-              }
+            {teamIsSelected && (
+              <>
+                <InputLabel required id="num-catches-label">Select number of catches to add</InputLabel>
+                <Select labelId="num-catches-label" id="num-catches" value={numCatches} onChange={handleChangeNumberOfCatches}>
+                  {[...Array(11).keys()].map(i => <MenuItem key={i} value={i}>{i}</MenuItem>)}
+                </Select>
 
-              {(teamIsSelected && numCatches > 0) ? (
-                <Button disabled={false} color="primary" variant="contained" onClick={handleCreateCatches}>Submit</Button>
-              ) : (
-                <Button disabled={true} color="primary" variant="contained" onClick={handleCreateCatches}>Submit</Button>
-              )
-              }
+                {catchData.length > 0 && addCatches()}
+
+                {!isSubmitted ? (
+                  <Button
+                    disabled={isSubmitting || numCatches <= 0}
+                    color="primary"
+                    variant="contained"
+                    onClick={handleCreateCatches}
+                    startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+                  >
+                    {isSubmitting ? "Submitting..." : "Submit"}
+                  </Button>
+                ) : (
+                  <h3>Submitted!</h3>
+                )}
+              </>
+            )}
 
             </Stack>
         </DialogContent>

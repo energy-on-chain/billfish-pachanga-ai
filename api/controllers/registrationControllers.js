@@ -25,9 +25,10 @@ const flattenObjectWithPrefix = (obj, prefix = '') => {
 module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) => {
 
   const registrationGetPastTeamNameList = async (req, res) => {
-    console.log('In api/registration-get-past-team-name-list...');
-
+    console.log('In api/registration_get_past_team_name_list...');
+ 
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const { teamTableNameList } = req.body; // Expecting an array of table names
       let allTeamNames = new Set();
@@ -48,9 +49,10 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   };
   
   const registrationCheckoutSession = async (req, res) => {
-    console.log('In api/registration-checkout-session...');
+    console.log('In api/registration_checkout_session...');
   
     try {
+      const year = req.params.year;
       // Parse the metaDataObject from the request body
       const parsedMetaData = JSON.parse(req.body.metaDataObject);
   
@@ -65,7 +67,6 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   
       // Store flattened metadata and image data (buffers) in Redis
       const metadataKey = `metadata:${uuidv4()}`;
-      
   
       // Process image uploads
       console.log("Processing images now...")
@@ -95,7 +96,8 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   
       await redisClient.set(metadataKey, JSON.stringify({
         ...parsedMetaData,
-        imageBuffers
+        imageBuffers,
+        year: `${year}`
       }));
   
       // Define line items for registration and add-ons
@@ -139,8 +141,8 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
         phone_number_collection: { enabled: true },
         line_items: lineItems,
         metadata: { metadataKey }, // Store the Redis key in Stripe's metadata
-        success_url: `${clientUrl}/registration_success`,
-        cancel_url: `${clientUrl}/registration_error`
+        success_url: `${clientUrl}/${year}/registration_success`,
+        cancel_url: `${clientUrl}/${year}/registration_error`
       });
   
       res.json({ url: session.url });
@@ -293,7 +295,7 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
     delete finalMetadata.addOnProperties;
 
     // Add the team document and get the document reference
-    const teamDocRef = await db.collection(metadata.teamTableName).add({
+    const teamDocRef = await db.collection(`teams${finalMetadata.year}`).add({
         teamName: finalMetadata.teamName,
         registrationFee: finalMetadata.registrationFee,
         hasCheckedIn: finalMetadata.hasCheckedIn,
@@ -314,8 +316,9 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
 
   const registrationGetNumberOfRegisteredTeams = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const snapshot = await db.collection(req.body.teamTableName).get();
+      const snapshot = await db.collection(`teams${year}`).get();
       const totalTeams = snapshot.size; // Count the number of documents
       res.json({ totalTeams });
     } catch (error) {
@@ -326,8 +329,9 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
 
   const registrationGetNumberOfCheckedInTeams = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const snapshot = await db.collection(req.body.teamTableName).where('hasCheckedIn', '==', true).get();
+      const snapshot = await db.collection(`teams${year}`).where('hasCheckedIn', '==', true).get();
       const checkedInTeams = snapshot.size; // Count the number of documents where hasCheckedIn is true
       res.json({ checkedInTeams });
     } catch (error) {
@@ -338,8 +342,9 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   
   const registrationGetTotalFeesCollected = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const snapshot = await db.collection(req.body.teamTableName).get();
+      const snapshot = await db.collection(`teams${year}`).get();
   
       let totalFees = 0;
       snapshot.forEach(doc => {
@@ -355,8 +360,9 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   
   const registrationGetTotalRegistrationFeesCollected = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const snapshot = await db.collection(req.body.teamTableName).get();
+      const snapshot = await db.collection(`teams${year}`).get();
   
       let totalRegistrationFees = 0;
       snapshot.forEach(doc => {
@@ -372,8 +378,9 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   
   const registrationGetTotalAddOnFeesCollected = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const snapshot = await db.collection(req.body.teamTableName).get();
+      const snapshot = await db.collection(`teams${year}`).get();
   
       let totalAddOnFees = 0;
       snapshot.forEach(doc => {

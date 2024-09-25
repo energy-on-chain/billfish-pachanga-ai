@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { loadConfigForYear } from '../config/masterConfig';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import { useTheme } from "@mui/material/styles";
@@ -9,21 +12,17 @@ import PlaceholderCard from '../components/dashboard/PlaceholderCard';
 import './BasePage.css';
 import './DashboardPage.css';
 
-import {
-  CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
-  CONFIG_STYLING_BANNER_TEXT_COLOR,
-  CONFIG_STYLING_SECTION_BACKGROUND_COLOR,
-  CONFIG_STYLING_SECTION_TEXT_COLOR,
-  CONFIG_STYLING_H2_COLOR,
-} from '../config/stylingConfig';
-
-import {
-  CONFIG_DASHBOARD_UPCOMING_AND_ACTIVE_TOURNAMENT_DATA,
-  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA,
-} from '../config/dashboardConfig';
-
 function DashboardPage() {
+  // Get the year from URL params if available
+  const { year: yearFromParams } = useParams();
+  // Get query params
+  const [searchParams] = useSearchParams();
+  // Get the year from the query params
+  const yearFromSearch = searchParams.get('year');
+  // Use year from URL params if available, otherwise fallback to query params or current year
+  const year = yearFromParams || yearFromSearch || new Date().getFullYear();
 
+  const [configs, setConfigs] = useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Mobile: screen size smaller than 'sm'
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md')); // Tablet: screen size between 'sm' and 'md'
@@ -32,6 +31,7 @@ function DashboardPage() {
   let cardWidth;
   let cardHeight;
   let itemsPerRow;
+
   if (isMobile) {
     cardWidth = "100%";
     cardHeight = "575px";
@@ -45,6 +45,36 @@ function DashboardPage() {
     cardHeight = "575px";
     itemsPerRow = 4;
   }
+
+  useEffect(() => {
+    if (year) { // Only call loadConfigForYear if the year is defined
+      const loadConfigs = async () => {
+        const loadedConfig = await loadConfigForYear('2024'); // Dynamically load config for the given year
+        // const loadedConfig = await loadConfigForYear(year); // Dynamically load config for the given year
+        if (loadedConfig) {
+          setConfigs(loadedConfig);
+        }
+      };
+      loadConfigs();
+    }
+  }, [year]);
+
+  if (!configs) {
+    return <div>Loading...</div>; // Show a loading state while configs are being fetched
+  }
+
+  const {
+    CONFIG_DASHBOARD_UPCOMING_AND_ACTIVE_TOURNAMENT_DATA,
+    CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA
+  } = configs.dashboardConfig;
+
+  const {
+    CONFIG_STYLING_BANNER_BACKGROUND_COLOR,
+    CONFIG_STYLING_BANNER_TEXT_COLOR,
+    CONFIG_STYLING_SECTION_BACKGROUND_COLOR,
+    CONFIG_STYLING_SECTION_TEXT_COLOR,
+    CONFIG_STYLING_H2_COLOR
+  } = configs.stylingConfig;
 
   // Splits the tournament data into rows of cards
   const createRows = (data) => {

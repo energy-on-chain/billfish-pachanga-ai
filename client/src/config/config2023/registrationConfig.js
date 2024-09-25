@@ -3,15 +3,17 @@
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION: true,
-  CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS: "1735711200000",    // Wednesday, January 1st, 2025
+  CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS: "1686805200000",    // Thursday, June 15th 2023 at 00:00AM
+  // CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS: "1689570000000",    // Monday, 17-July-2023 at 00:00 AM
+  CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS: "1753074000000",    // Sunday, 21-July-2025 at 00:00 AM
   CONFIG_REGISTRATION_EARLYBIRD_DATE_STRING:
-    "Earlybird registration (before January 1st, 2025):",
-  CONFIG_REGISTRATION_EARLYBIRD_FEE: 50,
+    "Earlybird registration (before June 15th, 2023):",
+  CONFIG_REGISTRATION_EARLYBIRD_FEE: 2500,
   CONFIG_REGISTRATION_NORMAL_DATE_STRING:
-    "Normal registration (after January 1st, 2025):",
-  CONFIG_REGISTRATION_NORMAL_FEE: 60,
+    "Normal registration (after June 15th, 2023):",
+  CONFIG_REGISTRATION_NORMAL_FEE: 3000,
+  CONFIG_REGISTRATION_LINK_TO_TOURNAMENT_RULES: "https://www.billfishpachanga.com/rules/",
   CONFIG_REGISTRATION_PAST_TEAMS_TABLES_FOR_AUTOCOMPLETE_NAME_LIST: [
-    // "teams2024",
   ],
   CONFIG_REGISTRATION_HAS_DISCLAIMERS: true,
   CONFIG_REGISTRATION_DISCLAIMERS: {
@@ -20,15 +22,15 @@ module.exports = {
       "By entering this tournament participants agree to abide by all rules and decisions.",
       "All decisions made by the weigh master and/or tournament directors are final.",
     ],
-    // Refunds: [
-    //   "It is the intent of the tournament committee to refund 50% of entry fees if the tournament is cancelled.",
-    // ],
+    Refunds: [
+      "It is the intent of the tournament committee to refund 50% of entry fees if the tournament is cancelled.",
+    ],
   },
   CONFIG_REGISTRATION_PAID_ADD_ONS: {
-    // "Extra Wristbands": [
-    //   "Each entry comes with 6 free wristbands",
-    //   "Up to 12 extra wristbands can be purchased for $175 each",
-    // ],
+    "Extra Wristbands": [
+      "Each entry comes with 6 free wristbands",
+      "Up to 12 extra wristbands can be purchased for $175 each",
+    ],
   },
 
   CONFIG_REGISTRATION_ADDITIONAL_REQUIRED_STRING_FIELDS: [
@@ -59,10 +61,10 @@ module.exports = {
     // "Gender": ["Male", "Female"],
   },
   CONFIG_REGISTRATION_ADDITIONAL_NON_REQUIRED_IMAGE_FIELDS: [
-    // "Captain Photo"
+    "Boat Photo"
   ],
   CONFIG_REGISTRATION_ADDITIONAL_PAID_ADD_ON_FIELDS: {
-    // "Extra Wristbands": { price: 175, minimumQty: 0, maximumQty: 12 },
+    "Extra Wristbands": { price: 175, minimumQty: 0, maximumQty: 12 },
     // "T-shirts": { price: 20, minimumQty: 0, maximumQty: 99 },
   },
 };

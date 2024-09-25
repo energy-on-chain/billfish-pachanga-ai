@@ -10,11 +10,12 @@ dayjs.extend(timezone);
 exports.getBillfishPachangaTournamentGrandChampion = async (req, res) => {
   console.log('Fetching billfish pachanga tournament grand champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, numPlaces, isReport } = req.body;
 
     // Fetch all catches for the given year
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.get();
 
     if (snapshot.empty) {
@@ -83,11 +84,12 @@ exports.getBillfishPachangaTournamentGrandChampion = async (req, res) => {
 exports.getBillfishPachangaOverallBillfishChampion = async (req, res) => {
   console.log('Fetching billfish pachanga overall billfish champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, numPlaces, isReport } = req.body;
 
     // Fetch all catches for the given year and speciesType "Catch & Release"
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -152,11 +154,12 @@ exports.getBillfishPachangaOverallBillfishChampion = async (req, res) => {
 exports.getBillfishPachangaGrandSlams = async (req, res) => {
   console.log('Fetching billfish pachanga grand slams...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, numPlaces, isReport } = req.body;
 
     // Fetch all catches for the given year
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -247,6 +250,7 @@ exports.getBillfishPachangaGrandSlams = async (req, res) => {
 exports.getBillfishPachangaBillfishDayChampion = async (req, res) => {
   console.log('Fetching billfish pachanga billfish day champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, numPlaces, isReport, day } = req.body;
 
@@ -254,7 +258,7 @@ exports.getBillfishPachangaBillfishDayChampion = async (req, res) => {
     const dayString = new Date(day).toISOString().split('T')[0];
 
     // Fetch all catches for the given year and speciesType "Catch & Release" that match the given day
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
     if (snapshot.empty) {
@@ -325,11 +329,12 @@ exports.getBillfishPachangaBillfishDayChampion = async (req, res) => {
 exports.getBillfishPachangaBillfishSpeciesChampion = async (req, res) => {
   console.log('Fetching billfish pachanga billfish species champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, numPlaces, isReport, species } = req.body;
 
     // Fetch all catches for the given year and species
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('species', '==', species).get();
 
     if (snapshot.empty) {
@@ -394,11 +399,12 @@ exports.getBillfishPachangaBillfishSpeciesChampion = async (req, res) => {
 exports.getBillfishPachangaMeatfishSpeciesChampion = async (req, res) => {
   console.log('Fetching billfish pachanga meatfish species champion...');
   try {
+    const year = req.params.year;
     const db = getFirestore();
     const { catchYear, numPlaces, isReport, species } = req.body;
 
     // Fetch all catches for the given year and species
-    const catchesRef = db.collection(catchYear);
+    const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('species', '==', species).get();
 
     if (snapshot.empty) {

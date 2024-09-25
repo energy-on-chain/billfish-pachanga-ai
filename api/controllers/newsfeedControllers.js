@@ -13,11 +13,12 @@ const formatTimestamp = (timestamp) => {
 
 exports.getTypeCountDataForNewsfeedTable = async (req, res) => {
   console.log('In api/get_type_count_data_for_newsfeed_table...');
+  const year = req.params.year;
   const db = getFirestore();
   const catchYear = req.body.catchYear;
 
   try {
-    const snapshot = await db.collection(catchYear).get();
+    const snapshot = await db.collection(`catches${year}`).get();
     const typeCount = {};
 
     snapshot.forEach(doc => {
@@ -50,11 +51,12 @@ exports.getTypeCountDataForNewsfeedTable = async (req, res) => {
 
 exports.getSpeciesCountDataForNewsfeedTable = async (req, res) => {
   console.log('In api/get_species_count_data_for_newsfeed_table...');
+  const year = req.params.year;
   const db = getFirestore();
   const catchYear = req.body.catchYear;
 
   try {
-    const snapshot = await db.collection(catchYear).get();
+    const snapshot = await db.collection(`catches${year}`).get();
     const speciesCount = {};
 
     snapshot.forEach(doc => {
@@ -90,11 +92,12 @@ exports.getSpeciesCountDataForNewsfeedTable = async (req, res) => {
 
 exports.getTeamCountDataForNewsfeedTable = async (req, res) => {
   console.log('In api/get_team_count_data_for_newsfeed_table...');
+  const year = req.params.year;
   const db = getFirestore();
   const catchYear = req.body.catchYear;
 
   try {
-    const snapshot = await db.collection(catchYear).get();
+    const snapshot = await db.collection(`catches${year}`).get();
     const teamCount = {};
 
     snapshot.forEach(doc => {
@@ -127,11 +130,12 @@ exports.getTeamCountDataForNewsfeedTable = async (req, res) => {
 
 exports.getDateCountDataForNewsfeedTable = async (req, res) => {
   console.log('In api/get_date_count_data_for_newsfeed_table...');
+  const year = req.params.year;
   const db = getFirestore();
   const catchYear = req.body.catchYear;
 
   try {
-    const snapshot = await db.collection(catchYear).get();
+    const snapshot = await db.collection(`catches${year}`).get();
     const dateCount = {};
 
     snapshot.forEach(doc => {
@@ -168,6 +172,7 @@ exports.getDateCountDataForNewsfeedTable = async (req, res) => {
 
 exports.getEventDataForNewsfeedTable = async (req, res) => {
   console.log('In api/get_event_data_for_newsfeed_table...');
+  const year = req.params.year;
   const db = getFirestore();
   const catchYear = req.body.catchYear;
   const teamYear = req.body.teamsYear;
@@ -177,7 +182,7 @@ exports.getEventDataForNewsfeedTable = async (req, res) => {
     const eventArray = [];
 
     // Fetch Catch data
-    const catchSnapshot = await db.collection(catchYear).get();
+    const catchSnapshot = await db.collection(`catches${year}`).get();
     catchSnapshot.forEach(doc => {
       const data = doc.data();
       eventArray.push({
@@ -190,7 +195,7 @@ exports.getEventDataForNewsfeedTable = async (req, res) => {
     });
 
     // Fetch Team registration data
-    const teamSnapshot = await db.collection(teamYear).get();
+    const teamSnapshot = await db.collection(`teams${year}`).get();
     teamSnapshot.forEach(doc => {
       const data = doc.data();
       eventArray.push({
@@ -203,7 +208,7 @@ exports.getEventDataForNewsfeedTable = async (req, res) => {
     });
 
     // Fetch Announcement data
-    const announcementSnapshot = await db.collection(announcementYear).get();
+    const announcementSnapshot = await db.collection(`announcements${year}`).get();
     announcementSnapshot.forEach(doc => {
       const data = doc.data();
       

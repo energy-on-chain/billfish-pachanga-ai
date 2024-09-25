@@ -1,20 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
-
-import {
-  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  
-  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,
-} from '../config/generalConfig';
-
-import { 
-  CONFIG_LEADERBOARD_CATEGORIES 
-} from '../config/leaderboardConfig';
-
-import { 
-  CONFIG_POTS_CATEGORIES,
-} from '../config/potsConfig';
+import { loadConfigForYear } from '../config/masterConfig'; // Import the dynamic config loader
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -37,7 +24,7 @@ const formatCurrency = (value) => {
 
 const formatPlace = (num) => {
   const j = num % 10,
-        k = num % 100;
+    k = num % 100;
   if (j === 1 && k !== 11) {
     return `${num}st`;
   }
@@ -51,29 +38,29 @@ const formatPlace = (num) => {
 };
 
 export const generateAwardsReport = async (year, tournamentName) => {
-  const doc = new jsPDF('portrait'); // Changed to portrait
+  const doc = new jsPDF('portrait');
   const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
+
+  // Dynamically load the configuration for the year
+  const config = await loadConfigForYear(year);
 
   try {
     // Define environment
-    let apiUrl = null;
-    if (process.env.REACT_APP_NODE_ENV === "staging") {
-      apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-    } else if (process.env.REACT_APP_NODE_ENV === "production") {
-      apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
-    }
+    let apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
+      ? process.env.REACT_APP_SERVER_URL_STAGING
+      : process.env.REACT_APP_SERVER_URL_PRODUCTION;
 
     // Fetch leaderboard data
-    const leaderboardQueries = CONFIG_LEADERBOARD_CATEGORIES.map(item => ({
+    const leaderboardQueries = config.leaderboardConfig.CONFIG_LEADERBOARD_CATEGORIES.map(item => ({
       title: item.title,
       subtitle: item.subtitle || "",
       numPlaces: item.numPlaces,
       numTrophies: item.numTrophies,
       url: item.url,
       body: JSON.stringify({
-        catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
         numPlaces: item.numPlaces,
-        isReport: true,  // Fetch all rows for the report
+        isReport: true,
         ...(item.inputs && item.inputs.length > 0
           ? item.inputs.reduce((acc, input) => ({ ...acc, ...input }), {})
           : {})
@@ -82,26 +69,24 @@ export const generateAwardsReport = async (year, tournamentName) => {
       mobileColumns: item.mobileColumns
     }));
 
-    const leaderboardResults = await Promise.all(leaderboardQueries.map((query) => {
-      return fetch(`${apiUrl}/api/${query.url}`, {
+    const leaderboardResults = await Promise.all(leaderboardQueries.map(query => {
+      return fetch(`${apiUrl}/api/${year}/${query.url}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: query.body
-      }).then(r => r.json()).then((result) => {
-        return {
-          title: query.title,
-          subtitle: query.subtitle,
-          numTrophies: query.numTrophies,
-          rows: Object.values(result).filter(row => row.place <= query.numTrophies)
-        };
-      });
+      }).then(r => r.json()).then(result => ({
+        title: query.title,
+        subtitle: query.subtitle,
+        numTrophies: query.numTrophies,
+        rows: Object.values(result).filter(row => row.place <= query.numTrophies)
+      }));
     }));
 
     // Fetch pot data
-    const potQueries = CONFIG_POTS_CATEGORIES.map((item) => {
-      let bodyData = {
-        catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
-        potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+    const potQueries = config.potsConfig.CONFIG_POTS_CATEGORIES.map(item => {
+      const bodyData = {
+        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+        potYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
         isReport: true,
         title: item.title,
         subtitle: item.subtitle || "",
@@ -130,29 +115,29 @@ export const generateAwardsReport = async (year, tournamentName) => {
         mobileColumns: item.mobileColumns,
       };
     });
-    
-    const potResults = await Promise.all(potQueries.map((query) => {
-      return fetch(`${apiUrl}/api/${query.url}`, {
+
+    const potResults = await Promise.all(potQueries.map(query => {
+      return fetch(`${apiUrl}/api/${year}/${query.url}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: query.body
-      }).then(r => r.json()).then((result) => {
-        return {
-          title: query.title,
-          subtitle: query.subtitle,
-          rows: Object.values(result).filter(row => row.payout > 0)
-        };
-      });
+      }).then(r => r.json()).then(result => ({
+        title: query.title,
+        subtitle: query.subtitle,
+        rows: Object.values(result).filter(row => row.payout > 0)
+      }));
     }));
 
-    // Fetch all registered teams (Assuming there's an endpoint to fetch all teams)
-    const teamsResponse = await fetch(`${apiUrl}/api/admin_get_database_list`, {
+    // Fetch all registered teams
+    const teamsResponse = await fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ table: CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME }),
-    })
-    const teamData = await teamsResponse.json(); // Assuming this returns an array of team names
-    const allTeams = Object.values(teamData).map(team => team.teamName);
+      body: JSON.stringify({ tableName: config.generalConfig.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME })
+    });
+    const teamData = await teamsResponse.json();
+    const allTeams = Object.values(teamData).map(team => ({
+      teamName: team.teamName
+    }));
 
     // Combine leaderboard and pot data by team
     const teamAwards = {};
@@ -168,7 +153,7 @@ export const generateAwardsReport = async (year, tournamentName) => {
         }
         teamAwards[teamName].leaderboard.push({
           title: category.title,
-          place: formatPlace(row.place), // Format place
+          place: formatPlace(row.place),
         });
       });
     });
@@ -185,7 +170,7 @@ export const generateAwardsReport = async (year, tournamentName) => {
         }
         teamAwards[teamName].pot.push({
           title: category.title,
-          place: formatPlace(row.place), // Format place
+          place: formatPlace(row.place),
           payout: row.payout
         });
         teamAwards[teamName].totalPayout += row.payout;
@@ -194,8 +179,8 @@ export const generateAwardsReport = async (year, tournamentName) => {
 
     // Add any teams that didn't win any awards
     allTeams.forEach(team => {
-      if (!teamAwards[team]) {
-        teamAwards[team] = {
+      if (!teamAwards[team.teamName]) {
+        teamAwards[team.teamName] = {
           leaderboard: [],
           pot: [],
           totalPayout: 0,
@@ -214,67 +199,69 @@ export const generateAwardsReport = async (year, tournamentName) => {
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
 
-      // Ensure proper formatting for text, make sure to pass strings only
-      doc.text(`${team} - ${tournamentName} ${year}`, 10, 10, { maxWidth: doc.internal.pageSize.getWidth() - 20 });
-      doc.text(`Total Payout: ${formatCurrency(teamData.totalPayout)}`, 10, 18);
-      doc.text(`Report generated on ${currentDate}`, 10, 26);
-
-      // Leaderboard
-      if (teamData.leaderboard.length > 0) {
-        doc.setFontSize(14);
-        doc.text('Leaderboard Awards', 10, 34);
-
-        const leaderboardRows = teamData.leaderboard.map((achievement) => [
-          achievement.title,
-          achievement.place
-        ]);
-
-        doc.autoTable({
-          startY: 40,
-          head: [['Category', 'Place']],
-          body: leaderboardRows,
-          theme: 'striped',
-          styles: { fontSize: 10, halign: 'center', valign: 'middle', overflow: 'linebreak' },
-          headStyles: { fillColor: '#02133E', textColor: '#ffffff', halign: 'center' },
-        });
-      } else {
-        doc.setFontSize(14);
-        doc.text('No leaderboard finishes', 10, 40);
-      }
-
-      // Pot
-      if (teamData.pot.length > 0) {
-        // Sort pot data by payout in descending order
-        teamData.pot.sort((a, b) => b.payout - a.payout);
-
-        const startY = teamData.leaderboard.length > 0 ? doc.lastAutoTable.finalY + 10 : 50;
-        doc.setFontSize(14);
-        doc.text('Pot Awards', 10, startY);
-
-        const potRows = teamData.pot.map((achievement) => [
-          achievement.title,
-          achievement.place,
-          formatCurrency(achievement.payout)
-        ]);
-
-        doc.autoTable({
-          startY: startY + 6,
-          head: [['Category', 'Place', 'Payout']],
-          body: potRows,
-          theme: 'striped',
-          styles: { fontSize: 10, halign: 'center', valign: 'middle', overflow: 'linebreak' },
-          headStyles: { fillColor: '#02133E', textColor: '#ffffff', halign: 'center' },
-        });
-      } else {
-        const noPotY = teamData.leaderboard.length > 0 ? doc.lastAutoTable.finalY + 10 : 50;
-        doc.text('No pot winnings', 10, noPotY);
-      }
+      const startY = 10;
+      addTextAndTables(doc, team, teamData, tournamentName, year, currentDate, startY);
     });
 
     addPageNumbers(doc);
     doc.save(`Awards_${tournamentName}_${year}.pdf`);
   } catch (error) {
     console.error("Error generating awards report:", error);
+  }
+};
+
+// Helper function to add text and tables
+const addTextAndTables = (doc, team, teamData, tournamentName, year, currentDate, startY) => {
+  doc.text(`${team} - ${tournamentName} ${year}`, 10, startY);
+  doc.text(`Total Payout: ${formatCurrency(teamData.totalPayout)}`, 10, startY + 8);
+  doc.text(`Report generated on ${currentDate}`, 10, startY + 16);
+
+  // Leaderboard
+  if (teamData.leaderboard.length > 0) {
+    doc.setFontSize(14);
+    doc.text('Leaderboard Awards', 10, startY + 24);
+
+    const leaderboardRows = teamData.leaderboard.map(achievement => [
+      achievement.title,
+      achievement.place
+    ]);
+
+    doc.autoTable({
+      startY: startY + 30,
+      head: [['Category', 'Place']],
+      body: leaderboardRows,
+      theme: 'striped',
+      styles: { fontSize: 10, halign: 'center', valign: 'middle', overflow: 'linebreak' },
+      headStyles: { fillColor: '#02133E', textColor: '#ffffff', halign: 'center' }
+    });
+  } else {
+    doc.setFontSize(14);
+    doc.text('No leaderboard finishes', 10, startY + 30);
+  }
+
+  // Pot Awards
+  if (teamData.pot.length > 0) {
+    const potStartY = teamData.leaderboard.length > 0 ? doc.lastAutoTable.finalY + 10 : startY + 40;
+    doc.setFontSize(14);
+    doc.text('Pot Awards', 10, potStartY);
+
+    const potRows = teamData.pot.map(achievement => [
+      achievement.title,
+      achievement.place,
+      formatCurrency(achievement.payout)
+    ]);
+
+    doc.autoTable({
+      startY: potStartY + 6,
+      head: [['Category', 'Place', 'Payout']],
+      body: potRows,
+      theme: 'striped',
+      styles: { fontSize: 10, halign: 'center', valign: 'middle', overflow: 'linebreak' },
+      headStyles: { fillColor: '#02133E', textColor: '#ffffff', halign: 'center' }
+    });
+  } else {
+    const noPotY = teamData.leaderboard.length > 0 ? doc.lastAutoTable.finalY + 10 : startY + 40;
+    doc.text('No pot winnings', 10, noPotY);
   }
 };
 

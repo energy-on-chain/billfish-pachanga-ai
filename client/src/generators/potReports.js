@@ -1,15 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
-
-import {
-  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  
-  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-} from '../config/generalConfig';
-
-import { 
-  CONFIG_POTS_CATEGORIES,
-} from '../config/potsConfig';
+import { loadConfigForYear } from '../config/masterConfig';  // Dynamic config loader
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -30,12 +22,14 @@ const formatCurrency = (value) => {
   }).format(value);
 };
 
-export const generatePotReport = async (year, tournamentName) => {
+export const generatePotsReport = async (year, tournamentName) => {
   const doc = new jsPDF('landscape');
   const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
 
   try {
-    // Define environment
+    // Load dynamic config for the specific year
+    const config = await loadConfigForYear(year);
+
     let apiUrl = null;
     if (process.env.REACT_APP_NODE_ENV === "staging") {
       apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
@@ -43,11 +37,11 @@ export const generatePotReport = async (year, tournamentName) => {
       apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
     }
 
-    // Build queries for payouts
-    const queries = CONFIG_POTS_CATEGORIES.map((item) => {
+    // Build queries for payouts using dynamic config
+    const queries = config.potsConfig.CONFIG_POTS_CATEGORIES.map((item) => {
       let bodyData = {
-        catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
-        potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  // Dynamically loaded config
+        potYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,  // Dynamically loaded config
         isReport: true,
         title: item.title,
         subtitle: item.subtitle || "",
@@ -79,26 +73,22 @@ export const generatePotReport = async (year, tournamentName) => {
 
     // Fetch data for each pot category
     const results = await Promise.all(queries.map((query) => {
-      return fetch(`${apiUrl}/api/${query.url}`, {
+      return fetch(`${apiUrl}/api/${year}/${query.url}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: query.body
       }).then(r => r.json()).then((result) => {
-        var tempObject = {};
-        var tempRows = [];
-        Object.keys(result).map((catchKey, i) => {
-          let tempObject = { ...result[catchKey], id: i, catchId: catchKey };
-          tempRows.push(tempObject);
+        let tempRows = [];
+        Object.keys(result).forEach((catchKey, i) => {
+          tempRows.push({ ...result[catchKey], id: i, catchId: catchKey });
         });
-        tempObject = {
+        return {
           title: query.title,
           subtitle: query.subtitle,
           numPlaces: query.numPlaces,
           rows: tempRows,
           desktopColumns: query.desktopColumns,
-          mobileColumns: query.mobileColumns
         };
-        return tempObject;
       });
     }));
 
@@ -112,7 +102,7 @@ export const generatePotReport = async (year, tournamentName) => {
       doc.text(`Report generated on ${currentDate}`, 10, 18);
 
       // Calculate total payout
-      const totalPayout = result.rows.reduce((sum, row) => sum + row.payout, 0);
+      const totalPayout = result.rows.reduce((sum, row) => sum + (row.payout || 0), 0);
       doc.text(`Total Payout: ${formatCurrency(totalPayout)}`, 10, 26); // Display total payout
 
       const tableColumn = result.desktopColumns.map(column => column.headerName);
@@ -120,9 +110,9 @@ export const generatePotReport = async (year, tournamentName) => {
         return result.desktopColumns.map(column => {
           // Format the payout column as currency
           if (column.field === 'payout') {
-            return formatCurrency(row[column.field]);
+            return formatCurrency(row[column.field] || 0);
           }
-          return row[column.field];
+          return row[column.field] || 'N/A';
         });
       });
 

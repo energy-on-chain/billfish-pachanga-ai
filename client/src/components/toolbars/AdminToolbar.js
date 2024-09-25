@@ -9,18 +9,26 @@ import {
   GridToolbarExport,
   GridToolbarQuickFilter,
 } from '@mui/x-data-grid';
+import { useTheme, useMediaQuery } from '@mui/material';
 
 function AdminToolbar(props) {
   const { handleOpenAddModal, buttonLabel } = props;
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm')); // Check if screen size is mobile
 
   return (
     <GridToolbarContainer style={{ display: 'flex', justifyContent: 'space-between' }}>
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        {/* Align these items to the left */}
-        <GridToolbarColumnsButton />
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <GridToolbarExport />
+        {/* Conditionally show these buttons on tablet and desktop */}
+        {!isMobile && (
+          <>
+            <GridToolbarColumnsButton />
+            <GridToolbarFilterButton />
+            <GridToolbarDensitySelector />
+            <GridToolbarExport />
+          </>
+        )}
         <Button color="primary" startIcon={<AddIcon />} onClick={handleOpenAddModal}>
           {buttonLabel}
         </Button>
@@ -28,11 +36,9 @@ function AdminToolbar(props) {
       <div>
         {/* Align this item to the right */}
         <GridToolbarQuickFilter />
-
       </div>
     </GridToolbarContainer>
   );
 }
 
 export default AdminToolbar;
-

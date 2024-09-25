@@ -1,22 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, CircularProgress, FormControlLabel, Checkbox } from "@mui/material";
+import { useParams } from 'react-router-dom';
+import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, FormControlLabel, Checkbox, CircularProgress } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { toast } from 'react-toastify';
-
-import { 
-  CONFIG_POTS_BOARD_LIST,
-} from '../../config/potsConfig';
+import { loadConfigForYear } from '../../config/masterConfig';
 
 const EditPotModal = (props) => {
+  const { year } = useParams();
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false); // New state to track if form is submitted
   const [teamId, setTeamId] = useState();
   const [teamName, setTeamName] = useState();
   const [boardSelections, setBoardSelections] = useState([]);
+  const [config, setConfig] = useState(null);
 
   useEffect(() => {
-    console.log("In EditPotModal...");
+    const loadConfigs = async () => {
+      const loadedConfig = await loadConfigForYear(year);
+      if (loadedConfig) {
+        setConfig(loadedConfig);
+      }
+    };
+
+    loadConfigs();
+  }, [year]);
+
+  useEffect(() => {
     if (props.editInfo) {
-      console.log(props.editInfo);
       setTeamId(props.editInfo.teamId);
       setTeamName(props.editInfo.teamName);
       setBoardSelections(props.editInfo.boardSelections || []);
@@ -25,14 +36,16 @@ const EditPotModal = (props) => {
   }, [props.editInfo]);
 
   const handleClose = () => {
+    setIsSubmitting(false);
+    setIsSubmitted(false); // Reset after closing
     props.close();
-  }
+  };
 
   const delayRefresh = () => {
     setTimeout(() => {
       window.location.reload();
     }, 2000);
-  }
+  };
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
@@ -42,33 +55,33 @@ const EditPotModal = (props) => {
   };
 
   const validateUserInput = () => {
-
     const hasValidSelections = boardSelections.some(selection => selection.potList && selection.potList.length > 0);
     if (!hasValidSelections) {
       toast.warning("Please select at least one pot.");
       return false;
     }
-
     return true;
   };
 
   const handleFormSubmission = async () => {
     if (validateUserInput()) {
+
+      setIsSubmitting(true);
+      setIsSubmitted(true); // Set to true when submitting
+
       let apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
         ? process.env.REACT_APP_SERVER_URL_STAGING
         : process.env.REACT_APP_SERVER_URL_PRODUCTION;
 
       let formData = {
         potId: props.editInfo.potId,
-        potYear: props.potYear,  
+        potYear: props.potYear,
       };
 
-      // Add board selections
-      const allBoardSelections = CONFIG_POTS_BOARD_LIST.map((boardObj) => {
+      const allBoardSelections = config.potsConfig.CONFIG_POTS_BOARD_LIST.map((boardObj) => {
         const boardName = Object.keys(boardObj)[0];
         const selectedBoard = boardSelections.find(selection => selection.board === boardName);
-  
-        // If the board is selected, keep its data, otherwise add it with empty potList and totalFee 0
+
         return selectedBoard || {
           board: boardName,
           potList: [],
@@ -76,15 +89,14 @@ const EditPotModal = (props) => {
         };
       });
       formData["boardSelections"] = allBoardSelections;
-  
-      // Add total fees for each board
+
       allBoardSelections.forEach((selection) => {
         const boardFeeKey = `total${selection.board.replace(/ /g, '')}Fee`;
         formData[boardFeeKey] = selection.totalFee;
       });
 
       try {
-        const response = await fetch(`${apiUrl}/api/admin_edit_pot`, {
+        const response = await fetch(`${apiUrl}/api/${year}/admin_edit_pot`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
@@ -92,25 +104,29 @@ const EditPotModal = (props) => {
 
         if (response.ok) {
           toast.success('Pot entry updated successfully!');
-          delayRefresh();
+          delayRefresh(); // Trigger refresh
         } else {
           throw new Error('Error updating the pot entry.');
         }
       } catch (error) {
-        toast.error('Error updating pot entry.');
+        toast.error('Error while attempting to save pot entry to the database.');
+        setIsSubmitted(false); // Reset isSubmitted if there's an error
+        setIsSubmitting(false); // Enable the button again
       }
+    } else {
+      console.log('Input was not valid or there was an error');
+      setIsSubmitting(false); // Enable the button again
     }
   };
 
   const handleBoardSelection = (boardName, isSelected) => {
     const newSelections = [...boardSelections];
-    const pots = CONFIG_POTS_BOARD_LIST.find(board => board[boardName])[boardName];
+    const pots = config.potsConfig.CONFIG_POTS_BOARD_LIST.find(board => board[boardName])[boardName];
     const totalFee = pots.reduce((acc, pot) => acc + pot.amount, 0);
-  
+
     const currentBoardIndex = newSelections.findIndex(selection => selection.board === boardName);
-  
+
     if (isSelected) {
-      // If the board isn't selected yet, add all pots for the board
       if (currentBoardIndex === -1) {
         newSelections.push({
           board: boardName,
@@ -118,20 +134,18 @@ const EditPotModal = (props) => {
           totalFee,
         });
       } else {
-        // If the board is partially selected, add the remaining pots
         const currentBoard = newSelections[currentBoardIndex];
-        currentBoard.potList = pots.map(pot => pot.title); // Select all pots
+        currentBoard.potList = pots.map(pot => pot.title);
         currentBoard.totalFee = totalFee;
         newSelections[currentBoardIndex] = currentBoard;
       }
     } else {
-      // Unselect all pots for this board
       newSelections.splice(currentBoardIndex, 1);
     }
-  
+
     setBoardSelections(newSelections);
   };
-  
+
   const handlePotSelection = (boardName, potTitle, isSelected, potAmount) => {
     const newSelections = [...boardSelections];
     const currentBoardIndex = newSelections.findIndex(selection => selection.board === boardName);
@@ -140,7 +154,7 @@ const EditPotModal = (props) => {
       potList: [],
       totalFee: 0,
     };
-  
+
     if (isSelected) {
       if (!currentBoard.potList.includes(potTitle)) {
         currentBoard.potList.push(potTitle);
@@ -149,22 +163,24 @@ const EditPotModal = (props) => {
     } else {
       currentBoard.potList = currentBoard.potList.filter(pot => pot !== potTitle);
       currentBoard.totalFee -= potAmount;
-  
-      // If all pots are unselected, remove the board from the selections
+
       if (currentBoard.potList.length === 0) {
         newSelections.splice(currentBoardIndex, 1);
       }
     }
-  
+
     if (currentBoard.potList.length > 0 && currentBoardIndex === -1) {
       newSelections.push(currentBoard);
     } else if (currentBoard.potList.length > 0) {
       newSelections[currentBoardIndex] = currentBoard;
     }
-  
+
     setBoardSelections(newSelections);
   };
 
+  if (!config) {
+    return <CircularProgress />;
+  }
 
   return (
     <Dialog open={props.status} onClose={handleClose} fullWidth maxWidth="sm">
@@ -177,7 +193,7 @@ const EditPotModal = (props) => {
             <InputLabel id="team-name-label"><strong>Team Name:</strong>  {teamName}</InputLabel>
 
             {/* Select pots */}
-            {CONFIG_POTS_BOARD_LIST.map((boardObj, boardIndex) => {
+            {config.potsConfig.CONFIG_POTS_BOARD_LIST.map((boardObj, boardIndex) => {
               const boardName = Object.keys(boardObj)[0];
               const pots = boardObj[boardName];
               const isBoardSelected = boardSelections.find(selection => selection.board === boardName);
@@ -226,7 +242,20 @@ const EditPotModal = (props) => {
               ))}
             </div>
             
-            <Button variant="contained" color="primary" onClick={handleFormSubmission}>Update Pot Info</Button>
+            {!isSubmitted ? ( // Conditionally render button only if not submitted
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleFormSubmission}
+                disabled={isSubmitting} // Disable button when submitting
+                startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+              >
+                {isSubmitting ? "Submitting..." : "Update Pot Info"}
+              </Button>
+            ) : (
+              <h3>Submitted!</h3>
+            )}
+
           </Stack>
         </DialogContent>
       </form>

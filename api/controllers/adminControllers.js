@@ -24,30 +24,24 @@ const flattenObjectWithPrefix = (obj, prefix = '') => {
 module.exports = ({redisClient}) => {
 
   // General
-  const adminGetDatabaseCount = async (req, res) => {
-    console.log('In api/admin_get_database_count...');
-  
-    try {
-      let counter = 0;
-      const db = getFirestore();
-      const snapshot = await db.collection(req.body.tableName).get();
-      snapshot.forEach(() => counter++);
-      res.json({ "count": counter === 0 ? "TBD" : counter });
-    } catch (e) {
-      res.status(500).json({ error: e.message });
-    }
-  };
-
   const adminGetDatabaseList = async (req, res) => {
     console.log('In api/admin_get_database_list...');
   
     try {
+
+      const { year } = req.params;
+      let tableName = req.body.tableName;
+      console.log('initial tableName', tableName);
+      tableName = tableName.replace(/\d+$/, year);
+      console.log('final tableName', tableName);
+
       const db = getFirestore();
       const documentObject = {};
-      const snapshot = await db.collection(req.body.table).get();
+      const snapshot = await db.collection(tableName).get();
       snapshot.forEach(document => {
         documentObject[document.id] = document.data();
       });
+      console.log(documentObject)
       res.send(documentObject);
     } catch (e) {
       res.status(500).json({ error: e.message });
@@ -59,9 +53,18 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_add_team...');
   
     try {
+      const year = req.params.year;
       // Parse the metaDataObject from the request body
       console.log(req.body.metaDataObject);
       const parsedMetaData = JSON.parse(req.body.metaDataObject);
+
+      // Duplicate check
+      const db = getFirestore();
+      const { teamName } = parsedMetaData;  // Get the team name from metadata
+      const teamQuerySnapshot = await db.collection(`teams${year}`).where('teamName', '==', teamName).get();
+      if (!teamQuerySnapshot.empty) {
+        return res.status(400).json({ error: `Team with name "${teamName}" already exists.` });
+      }
 
       // Flatten specific fields
       const flattenedMetaData = {
@@ -107,7 +110,8 @@ module.exports = ({redisClient}) => {
       // Prepare metadata for Firebase
       const metadata = {
         ...parsedMetaData,
-        imageBuffers
+        imageBuffers, 
+        year: `${year}`
       };
 
       // Save the metadata to Firebase and handle images in Google Cloud Storage
@@ -221,7 +225,7 @@ module.exports = ({redisClient}) => {
     delete finalMetadata.addOnProperties;
 
     // Add the team document and get the document reference
-    const teamDocRef = await db.collection(metadata.teamTableName).add({
+    const teamDocRef = await db.collection(`teams${metadata.year}`).add({
       teamName: finalMetadata.teamName,
       registrationFee: finalMetadata.registrationFee,
       hasCheckedIn: finalMetadata.hasCheckedIn,
@@ -245,16 +249,23 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_edit_team...');
   
     try {
+      const { year } = req.params;
       const db = getFirestore();
       const bucket = getStorage().bucket();
       const { potYear, catchYear, teamId, teamYear, teamName, teamEmail, teamPhone } = req.body;
       let { hasCheckedIn } = req.body;
 
+      // Duplicate check
+      // const teamQuerySnapshot = await db.collection(`teams${year}`).where('teamName', '==', teamName).get();
+      // if (!teamQuerySnapshot.empty) {
+      //   return res.status(400).json({ error: `Team with name "${teamName}" already exists.` });
+      // }
+
       // Convert hasCheckedIn back to a boolean
       hasCheckedIn = (hasCheckedIn === 'true');
   
       // Get the team document
-      const teamDocRef = db.collection(teamYear).doc(teamId);
+      const teamDocRef = db.collection(`teams${year}`).doc(teamId);
       const teamDoc = await teamDocRef.get();
   
       if (!teamDoc.exists) {
@@ -332,7 +343,7 @@ module.exports = ({redisClient}) => {
       });
 
       // Update the team name in all matching catches
-      const catchQuerySnapshot = await db.collection(catchYear).where('teamId', '==', teamId).get();
+      const catchQuerySnapshot = await db.collection(`catches${year}`).where('teamId', '==', teamId).get();
       const catchUpdatePromises = [];
       catchQuerySnapshot.forEach(doc => {
         catchUpdatePromises.push(doc.ref.update({ teamName: teamName }));
@@ -340,7 +351,7 @@ module.exports = ({redisClient}) => {
       await Promise.all(catchUpdatePromises);
 
       // Update the team name in all matching pots
-      const potQuerySnapshot = await db.collection(potYear).where('teamId', '==', teamId).get();
+      const potQuerySnapshot = await db.collection(`pots${year}`).where('teamId', '==', teamId).get();
       const potUpdatePromises = [];
       potQuerySnapshot.forEach(doc => {
         potUpdatePromises.push(doc.ref.update({ teamName }));
@@ -360,6 +371,7 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_delete_team...');
   
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const bucket = getStorage().bucket();
       const teamId = req.body.teamId;
@@ -368,7 +380,7 @@ module.exports = ({redisClient}) => {
       const potYear = req.body.potYear;
   
       // Get the team document
-      const teamDocRef = db.collection(teamYear).doc(teamId);
+      const teamDocRef = db.collection(`teams${year}`).doc(teamId);
       const teamDoc = await teamDocRef.get();
   
       if (!teamDoc.exists) {
@@ -401,7 +413,7 @@ module.exports = ({redisClient}) => {
       console.log(`Team ${teamId} deleted successfully from ${teamYear} collection`);
   
       // Delete all catches with the specified teamId
-      const catchQuerySnapshot = await db.collection(catchYear).where('teamId', '==', teamId).get();
+      const catchQuerySnapshot = await db.collection(`catches${year}`).where('teamId', '==', teamId).get();
       const catchDeletePromises = [];
       catchQuerySnapshot.forEach(doc => {
         catchDeletePromises.push(doc.ref.delete());
@@ -410,7 +422,7 @@ module.exports = ({redisClient}) => {
       console.log(`All catches with teamId ${teamId} deleted successfully from ${catchYear} collection`);
 
       // Delete all pots with the specified teamId
-      const potQuerySnapshot = await db.collection(potYear).where('teamId', '==', teamId).get();
+      const potQuerySnapshot = await db.collection(`pots${year}`).where('teamId', '==', teamId).get();
       const potDeletePromises = [];
       potQuerySnapshot.forEach(doc => {
         potDeletePromises.push(doc.ref.delete());
@@ -431,8 +443,9 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_get_registered_team_data_for_report...');
   
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const teamCollection = db.collection(req.body.teamYear);  // Assuming the team year is passed in the request body
+      const teamCollection = db.collection(`teams${year}`);  // Assuming the team year is passed in the request body
       const snapshot = await teamCollection.get();
       
       const teams = {};
@@ -448,28 +461,11 @@ module.exports = ({redisClient}) => {
   };
   
   // Catches
-  const adminGetCatches = async (req, res) => {
-    console.log('In api/admin_get_catches...');
-  
-    try {
-      const documentObject = {};
-      const db = getFirestore();
-      const catchesRef = db.collection(req.body.catchYear);
-      const snapshot = await catchesRef.get();
-      snapshot.forEach(document => {
-        documentObject[document.id] = document.data();
-      });
-      res.send(documentObject);
-    } catch (e) {
-      console.log('Error getting collection of catches', e);
-      res.status(500).json({ error: e.message });
-    }
-  };
-
   const adminAddCatch = async (req, res) => {
     console.log('In api/admin_add_catch...');
     
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const bucket = getStorage().bucket();
   
@@ -502,7 +498,7 @@ module.exports = ({redisClient}) => {
         }
   
         // Save catch data to Firestore, including the catch photo URL if applicable
-        const catchDocRef = await db.collection(req.body.catchYear).add({
+        const catchDocRef = await db.collection(`catches${year}`).add({
           teamId: item.teamId,
           teamName: item.teamName,
           speciesType: item.speciesType,
@@ -534,11 +530,12 @@ module.exports = ({redisClient}) => {
     console.log('req.files', req.files);
   
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const bucket = getStorage().bucket();
   
       // Get the current catch document
-      const catchDocRef = db.collection(req.body.catchYear).doc(req.body.catchId);
+      const catchDocRef = db.collection(`catches${year}`).doc(req.body.catchId);
       const catchDoc = await catchDocRef.get();
   
       if (!catchDoc.exists) {
@@ -603,13 +600,14 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_delete_catch...');
   
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const bucket = getStorage().bucket();
       const catchId = req.body.catchId;
       const catchYear = req.body.catchYear;
   
       // Get the team document
-      const catchDocRef = db.collection(catchYear).doc(catchId);
+      const catchDocRef = db.collection(`catches${year}`).doc(catchId);
       const catchDoc = await catchDocRef.get();
 
       if (!catchDoc.exists) {
@@ -653,11 +651,12 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_get_total_catch_count...');
     
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const catchYear = req.body.catchYear;
       
       // Get all documents in the collection
-      const snapshot = await db.collection(catchYear).get();
+      const snapshot = await db.collection(`catches${year}`).get();
       
       const totalFishCount = snapshot.size;  // Total number of documents
       res.status(200).json({ totalFishCount });
@@ -672,12 +671,13 @@ module.exports = ({redisClient}) => {
     console.log('In api/admin_get_total_catch_count_by_species...');
     
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const catchYear = req.body.catchYear;
       const speciesType = req.body.speciesType;  // Pass the species type
   
       // Query to get documents where the speciesType matches
-      const snapshot = await db.collection(catchYear).where("speciesType", "==", speciesType).get();
+      const snapshot = await db.collection(`catches${year}`).where("speciesType", "==", speciesType).get();
       
       const speciesCount = snapshot.size;  // Number of matching documents
       res.status(200).json({ speciesCount });
@@ -691,10 +691,11 @@ module.exports = ({redisClient}) => {
   // Announcements
   const adminAddAnnouncement = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const { newAnnouncement, announcementYear } = req.body;
   
-      const announcementRef = await db.collection(announcementYear).add(newAnnouncement);
+      const announcementRef = await db.collection(`announcements${year}`).add(newAnnouncement);
       await announcementRef.update({ announcementId: announcementRef.id });
   
       res.status(200).json({ message: 'Announcement added successfully' });
@@ -707,7 +708,7 @@ module.exports = ({redisClient}) => {
   const adminEditAnnouncement = async (req, res) => {
     try {
       console.log("Request Body:", req.body); // Log the request body to verify it's correct
-  
+      const year = req.params.year;
       const db = getFirestore();
       const { updatedAnnouncement, announcementYear } = req.body;
       const { announcementId } = updatedAnnouncement;
@@ -716,7 +717,7 @@ module.exports = ({redisClient}) => {
         return res.status(400).json({ error: 'Announcement ID is missing' });
       }
   
-      const announcementRef = db.collection(announcementYear).doc(announcementId);
+      const announcementRef = db.collection(`announcements${year}`).doc(announcementId);
       await announcementRef.update(updatedAnnouncement);
   
       res.status(200).json({ message: 'Announcement updated successfully' });
@@ -728,10 +729,11 @@ module.exports = ({redisClient}) => {
   
   const adminDeleteAnnouncement = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const { announcementId, announcementYear } = req.body;
   
-      const announcementRef = db.collection(announcementYear).doc(announcementId);
+      const announcementRef = db.collection(`announcements${year}`).doc(announcementId);
       await announcementRef.delete();
   
       res.status(200).json({ message: 'Announcement deleted successfully' });
@@ -744,6 +746,7 @@ module.exports = ({redisClient}) => {
   // Pots
   const adminAddPot = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const { potYear, teamId, teamName, boardSelections } = req.body;
   
@@ -771,7 +774,7 @@ module.exports = ({redisClient}) => {
       };
   
       // Add pot data to Firestore
-      const potDocRef = await db.collection(potYear).add(potData);
+      const potDocRef = await db.collection(`pots${year}`).add(potData);
   
       // Update document with potId
       await potDocRef.update({ potId: potDocRef.id });
@@ -787,8 +790,9 @@ module.exports = ({redisClient}) => {
     const { potYear, teamId } = req.body;
   
     try {
+      const year = req.params.year;
       const db = getFirestore();
-      const snapshot = await db.collection(potYear).where('teamId', '==', teamId).get();
+      const snapshot = await db.collection(`pots${year}`).where('teamId', '==', teamId).get();
   
       if (!snapshot.empty) {
         return res.status(200).json({ exists: true });
@@ -803,11 +807,12 @@ module.exports = ({redisClient}) => {
   
   const adminEditPot = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const { potYear, potId, teamId, teamName, boardSelections } = req.body;
   
       // Find the pot entry by teamId and update it
-      const potRef = db.collection(potYear).doc(potId);
+      const potRef = db.collection(`pots${year}`).doc(potId);
       await potRef.update({
         boardSelections,
         totalPotFee: boardSelections.reduce((acc, selection) => acc + selection.totalFee, 0),
@@ -828,11 +833,12 @@ module.exports = ({redisClient}) => {
   
   const adminDeletePot = async (req, res) => {
     try {
+      const year = req.params.year;
       const db = getFirestore();
       const { potId, potYear } = req.body;
   
       // Remove the document
-      await db.collection(potYear).doc(potId).delete();
+      await db.collection(`pots${year}`).doc(potId).delete();
   
       res.status(200).json({ message: 'Pot entry deleted successfully' });
     } catch (error) {
@@ -842,12 +848,10 @@ module.exports = ({redisClient}) => {
   }; 
 
   return {
-    adminGetDatabaseCount,
     adminGetDatabaseList,
     adminAddTeam,
     adminEditTeam,
     adminDeleteTeam,
-    adminGetCatches,
     adminAddCatch,
     adminEditCatch,
     adminDeleteCatch,

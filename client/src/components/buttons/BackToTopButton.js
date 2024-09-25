@@ -1,40 +1,64 @@
 import React, { useEffect, useState } from 'react';
-import { FaAngleDoubleUp } from 'react-icons/fa'
-
+import { FaAngleDoubleUp } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
+import { loadConfigForYear } from '../../config/masterConfig';
 import './BackToTopButton.css';
 
-import {
-  CONFIG_STYLING_FOOTER_SECTION_DIVIDER_HIGHLIGHT_COLOR,
-} from '../../config/stylingConfig';
-
 function BackToTopButton() {
+  const { year } = useParams();
+  const [BackToTopButtonVisible, setBackToTopButtonVisible] = useState(false);
+  const [configs, setConfigs] = useState(null);
 
-  const [BackToTopButton, setBackToTopButton] = useState(false);
-  
+  useEffect(() => {
+    const loadConfigs = async () => {
+      const config = await loadConfigForYear(year);
+      if (config) {
+        setConfigs(config);
+      }
+    };
+    loadConfigs();
+  }, [year]);
+
   const scrollUp = () => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
-    })
-  }
+    });
+  };
 
   useEffect(() => {
-    window.addEventListener("scroll", () => {
-      if(window.scrollY > 100) {
-        setBackToTopButton(true);
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setBackToTopButtonVisible(true);
       } else {
-        setBackToTopButton(false);
+        setBackToTopButtonVisible(false);
       }
-    })
-  }, [])
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  if (!configs) {
+    return null; // Don't render anything until the configs are loaded
+  }
+
+  const { CONFIG_STYLING_FOOTER_SECTION_DIVIDER_HIGHLIGHT_COLOR } = configs.stylingConfig;
 
   return (
     <div>
-      <a onClick={scrollUp} >
-        <i style={{color: CONFIG_STYLING_FOOTER_SECTION_DIVIDER_HIGHLIGHT_COLOR}} ><FaAngleDoubleUp size={30}/></i>
-      </a>
+      {BackToTopButtonVisible && (
+        <a onClick={scrollUp}>
+          <i style={{color: CONFIG_STYLING_FOOTER_SECTION_DIVIDER_HIGHLIGHT_COLOR}}>
+            <FaAngleDoubleUp size={30} />
+          </i>
+        </a>
+      )}
     </div>
-    );
+  );
 }
 
 export default BackToTopButton;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
@@ -24,31 +25,12 @@ import AdminToolbar from '../toolbars/AdminToolbar';
 
 import defaultNoImage from '../../images/defaultNoImage.png';
 
-import {
-  CONFIG_GENERAL_YEAR,
-  CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,    // Firebase
-  CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
-  CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
-  CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-  CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,
-} from '../../config/generalConfig';
-
-import { 
-  CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
-  CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
-  CONFIG_STYLING_ADMIN_TOOLBAR_TEXT_COLOR,
-  CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR,
-  CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
-} from '../../config/stylingConfig';
-
-import { 
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
-  CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS,
-} from '../../config/adminConfig';
+import { loadConfigForYear } from '../../config/masterConfig';
 
 function CrudTable(props) {
+
+  const { year } = useParams();
+  const [config, setConfig] = useState(null);
 
   // STATE - STYLING
   const [buttonLabel, setButtonLabel] = useState();
@@ -69,27 +51,52 @@ function CrudTable(props) {
 
   // INITIALIZE
   useEffect(() => {
+    fetchConfigAndData(); // Load config and fetch data
+  }, [year]);  // add tabName as a dependency to re-fetch when the tab changes
 
-    let rawColumns;
-    if (props.tableType === "Teams") {
-      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
-    } else if (props.tableType === "Catches") {
-      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
-    } else if (props.tableType === "Announcements") {
-      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
-    } else if (props.tableType === "Pots") {
-      rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
-    }
-
-    loadAllData(rawColumns);
-
-  }, []);
-
-  const loadAllData = async (rawColumns) => {
+  const fetchConfigAndData = async () => {
 
     try {
 
+      const loadedConfig = await loadConfigForYear(year); // Load the config dynamically
+      setConfig(loadedConfig); // Set the loaded configuration
+
+      const {
+        generalConfig: {
+          CONFIG_GENERAL_YEAR,
+          CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME,    // Firebase
+          CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+          CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME,
+          CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
+          CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME,
+        },
+        stylingConfig: {
+          CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
+          CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
+          CONFIG_STYLING_ADMIN_TOOLBAR_TEXT_COLOR,
+          CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR,
+          CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
+        },
+        adminConfig: {
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS,
+          CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS,
+        },
+      } = loadedConfig;
+
       // Parse columns
+      let rawColumns;
+      if (props.tableType === "Teams") {
+        rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_TEAMS;
+      } else if (props.tableType === "Catches") {
+        rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES;
+      } else if (props.tableType === "Announcements") {
+        rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS;
+      } else if (props.tableType === "Pots") {
+        rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
+      }
+
       const updatedColumnList = rawColumns.map(columnObject => {
         const updatedColumn = { ...columnObject };
 
@@ -250,12 +257,12 @@ function CrudTable(props) {
           status={isDeleteModalOpen} 
           open={openDeleteModal} 
           close={closeDeleteModal} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (deleteInfo && props.tableType === "Catches") && 
@@ -266,12 +273,12 @@ function CrudTable(props) {
           status={isDeleteModalOpen} 
           open={openDeleteModal} 
           close={closeDeleteModal} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (deleteInfo && props.tableType === "Announcements") && 
@@ -282,12 +289,12 @@ function CrudTable(props) {
           status={isDeleteModalOpen} 
           open={openDeleteModal} 
           close={closeDeleteModal} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (deleteInfo && props.tableType === "Pots") && 
@@ -298,12 +305,12 @@ function CrudTable(props) {
           status={isDeleteModalOpen} 
           open={openDeleteModal} 
           close={closeDeleteModal} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
 
@@ -318,12 +325,12 @@ function CrudTable(props) {
           close={closeEditModal} 
           startDate={props.startDate}
           endDate={props.endDate} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (editInfo && props.tableType === "Catches") && 
@@ -336,12 +343,12 @@ function CrudTable(props) {
           close={closeEditModal} 
           startDate={props.startDate}
           endDate={props.endDate} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (editInfo && props.tableType === "Announcements") && 
@@ -354,12 +361,12 @@ function CrudTable(props) {
           close={closeEditModal} 
           startDate={props.startDate}
           endDate={props.endDate} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
       { (editInfo && props.tableType === "Pots") && 
@@ -372,12 +379,12 @@ function CrudTable(props) {
           close={closeEditModal} 
           startDate={props.startDate}
           endDate={props.endDate} 
-          year={CONFIG_GENERAL_YEAR} 
-          teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-          catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-          potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-          auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-          announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+          year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+          teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+          catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+          potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+          auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+          announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
         />
       }
 
@@ -394,12 +401,12 @@ function CrudTable(props) {
             status={props.addStatus} 
             open={props.openAddModal} 
             close={props.closeAddModal}  
-            year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+            teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
         { (props.tableType === "Catches") && 
@@ -412,12 +419,12 @@ function CrudTable(props) {
             status={props.addStatus} 
             open={props.openAddModal} 
             close={props.closeAddModal}  
-            year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+            teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
         { (props.tableType === "Announcements") && 
@@ -430,12 +437,12 @@ function CrudTable(props) {
             status={props.addStatus} 
             open={props.openAddModal} 
             close={props.closeAddModal}  
-            year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+            teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
         { (props.tableType === "Pots") && 
@@ -448,12 +455,12 @@ function CrudTable(props) {
             status={props.addStatus} 
             open={props.openAddModal} 
             close={props.closeAddModal}  
-            year={CONFIG_GENERAL_YEAR} 
-            teamYear={CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
-            catchYear={CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
-            potYear={CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
-            auctionYear={CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
-            announcementYear={CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
+            year={config?.generalConfig?.CONFIG_GENERAL_YEAR} 
+            teamYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME} 
+            catchYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME} 
+            potYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME} 
+            auctionYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_AUCTION_TABLE_NAME} 
+            announcementYear={config?.generalConfig?.CONFIG_GENERAL_FIREBASE_ANNOUNCEMENTS_TABLE_NAME}
           />
         }
 
@@ -468,28 +475,28 @@ function CrudTable(props) {
             overflowX: scroll,
             '.MuiDataGrid-toolbarContainer .MuiButton-root': {
                 backgroundColor: 'white', // Button background color
-                color: CONFIG_STYLING_ADMIN_TOOLBAR_TEXT_COLOR,
+                color: config?.stylingConfig?.CONFIG_STYLING_ADMIN_TOOLBAR_TEXT_COLOR,
                 '&:hover': {
                   // backgroundColor: '#115293', // Hover background color
                 },
               },
               // Other customizations
               '.MuiDataGrid-toolbarContainer': {
-                color: CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
+                color: config?.stylingConfig?.CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
               },
             '.MuiDataGrid-row.Mui-odd': {
               backgroundColor: 'rgba(234, 234, 234)',
             },
             '.MuiDataGrid-columnHeaderTitleContainer': {
               fontSize: '16px',
-              backgroundColor: CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
-              color: CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
+              backgroundColor: config?.stylingConfig?.CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
+              color: config?.stylingConfig?.CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
               ".MuiSvgIcon-root": {
-                color: CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
+                color: config?.stylingConfig?.CONFIG_STYLING_TABLE_HEADER_TEXT_COLOR,
               }
             },
             '& .super-app-theme--header': {
-              backgroundColor: CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
+              backgroundColor: config?.stylingConfig?.CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR,
               color: 'white',
               fontSize: '16px',
             },
@@ -497,7 +504,7 @@ function CrudTable(props) {
               justifyContent: 'center',
               textAlign: 'center',
               fontSize: '16px',
-              color: CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
+              color: config?.stylingConfig?.CONFIG_STYLING_TABLE_CELL_TEXT_COLOR,
             },
           }}
           initialState={initialState}
