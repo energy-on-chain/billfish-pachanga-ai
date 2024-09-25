@@ -115,6 +115,7 @@ const allowedOrigins = [
   serverUrl,
   'https://www.billfishpachanga.customtournamentsolutions.com',
   'https://billfishpachanga.customtournamentsolutions.com',
+  'https://billfish-pachanga-staging-29e5a342e094.herokuapp.com',
   'https://billfish-pachanga-production-ae9f4209fe66.herokuapp.com'
 ];
 // app.use(cors({ origin: clientUrl }));
