@@ -9,8 +9,8 @@ module.exports = {
     "2023 Tournament: 36 teams / 114 billfish / $654,750 total pot",
   ],
   CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT: [
-    "Billfish",
-    // "Catch & Release",
+    // "Billfish",
+    "Catch & Release",
     // "Meatfish",
     // "Bass",
     // "Flyfishing",

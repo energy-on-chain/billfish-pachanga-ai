@@ -217,7 +217,6 @@ function LeaderboardPage() {
                 {!tournamentHasStarted && (
                   <div>
                     <br />
-                    <br />
                     <h2 style={{ color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>
                       The {config?.generalConfig?.CONFIG_GENERAL_YEAR} tournament will begin soon!
                     </h2>

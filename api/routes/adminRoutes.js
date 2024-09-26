@@ -5,6 +5,7 @@ module.exports = ({ redisClient }) => {
   const router = express.Router();
   const {
     adminGetDatabaseList,
+    adminGetOldTeamNameList,
     adminAddTeam,
     adminEditTeam,
     adminDeleteTeam,
@@ -25,6 +26,7 @@ module.exports = ({ redisClient }) => {
   } = require('../controllers/adminControllers')({ redisClient });
 
   router.post('/api/:year/admin_get_database_list', adminGetDatabaseList);
+  router.post('/api/admin_get_old_team_name_list', adminGetOldTeamNameList);
   router.post('/api/:year/admin_add_team', upload.fields([
     { name: 'requiredImageUploads', maxCount: 10 },
     { name: 'imageUploads', maxCount: 10 }

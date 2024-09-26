@@ -502,6 +502,7 @@ function PotsPage() {
             {/* Holdover message if there are no catches yet */}
             { (!tournamentHasStarted && displaySelection === "Payouts") &&
               <div>
+                <br/>
                 <h2 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>The {year} tournament will begin soon!</h2>
               </div>
             }

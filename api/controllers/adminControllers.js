@@ -48,6 +48,27 @@ module.exports = ({redisClient}) => {
     }
   };
   
+  const adminGetOldTeamNameList = async (req, res) => {
+    console.log('In api/admin_get_old_team_name_list...');
+  
+    try {
+
+      let tableName = req.body.tableName;
+      console.log('tableName', tableName);
+
+      const db = getFirestore();
+      const documentObject = {};
+      const snapshot = await db.collection(tableName).get();
+      snapshot.forEach(document => {
+        documentObject[document.id] = document.data();
+      });
+      console.log(documentObject)
+      res.send(documentObject);
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  };
+  
   // Teams
   const adminAddTeam = async (req, res) => {
     console.log('In api/admin_add_team...');
@@ -849,6 +870,7 @@ module.exports = ({redisClient}) => {
 
   return {
     adminGetDatabaseList,
+    adminGetOldTeamNameList,
     adminAddTeam,
     adminEditTeam,
     adminDeleteTeam,

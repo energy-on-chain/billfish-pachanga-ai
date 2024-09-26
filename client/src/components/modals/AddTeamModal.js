@@ -112,7 +112,8 @@ const AddTeamModal = (props) => {
   
           // Loop through each table in the list and fetch data
           for (const tableName of CONFIG_REGISTRATION_PAST_TEAMS_TABLES_FOR_AUTOCOMPLETE_NAME_LIST) {
-            const response = await fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {
+            let parsedYear = year.replace("teams", "");
+            const response = await fetch(`${apiUrl}/api/admin_get_old_team_name_list`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -133,6 +134,8 @@ const AddTeamModal = (props) => {
             });
           }
   
+          console.log('Existing team name list for autocomplete:');
+          console.log(tempNameList);
           // Once all tables are fetched, update the state with the combined list
           setTeamNameOptions(tempNameList);
   
