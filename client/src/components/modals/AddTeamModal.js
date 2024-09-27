@@ -112,25 +112,24 @@ const AddTeamModal = (props) => {
   
           // Loop through each table in the list and fetch data
           for (const tableName of CONFIG_REGISTRATION_PAST_TEAMS_TABLES_FOR_AUTOCOMPLETE_NAME_LIST) {
-            let parsedYear = year.replace("teams", "");
             const response = await fetch(`${apiUrl}/api/admin_get_old_team_name_list`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
               },
-              body: JSON.stringify({ tableName })  // Send the tableName in the request body
+              body: JSON.stringify({ tableName: tableName })  // Send the tableName in the request body
             });
             
             const data = await response.json();
             
             // Map the response data to the appropriate format
             Object.keys(data).forEach((teamKey) => {
-              let tempNameObject = {
-                teamKey: teamKey,
-                teamData: data[teamKey],
-                label: data[teamKey].teamName // Assuming the team name is stored as 'teamName'
-              };
-              tempNameList.push(tempNameObject);  // Accumulate team names in tempNameList
+              // let tempNameObject = {
+              //   teamKey: teamKey,
+              //   teamData: data[teamKey],
+              //   label: data[teamKey].teamName // Assuming the team name is stored as 'teamName'
+              // };
+              tempNameList.push(data[teamKey].teamName);  // Accumulate team names in tempNameList
             });
           }
   
