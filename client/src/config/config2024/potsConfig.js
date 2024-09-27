@@ -1002,7 +1002,7 @@ module.exports = {
     
     
     
-    Captain & Mate Pots
+    // Captain & Mate Pots
     { 
       title: "Captain Pot", 
       subtitle: "",
