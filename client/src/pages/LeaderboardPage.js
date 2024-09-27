@@ -231,6 +231,7 @@ function LeaderboardPage() {
                     </div>
                   ) : (
                     <div>
+                      <br/>
                       {resultArray.map(result => {
                         if (result.rows.length > 0) {
                           return (
@@ -260,7 +261,10 @@ function LeaderboardPage() {
                       <h1>Loading...</h1>
                     </div>
                   ) : (
-                    <Carousel results={resultArray} />
+                    <div>
+                      <br/>
+                      <Carousel results={resultArray} />
+                    </div>
                   )
                 )}
 
@@ -273,6 +277,7 @@ function LeaderboardPage() {
                   ) : (
                     <div>
                       <div className="select-div">
+                        <br/>
                         <Select
                           labelId="select-category"
                           id="select-category"
