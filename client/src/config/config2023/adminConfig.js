@@ -323,7 +323,6 @@ module.exports = {
     //   align: "center",
     // },
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES: [
     {
       field: "catchId",
@@ -548,7 +547,6 @@ module.exports = {
     //   align: "center",
     // },
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS: [
     {
       field: "announcementId",
@@ -651,7 +649,6 @@ module.exports = {
       align: "center",
     },    
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS: [
     {
       field: "potId",

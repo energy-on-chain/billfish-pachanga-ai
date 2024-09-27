@@ -61,11 +61,10 @@ module.exports = {
     // "Gender": ["Male", "Female"],
   },
   CONFIG_REGISTRATION_ADDITIONAL_NON_REQUIRED_IMAGE_FIELDS: [
-    // "Photo of Boat"
+    "Boat Photo"
   ],
   CONFIG_REGISTRATION_ADDITIONAL_PAID_ADD_ON_FIELDS: {
     "Extra Wristbands": { price: 175, minimumQty: 0, maximumQty: 12 },
     // "T-shirts": { price: 20, minimumQty: 0, maximumQty: 99 },
   },
 };
-

@@ -237,27 +237,27 @@ module.exports = {
       align: "center",
     },
     // Images
-    // {
-    //   field: "Team Photo",
-    //   headerName: "Team Photo",
-    //   type: "image",
-    //   isEditable: true,
-    //   isRequired: false,
-    //   isVisible: false,
-    //   flex: 2,
-    //   width: 200,
-    //   valueFormatter: null,
-    //   isId: false,
-    //   isCurrency: false,
-    //   isPhoneNumber: true,
-    //   isEmail: false,
-    //   isDateTime: false,
-    //   isImage: true,
-    //   isAddOnCharge: false,
-    //   headerClassName: "super-app-theme--header",
-    //   headerAlign: "center",
-    //   align: "center",
-    // },
+    {
+      field: "Boat Photo",
+      headerName: "Boat Photo",
+      type: "image",
+      isEditable: true,
+      isRequired: false,
+      isVisible: true,
+      flex: 2,
+      width: 200,
+      valueFormatter: null,
+      isId: false,
+      isCurrency: false,
+      isPhoneNumber: true,
+      isEmail: false,
+      isDateTime: false,
+      isImage: true,
+      isAddOnCharge: false,
+      headerClassName: "super-app-theme--header",
+      headerAlign: "center",
+      align: "center",
+    },
     // {
     //   field: "Captain Photo",
     //   headerName: "Captain Photo",
@@ -323,7 +323,6 @@ module.exports = {
     //   align: "center",
     // },
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES: [
     {
       field: "catchId",
@@ -548,7 +547,6 @@ module.exports = {
     //   align: "center",
     // },
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS: [
     {
       field: "announcementId",
@@ -651,7 +649,6 @@ module.exports = {
       align: "center",
     },    
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS: [
     {
       field: "potId",

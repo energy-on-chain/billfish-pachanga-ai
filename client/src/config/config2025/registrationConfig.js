@@ -69,8 +69,7 @@ module.exports = {
     "Boat Photo"
   ],
   CONFIG_REGISTRATION_ADDITIONAL_PAID_ADD_ON_FIELDS: {
-    "Extra Wristbands": { price: 175, minimumQty: 0, maximumQty: 12 },
+    // "Extra Wristbands": { price: 175, minimumQty: 0, maximumQty: 12 },
     // "T-shirts": { price: 20, minimumQty: 0, maximumQty: 99 },
   },
 };
-

@@ -240,12 +240,12 @@ module.exports = {
     },
     // Images
     {
-      field: "Team Photo",
-      headerName: "Team Photo",
+      field: "Boat Photo",
+      headerName: "Boat Photo",
       type: "image",
       isEditable: true,
       isRequired: false,
-      isVisible: false,
+      isVisible: true,
       flex: 2,
       width: 200,
       valueFormatter: null,
@@ -325,7 +325,6 @@ module.exports = {
     //   align: "center",
     // },
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_CATCHES: [
     {
       field: "catchId",
@@ -550,7 +549,6 @@ module.exports = {
     //   align: "center",
     // },
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_ANNOUNCEMENTS: [
     {
       field: "announcementId",
@@ -653,7 +651,6 @@ module.exports = {
       align: "center",
     },    
   ],
-
   CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS: [
     {
       field: "potId",
