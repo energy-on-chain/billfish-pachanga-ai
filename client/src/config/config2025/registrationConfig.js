@@ -16,7 +16,7 @@ module.exports = {
   // CONFIG_REGISTRATION_NORMAL_FEE: 3500,
   CONFIG_REGISTRATION_LINK_TO_TOURNAMENT_RULES: "https://www.billfishpachanga.com/rules/",
   CONFIG_REGISTRATION_PAST_TEAMS_TABLES_FOR_AUTOCOMPLETE_NAME_LIST: [
-    "teams2023",
+    // "teams2023",
     "teams2024",
   ],
   CONFIG_REGISTRATION_HAS_DISCLAIMERS: true,
