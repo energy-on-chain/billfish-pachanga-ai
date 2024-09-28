@@ -72,8 +72,8 @@ function HomePage() {
     } = configs.generalConfig;
 
     const {
-      CONFIG_LEADERBOARD_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS,
-    } = configs.leaderboardConfig;
+      CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS,
+    } = configs.registrationConfig;
 
     const apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
       ? process.env.REACT_APP_SERVER_URL_STAGING
@@ -81,7 +81,7 @@ function HomePage() {
 
     // Check if the current time is past the cutoff, and disable registration if so
     const currentTime = new Date().getTime();
-    if (currentTime > CONFIG_LEADERBOARD_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS) {
+    if (currentTime > CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS) {
       setIsRegistrationDisabled(true); // Disable the registration button
     }
 
