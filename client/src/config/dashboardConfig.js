@@ -26,7 +26,7 @@ module.exports = {
     {
       logo: './BillfishPachangaLogo2025.png',
       title: "Billfish Pachanga 2025",
-      dates: "Dates Coming Soon!",
+      dates: "July 16th - 19th 2025",
       home: "/2025/home",
       register: "/2025/register",
       leaderboard: "/2025/leaderboard",
