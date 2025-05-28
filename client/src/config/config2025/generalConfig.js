@@ -2,7 +2,6 @@
 // GENERAL SETTINGS /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
-
   // VISUAL
   CONFIG_GENERAL_TOURNAMENT_NAME: "Billfish Pachanga",
   CONFIG_GENERAL_YEAR: "2025",
@@ -21,7 +20,7 @@ module.exports = {
     "https://www.billfishpachanga.com/rules/",
   CONFIG_GENERAL_INFO_LINK_OBJECT: {
     "Tournament Site": "https://www.billfishpachanga.com/",
-    "Rules": "https://www.billfishpachanga.com/rules/",
+    Rules: "https://www.billfishpachanga.com/rules/",
   },
   CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT: {
     Register: "/2025/register",
@@ -38,13 +37,15 @@ module.exports = {
   CONFIG_GENERAL_CONTACT_FOOTER_LOCATION_STRING: "New Orleans, LA - Austin, TX", // Contact info
   CONFIG_GENERAL_CONTACT_FOOTER_PHONE_STRING: "Phone / Text: (630) 991-3012",
   CONFIG_GENERAL_CONTACT_FOOTER_EMAIL_STRING:
-    "Email: info@customtournamentsolutions.com",
+    "Email: support@customtournamentsolutions.com",
   CONFIG_GENERAL_CONTACT_FOOTER_COMPANY_COPYRIGHT_STRING:
     " Custom Tournament Solutions, 2023-Present, All Rights Reserved",
   CONFIG_GENERAL_CONTACT_INFO_ADMIN_NAME_1: "Matt Hartigan",
   CONFIG_GENERAL_CONTACT_INFO_ADMIN_NAME_2: "Cody Craig",
-  CONFIG_GENERAL_CONTACT_INFO_ADMIN_EMAIL_1: "matthew@deepwaterdigital.tech",
-  CONFIG_GENERAL_CONTACT_INFO_ADMIN_EMAIL_2: "cody@arrowheadecology.com",
+  CONFIG_GENERAL_CONTACT_INFO_ADMIN_EMAIL_1:
+    "matthew@customtournamentsolutions.com",
+  CONFIG_GENERAL_CONTACT_INFO_ADMIN_EMAIL_2:
+    "cody@customtournamentsolutions.com",
 
   // FIREBASE
   CONFIG_GENERAL_FIREBASE_TEAMS_TABLE_NAME: "teams2025", // Firebase
