@@ -152,167 +152,225 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
   };  
 
   const registrationWebhook = async (req, res) => {
-    console.log('In api/registrationWebhook...');
+      console.log('=== WEBHOOK START ===');
+      console.log('Timestamp:', new Date().toISOString());
 
-    const payload = req.rawBody.toString();
-    const sig = req.headers['stripe-signature'];
+      const payload = req.rawBody.toString();
+      const sig = req.headers['stripe-signature'];
 
-    let event;
-    try {
-        event = stripe.webhooks.constructEvent(payload, sig, webhookSecret);
-        console.log('Successfully created webhook event!');
-    } catch (err) {
-        console.log(err);
-        return res.status(400).send(`Error while attempting to create webhook event: ${err.message}`);
-    }
+      let event;
+      try {
+          event = stripe.webhooks.constructEvent(payload, sig, webhookSecret);
+          console.log('? Successfully created webhook event!');
+          console.log('Event type:', event.type);
+      } catch (err) {
+          console.error('? Webhook signature verification failed:', err.message);
+          return res.status(400).send(`Error while attempting to create webhook event: ${err.message}`);
+      }
 
-    // Send an immediate response to Stripe
-    res.status(200).end();
+      // Send an immediate response to Stripe
+      res.status(200).end();
 
-    if (event.type === 'checkout.session.completed') {
-        const metadataKey = event.data.object.metadata.metadataKey;
+      if (event.type === 'checkout.session.completed') {
+          const metadataKey = event.data.object.metadata.metadataKey;
+          console.log('?? Processing checkout.session.completed for metadataKey:', metadataKey);
+          console.log('?? Amount total:', event.data.object.amount_total);
+          console.log('?? Customer email:', event.data.object.customer_details?.email);
 
-        // Retrieve metadata from Redis
-        const storedMetadata = await redisClient.get(metadataKey);
-        const metadata = JSON.parse(storedMetadata);
+          try {
+              // Step 1: Retrieve metadata from Redis
+              console.log('?? Attempting to retrieve metadata from Redis...');
+              const storedMetadata = await redisClient.get(metadataKey);
+              
+              if (!storedMetadata) {
+                  console.error('? No metadata found in Redis for key:', metadataKey);
+                  return;
+              }
 
-        // Perform Firestore operations asynchronously
-        processFirestore(metadata, event.data.object).catch(error => {
-            console.log("Error while trying to write to Firestore: ", error);
-        });
+              console.log('? Retrieved metadata from Redis successfully');
+              const metadata = JSON.parse(storedMetadata);
+              console.log('?? Metadata team name:', metadata.teamName);
 
-        // Optionally clear the stored metadata in Redis after processing
-        await redisClient.del(metadataKey);
-    }
+              // Step 2: Process Firestore operations
+              console.log('?? Starting Firestore operations...');
+              await processFirestore(metadata, event.data.object);
+              console.log('? Successfully processed Firestore operations');
+
+              // Step 3: Clear Redis
+              console.log('?? Clearing metadata from Redis...');
+              await redisClient.del(metadataKey);
+              console.log('? Cleared metadata from Redis');
+
+              console.log('?? WEBHOOK COMPLETED SUCCESSFULLY');
+
+          } catch (error) {
+              console.error("? ERROR in webhook processing:");
+              console.error("Error name:", error.name);
+              console.error("Error message:", error.message);
+              console.error("Error stack:", error.stack);
+              console.error("Error code:", error.code);
+              
+              // Don't delete the Redis key if there was an error, so we can retry
+              console.log('?? Keeping Redis data for potential retry due to error');
+          }
+      }
+
+      console.log('=== WEBHOOK END ===');
   };
 
   const processFirestore = async (metadata, stripeEventData) => {
-    console.log('In processFirestore() function inside registrationWebhook() creating a new team registration record in firebase...');
-
-    const db = getFirestore();
-    const bucket = getStorage().bucket();
-
-    console.log('Metadata:', metadata);
-
-    const customerDetails = stripeEventData.customer_details || {};
-    const email = customerDetails.email || null;
-    const name = customerDetails.name || null;
-    const phone = customerDetails.phone || null;
-
-    if (!email) {
-        throw new Error("Customer email is missing in the Stripe event data.");
-    }
-
-    // Combine addOnProperties and addOnQuantities and add costOfPurchase
-    const combinedAddOns = {};
-    for (const [addOn, properties] of Object.entries(metadata.addOnProperties)) {
-        const quantityPurchased = metadata.addOnQuantities[addOn] || 0;
-        combinedAddOns[addOn] = {
-            ...properties,
-            quantityPurchased,
-            costOfPurchase: quantityPurchased * properties.price, // Calculate cost of purchase
-        };
-    }
-
-    // Flatten required and non-required fields
-    const flattenedFields = {
-        ...metadata.requiredStringFields,
-        ...metadata.requiredIntFields,
-        ...metadata.requiredBooleanFields,
-        ...metadata.requiredDropdownFields,
-        ...metadata.nonRequiredStringFields,
-        ...metadata.nonRequiredIntFields,
-        ...metadata.nonRequiredBooleanFields,
-        ...metadata.nonRequiredDropdownFields,
-    };
-
-    // Handle image uploads using imported field names
-    const requiredImageFields = {};
-    const nonRequiredImageFields = {};
-
-    // Handle required image uploads
-    console.log('metadata.imageBuffers:', metadata.imageBuffers)
-    for (const [originalname, fileData] of Object.entries(metadata.imageBuffers)) {
-      const buffer = Buffer.from(fileData.buffer, 'base64');
-      const sanitizedFilename = originalname.replace(/\s+/g, '-');
-      const filename = `${uuidv4()}-${sanitizedFilename}`;
-      const fileUpload = bucket.file(filename);
+      console.log('?? === FIRESTORE PROCESSING START ===');
 
       try {
-          await fileUpload.save(buffer, {
-              metadata: {
-                  contentType: fileData.mimetype,
-              },
-          });
+          // Step 1: Initialize Firebase services
+          console.log('?? Initializing Firebase services...');
+          const db = getFirestore();
+          const bucket = getStorage().bucket();
+          console.log('? Firebase services initialized');
 
-          const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+          // Step 2: Extract customer details
+          console.log('?? Extracting customer details...');
+          const customerDetails = stripeEventData.customer_details || {};
+          const email = customerDetails.email || null;
+          const name = customerDetails.name || null;
+          const phone = customerDetails.phone || null;
 
-          // Determine if the image is required or non-required based on fieldname
-          if (fileData.fieldname === 'requiredImageUploads') {
-              requiredImageFields[originalname] = publicUrl;
-              console.log(`Stored required image: ${originalname} at URL: ${publicUrl}`);
-          } else {
-              nonRequiredImageFields[originalname] = publicUrl;
-              console.log(`Stored non-required image: ${originalname} at URL: ${publicUrl}`);
+          if (!email) {
+              throw new Error("Customer email is missing in the Stripe event data.");
           }
+          console.log('? Customer details extracted:', { email, name, phone });
+
+          // Step 3: Process add-ons
+          console.log('?? Processing add-ons...');
+          const combinedAddOns = {};
+          if (metadata.addOnProperties) {
+              for (const [addOn, properties] of Object.entries(metadata.addOnProperties)) {
+                  const quantityPurchased = metadata.addOnQuantities?.[addOn] || 0;
+                  combinedAddOns[addOn] = {
+                      ...properties,
+                      quantityPurchased,
+                      costOfPurchase: quantityPurchased * properties.price,
+                  };
+              }
+          }
+          console.log('? Add-ons processed:', Object.keys(combinedAddOns));
+
+          // Step 4: Flatten fields
+          console.log('?? Flattening form fields...');
+          const flattenedFields = {
+              ...metadata.requiredStringFields,
+              ...metadata.requiredIntFields,
+              ...metadata.requiredBooleanFields,
+              ...metadata.requiredDropdownFields,
+              ...metadata.nonRequiredStringFields,
+              ...metadata.nonRequiredIntFields,
+              ...metadata.nonRequiredBooleanFields,
+              ...metadata.nonRequiredDropdownFields,
+          };
+          console.log('? Fields flattened, count:', Object.keys(flattenedFields).length);
+
+          // Step 5: Process images
+          console.log('??? Processing image uploads...');
+          const requiredImageFields = {};
+          const nonRequiredImageFields = {};
+
+          if (metadata.imageBuffers && Object.keys(metadata.imageBuffers).length > 0) {
+              console.log('?? Found', Object.keys(metadata.imageBuffers).length, 'images to process');
+              
+              for (const [originalname, fileData] of Object.entries(metadata.imageBuffers)) {
+                  console.log('?? Uploading image:', originalname);
+                  
+                  try {
+                      const buffer = Buffer.from(fileData.buffer, 'base64');
+                      const sanitizedFilename = originalname.replace(/\s+/g, '-');
+                      const filename = `${uuidv4()}-${sanitizedFilename}`;
+                      const fileUpload = bucket.file(filename);
+
+                      await fileUpload.save(buffer, {
+                          metadata: {
+                              contentType: fileData.mimetype,
+                          },
+                      });
+
+                      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+
+                      if (fileData.fieldname === 'requiredImageUploads') {
+                          requiredImageFields[originalname] = publicUrl;
+                      } else {
+                          nonRequiredImageFields[originalname] = publicUrl;
+                      }
+
+                      console.log('? Image uploaded successfully:', originalname);
+                  } catch (imageError) {
+                      console.error('? Error uploading image:', originalname, imageError.message);
+                      throw new Error(`Image upload failed for ${originalname}: ${imageError.message}`);
+                  }
+              }
+          } else {
+              console.log('?? No images to process');
+          }
+
+          // Step 6: Prepare final metadata
+          console.log('?? Preparing final metadata...');
+          const finalMetadata = {
+              ...flattenedFields,
+              ...metadata,
+          };
+
+          // Add image URLs
+          Object.assign(finalMetadata, requiredImageFields, nonRequiredImageFields);
+
+          // Add add-on data
+          Object.assign(finalMetadata, combinedAddOns);
+
+          // Clean up unwanted fields
+          const fieldsToDelete = [
+              'requiredStringFields', 'requiredIntFields', 'requiredBooleanFields', 'requiredDropdownFields',
+              'nonRequiredStringFields', 'nonRequiredIntFields', 'nonRequiredBooleanFields', 'nonRequiredDropdownFields',
+              'imageBuffers', 'addOnQuantities', 'teamTableName', 'addOnProperties'
+          ];
+          
+          fieldsToDelete.forEach(field => delete finalMetadata[field]);
+          console.log('? Metadata prepared');
+
+          // Step 7: Save to Firestore
+          console.log('?? Saving to Firestore...');
+          const teamData = {
+              teamName: finalMetadata.teamName,
+              registrationFee: finalMetadata.registrationFee,
+              totalFeePaidAtCheckout: stripeEventData.amount_total / 100,
+              hasCheckedIn: finalMetadata.hasCheckedIn || false,
+              isEarlybird: finalMetadata.isEarlybird || false,
+              registrationTimestampInLocalTime: new Date().toLocaleString(),
+              teamEmail: email,
+              teamCardholderName: name,
+              teamPhone: phone,
+              teamPaymentStatus: stripeEventData.payment_status,
+              ...finalMetadata,
+          };
+
+          console.log('??? Attempting to write to collection: teams' + finalMetadata.year);
+          const teamDocRef = await db.collection(`teams${finalMetadata.year}`).add(teamData);
+          console.log('? Document created with ID:', teamDocRef.id);
+
+          // Step 8: Update with teamId
+          console.log('?? Updating document with teamId...');
+          await teamDocRef.update({ teamId: teamDocRef.id });
+          console.log('? Document updated with teamId');
+
+          console.log('?? FIRESTORE PROCESSING COMPLETED SUCCESSFULLY');
+
       } catch (error) {
-          console.error(`Error storing image ${originalname}:`, error);
+          console.error('? FIRESTORE PROCESSING ERROR:');
+          console.error('Error name:', error.name);
+          console.error('Error message:', error.message);
+          console.error('Error stack:', error.stack);
+          console.error('Error code:', error.code);
+          
+          // Re-throw the error to be caught by the webhook handler
+          throw error;
       }
-    }
-
-    // Prepare final metadata without nested objects and without imageBuffers
-    const finalMetadata = {
-        ...flattenedFields,
-        ...metadata, // This still includes non-nested properties like teamTableName, teamName, etc.
-    };
-
-    // Separate each required and non-required image field into its own field
-    for (const [imageName, imageUrl] of Object.entries(requiredImageFields)) {
-      finalMetadata[imageName] = imageUrl;
-    }
-
-    for (const [imageName, imageUrl] of Object.entries(nonRequiredImageFields)) {
-      finalMetadata[imageName] = imageUrl;
-    }
-
-    // Separate each addOnCharge into its own field
-    for (const [addOn, addOnData] of Object.entries(combinedAddOns)) {
-      finalMetadata[addOn] = addOnData;
-    }
-
-    // Exclude original `required...`, `nonRequired...`, `imageBuffers`, and `addOnQuantities`
-    delete finalMetadata.requiredStringFields;
-    delete finalMetadata.requiredIntFields;
-    delete finalMetadata.requiredBooleanFields;
-    delete finalMetadata.requiredDropdownFields;
-    delete finalMetadata.nonRequiredStringFields;
-    delete finalMetadata.nonRequiredIntFields;
-    delete finalMetadata.nonRequiredBooleanFields;
-    delete finalMetadata.nonRequiredDropdownFields;
-    delete finalMetadata.imageBuffers;
-    delete finalMetadata.addOnQuantities;
-    delete finalMetadata.teamTableName;
-    delete finalMetadata.addOnProperties;
-
-    // Add the team document and get the document reference
-    const teamDocRef = await db.collection(`teams${finalMetadata.year}`).add({
-        teamName: finalMetadata.teamName,
-        registrationFee: finalMetadata.registrationFee,
-        hasCheckedIn: finalMetadata.hasCheckedIn,
-        isEarlybird: finalMetadata.isEarlybird,
-        registrationTimestampInLocalTime: new Date().toLocaleString(),
-        teamEmail: email,
-        teamCardholderName: name,
-        teamPhone: phone,
-        teamPaymentStatus: stripeEventData.payment_status,
-        ...finalMetadata,  // Save all additional fields including flattened fields and image URLs
-    });
-
-    // Now add the teamId using the newly created doc number in firebase
-    await teamDocRef.update({ teamId: teamDocRef.id });
-
-    console.log('Successfully saved a new team registration record in firebase');
-};
+  };
 
   const registrationGetNumberOfRegisteredTeams = async (req, res) => {
     try {

@@ -57,7 +57,7 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
   stripe = require("stripe")(process.env.REACT_APP_STRIPE_PRIVATE_KEY_TESTING);
   webhookSecret = process.env.REACT_APP_STRIPE_WEBHOOK_SECRET_KEY_TESTING;
 
-  redisHost: process.env.REACT_APP_CLIENT_URL_STAGING;    // session
+  redisHost = process.env.REACT_APP_CLIENT_URL_STAGING;    // session
   sessionSecret = process.env.REACT_APP_SESSION_SECRET_KEY_STAGING;   
 
 } else if (process.env.REACT_APP_NODE_ENV === "production") {
@@ -85,7 +85,7 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
   stripe = require("stripe")(process.env.REACT_APP_STRIPE_PRIVATE_KEY_PRODUCTION);
   webhookSecret = process.env.REACT_APP_STRIPE_WEBHOOK_SECRET_KEY_PRODUCTION;
 
-  redisHost: process.env.REACT_APP_CLIENT_URL_PRODUCTION;    // session
+  redisHost = process.env.REACT_APP_CLIENT_URL_PRODUCTION;    // session
   sessionSecret = process.env.REACT_APP_SESSION_SECRET_KEY_PRODUCTION;  
 
 } else {
