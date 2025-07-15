@@ -16,8 +16,9 @@ client/data
 /node_modules
 
 # google credentials (FIXME)
-# billfish-pachanga-2024-prod-f2137b19898a.json
-# billfish-pachanga-2024-staging-6d8062fd0da0.json
+billfish-pachanga-2024-prod-f2137b19898a.json
+billfish-pachanga-2024-staging-6d8062fd0da0.json
+scripts/backups/
 
 # misc
 *.env

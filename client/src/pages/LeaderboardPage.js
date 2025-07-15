@@ -209,8 +209,8 @@ function LeaderboardPage() {
                     <h3 className="timestamp-text" style={{ color: config?.stylingConfig?.CONFIG_STYLING_LEADERBOARD_TIMESTAMP_TEXT_COLOR }}>
                       <em>{timestamp}</em>
                     </h3>
-                    <h3 className="timestamp-text" style={{color: red}}><em>For information only.</em></h3>
-                    <h3 className="timestamp-text" style={{color: red}}><em>Official results can only be certified by the tournament committee.</em></h3>
+                    <h3 className="timestamp-text" style={{color: "red"}}><em>For information only.</em></h3>
+                    <h3 className="timestamp-text" style={{color: "red"}}><em>Official results can only be certified by the tournament committee.</em></h3>
                     <br/>
                   </div>
                 )}

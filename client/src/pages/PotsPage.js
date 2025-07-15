@@ -460,8 +460,8 @@ function PotsPage() {
                   <br/>
                   <h1 style={{ fontSize: '30px', marginBottom: '20px', color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR }}>Total Pot Value: {formatCurrency(totalGrossPot)}</h1>
                   <h3 className="timestamp-text" style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TIMESTAMP_TEXT_COLOR}}><em>{timestamp}</em></h3>
-                  <h3 className="timestamp-text" style={{color: red}}><em>For information only.</em></h3>
-                  <h3 className="timestamp-text" style={{color: red}}><em>Official results can only be certified by the tournament committee.</em></h3>
+                  <h3 className="timestamp-text" style={{color: "red"}}><em>For information only.</em></h3>
+                  <h3 className="timestamp-text" style={{color: "red"}}><em>Official results can only be certified by the tournament committee.</em></h3>
                 </div>
               ) : (
                 <div>
