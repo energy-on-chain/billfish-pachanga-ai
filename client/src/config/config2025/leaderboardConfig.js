@@ -85,7 +85,7 @@ module.exports = {
       numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_day_champion",     
       inputs: [
-        {day: "2024-07-18"}
+        {day: "2025-07-17"}
       ],
       desktopColumns: [
         { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
@@ -107,7 +107,7 @@ module.exports = {
       numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_day_champion",     
       inputs: [
-        {day: "2024-07-19"}
+        {day: "2025-07-18"}
       ],
       desktopColumns: [
         { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
@@ -129,7 +129,7 @@ module.exports = {
       numTrophies: 3, 
       url: "get_billfish_pachanga_billfish_day_champion",     
       inputs: [
-        {day: "2024-07-20"}
+        {day: "2025-07-19"}
       ],
       desktopColumns: [
         { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
