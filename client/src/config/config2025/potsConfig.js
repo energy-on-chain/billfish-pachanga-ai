@@ -878,8 +878,10 @@ module.exports = {
       entryAmount: 1500,
       tournamentCut: 0.08,
       payoutStructure: {
-        1: 0.7,
-        2: 0.3,
+        // 1: 0.7, FIXME
+        // 2: 0.3, FIXME
+        1: 1.0,
+        2: 0.0,
         3: 0.0,
         4: 0.0,
         5: 0.0,
@@ -942,8 +944,10 @@ module.exports = {
       entryAmount: 1000,
       tournamentCut: 0.08,
       payoutStructure: {
-        1: 0.7,
-        2: 0.3,
+        // 1: 0.7, FIXME
+        // 2: 0.3, FIXME
+        1: 1.0,
+        2: 0.0,
         3: 0.0,
         4: 0.0,
         5: 0.0,
