@@ -127,9 +127,9 @@ function PotsPage() {
         setIsPreliminaryResults(false);
       };
 
-      const apiUrl = process.env.REACT_APP_NODE_ENV === "production"
-      ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-      : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === "production"
+      ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+      : import.meta.env.VITE_SERVER_URL_STAGING;
 
       // Fetch pot config overrides from Firestore (via admin API)
       let potConfigOverrides = {};

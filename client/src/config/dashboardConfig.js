@@ -3,24 +3,24 @@
 /////////////////////////////////////////////////////////////////////////////
 module.exports = {
   firebaseStagingConfig: {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_STAGING,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_STAGING,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_STAGING,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY_STAGING,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN_STAGING,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID_STAGING,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET_STAGING,
     messagingSenderId:
-      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_STAGING,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID_STAGING,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_STAGING,
+      import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID_STAGING,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID_STAGING,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID_STAGING,
   },
   firebaseProductionConfig: {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_PRODUCTION,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_PRODUCTION,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY_PRODUCTION,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN_PRODUCTION,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID_PRODUCTION,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET_PRODUCTION,
     messagingSenderId:
-      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID_PRODUCTION,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_PRODUCTION,
+      import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID_PRODUCTION,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID_PRODUCTION,
   },
   CONFIG_DASHBOARD_UPCOMING_AND_ACTIVE_TOURNAMENT_DATA: [
     {

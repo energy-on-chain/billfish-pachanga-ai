@@ -75,9 +75,9 @@ function HomePage() {
       CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS,
     } = configs.registrationConfig;
 
-    const apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
-      ? process.env.REACT_APP_SERVER_URL_STAGING
-      : process.env.REACT_APP_SERVER_URL_PRODUCTION;
+    const apiUrl = import.meta.env.VITE_NODE_ENV === "staging"
+      ? import.meta.env.VITE_SERVER_URL_STAGING
+      : import.meta.env.VITE_SERVER_URL_PRODUCTION;
 
     // Check if the current time is past the cutoff, and disable registration if so
     const currentTime = new Date().getTime();

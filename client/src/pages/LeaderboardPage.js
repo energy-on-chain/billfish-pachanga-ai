@@ -67,9 +67,9 @@ function LeaderboardPage() {
         setIsPreliminaryResults(false);
       }
 
-      const apiUrl = process.env.REACT_APP_NODE_ENV === "production"
-        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-        : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === "production"
+        ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+        : import.meta.env.VITE_SERVER_URL_STAGING;
 
       // Build queries
       const queries = CONFIG_LEADERBOARD_CATEGORIES.map((item) => {

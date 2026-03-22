@@ -34,10 +34,10 @@ const DeleteCatchModal = (props) => {
 
     try {
       let apiUrl = null;
-      if (process.env.REACT_APP_NODE_ENV === "staging") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-      } else if (process.env.REACT_APP_NODE_ENV === "production") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+      if (import.meta.env.VITE_NODE_ENV === "staging") {
+        apiUrl = import.meta.env.VITE_SERVER_URL_STAGING;
+      } else if (import.meta.env.VITE_NODE_ENV === "production") {
+        apiUrl = import.meta.env.VITE_SERVER_URL_PRODUCTION;
       }
 
       const response = await fetch(`${apiUrl}/api/${year}/admin_delete_catch`, {

@@ -69,9 +69,9 @@ const AddTeamModal = (props) => {
         }
       } = loadedConfig;
   
-      const apiUrl = process.env.REACT_APP_NODE_ENV === 'production'
-        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-        : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === 'production'
+        ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+        : import.meta.env.VITE_SERVER_URL_STAGING;
   
       // Assess earlybird registration condition
       if (CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION) {
@@ -445,10 +445,10 @@ const AddTeamModal = (props) => {
   const handlePayment = async () => {
     console.log('In handlePayment...')
     let apiUrl = null;
-    if (process.env.REACT_APP_NODE_ENV === "staging") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-    } else if (process.env.REACT_APP_NODE_ENV === "production") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+    if (import.meta.env.VITE_NODE_ENV === "staging") {
+        apiUrl = import.meta.env.VITE_SERVER_URL_STAGING;
+    } else if (import.meta.env.VITE_NODE_ENV === "production") {
+        apiUrl = import.meta.env.VITE_SERVER_URL_PRODUCTION;
     }
 
     let metaDataObject = {
