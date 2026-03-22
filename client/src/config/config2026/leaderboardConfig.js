@@ -21,9 +21,9 @@ module.exports = {
         { field: 'points', headerName: 'Points', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ]
     },
 
@@ -43,10 +43,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
 
@@ -67,11 +67,11 @@ module.exports = {
         { field: 'firstCatchSailfish', headerName: 'Sailfish', flex: 3, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 100, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', width: 200, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'firstCatchBlueMarlin', headerName: 'Blue Marlin', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
-        { field: 'firstCatchWhiteMarlin', headerName: 'White Marlin', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
-        { field: 'firstCatchSailfish', headerName: 'Sailfish', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 70, flex: 0.7, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'team', headerName: 'Team', minWidth: 120, flex: 1.5, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'firstCatchBlueMarlin', headerName: 'Blue Marlin', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'firstCatchWhiteMarlin', headerName: 'White Marlin', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'firstCatchSailfish', headerName: 'Sailfish', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
 
@@ -92,10 +92,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
     {
@@ -114,10 +114,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
     {
@@ -136,10 +136,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
 
@@ -160,10 +160,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
     {
@@ -182,10 +182,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
     {
@@ -204,10 +204,10 @@ module.exports = {
         { field: 'lastCatch', headerName: 'Time of Last Catch', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'points', headerName: 'Points', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'lastCatch', headerName: 'Time of Last Catch', width: 300, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'points', headerName: 'Points', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'lastCatch', headerName: 'Time of Last Catch', minWidth: 130, flex: 2, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: true},
       ]
     },
 
@@ -228,10 +228,10 @@ module.exports = {
         { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'weight', headerName: 'Points (Weight, lbs)', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'length', headerName: 'Length (in)', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ]
     },
     {
@@ -250,10 +250,10 @@ module.exports = {
         { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'weight', headerName: 'Points (Weight, lbs)', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'length', headerName: 'Length (in)', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ]
     },
     {
@@ -272,10 +272,10 @@ module.exports = {
         { field: 'length', headerName: 'Length (in)', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ],
       mobileColumns: [
-        { field: 'place', headerName: 'Place', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'weight', headerName: 'Points (Weight, lbs)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'length', headerName: 'Length (in)', width: 150, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
+        { field: 'weight', headerName: 'Points (Weight, lbs)', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
+        { field: 'length', headerName: 'Length (in)', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
       ]
     },
 
