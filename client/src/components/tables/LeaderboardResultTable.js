@@ -88,5 +88,5 @@ function LeaderboardResultTable(props) {
   );
 }
 
-export default LeaderboardResultTable;
+export default React.memo(LeaderboardResultTable);
 

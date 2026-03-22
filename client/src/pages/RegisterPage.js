@@ -1,3 +1,4 @@
+import { CircularProgress, Box } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
@@ -86,7 +87,7 @@ function RegisterPage(props) {
   }, [year]);
 
   if (!configLoaded) {
-    return <div>Loading...</div>; // Render a loading state while fetching the config
+    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
   }
 
   return (

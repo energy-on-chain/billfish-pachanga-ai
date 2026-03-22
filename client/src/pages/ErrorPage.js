@@ -1,3 +1,4 @@
+import { CircularProgress, Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import RootNavigation from "../components/RootNavigation";
@@ -18,7 +19,7 @@ function ErrorPage() {
   }, [year]);
 
   if (!configs) {
-    return <div>Loading...</div>; // Show loading while configurations are fetched
+    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
   }
 
   const { CONFIG_STYLING_H2_COLOR, CONFIG_STYLING_P_COLOR } = configs.stylingConfig;

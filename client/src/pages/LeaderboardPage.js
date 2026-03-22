@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import Box from '@mui/material/Box';
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Skeleton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import dayjs from 'dayjs';
@@ -228,9 +228,12 @@ function LeaderboardPage() {
                 {/* List view */}
                 {viewAlignment === "List" && tournamentHasStarted && (
                   !hasLoaded ? (
-                    <div>
-                      <h1>Loading...</h1>
-                    </div>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
                   ) : (
                     <div>
                       <br/>
@@ -259,9 +262,12 @@ function LeaderboardPage() {
                 {/* Slideshow View */}
                 {viewAlignment === "Slideshow" && tournamentHasStarted && (
                   !hasLoaded ? (
-                    <div>
-                      <h1>Loading...</h1>
-                    </div>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
                   ) : (
                     <div>
                       <br/>
@@ -273,9 +279,12 @@ function LeaderboardPage() {
                 {/* Select View */}
                 {viewAlignment === "Select" && tournamentHasStarted && (
                   !hasLoaded ? (
-                    <div>
-                      <h1>Loading...</h1>
-                    </div>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
                   ) : (
                     <div>
                       <div className="select-div">

@@ -104,5 +104,5 @@ function PotsResultTable(props) {
   );
 }
 
-export default PotsResultTable;
+export default React.memo(PotsResultTable);
 

@@ -4,7 +4,7 @@ import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { Select, MenuItem, InputLabel, Autocomplete, TextField } from "@mui/material";
+import { Select, MenuItem, InputLabel, Autocomplete, TextField, Skeleton } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -792,7 +792,12 @@ function PotsPage() {
             { (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "List") && tournamentHasStarted &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
                   <CircularProgress />
                 </div>
               ) : (
@@ -831,7 +836,12 @@ function PotsPage() {
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
                   <CircularProgress />
                 </div>
               ) : (
@@ -845,7 +855,12 @@ function PotsPage() {
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
                   <CircularProgress />
                 </div>
                 ) : (
@@ -899,10 +914,12 @@ function PotsPage() {
             {/* PAYOUTS - BY TEAM */}
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "List") && (tournamentHasStarted) ) &&
             (!hasLoaded ? (
-              <div>
-                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
             ) : (
               <>
                 <br/>
@@ -919,10 +936,12 @@ function PotsPage() {
 
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
             (!hasLoaded ? (
-              <div>
-                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
               ) : (
                 <>
                   <br/>
@@ -977,10 +996,12 @@ function PotsPage() {
 
             {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) && 
             (!hasLoaded ? (
-              <div>
-                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
             ) : (
               <>
                 <br/>
