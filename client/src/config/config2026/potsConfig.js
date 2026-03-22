@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // POT SETTINGS /////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
-module.exports = {
+export default {
   CONFIG_POTS_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER: true,
   CONFIG_POTS_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1784437200000",    // Sunday, 19-July-2026 at 00:00 AM CDT
   CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS: [

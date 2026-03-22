@@ -4,7 +4,6 @@ const bodyParser = require("body-parser");
 const path = require('path');
 const dotenv = require('dotenv');
 const admin = require("firebase-admin");    // firebase
-const {firebaseStagingConfig, firebaseProductionConfig} = require("../client/src/config/dashboardConfig.js");
 const session = require('express-session');
 const RedisStore = require('connect-redis').default; // Corrected way to import connect-redis
 const redis = require('redis');
@@ -49,7 +48,6 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
       "universe_domain": process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_UNIVERSE_DOMAIN_STAGING
     }),
     storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
-    config: firebaseStagingConfig
   });
 
   clientUrl = process.env.REACT_APP_CLIENT_URL_STAGING;    // stripe
@@ -77,7 +75,6 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
       "universe_domain": process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_UNIVERSE_DOMAIN_PRODUCTION
     }),
     storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
-    config: firebaseProductionConfig
   });
 
   clientUrl = process.env.REACT_APP_CLIENT_URL_PRODUCTION;    // stripe
