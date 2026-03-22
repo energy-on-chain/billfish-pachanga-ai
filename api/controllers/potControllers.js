@@ -7,6 +7,28 @@ const timezone = require('dayjs/plugin/timezone');
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+/**
+ * Rolls up payout percentages to 1st place for places that have no qualifying team.
+ * e.g. {1: 0.7, 2: 0.3} with numQualified=1 => {1: 1.0, 2: 0}
+ */
+const applyPayoutRollup = (payoutStructure, numQualified) => {
+  const adjusted = {};
+  let rollup = 0;
+  Object.keys(payoutStructure).forEach(place => {
+    const p = parseInt(place);
+    if (p > numQualified) {
+      rollup += parseFloat(payoutStructure[place]);
+      adjusted[place] = 0;
+    } else {
+      adjusted[place] = payoutStructure[place];
+    }
+  });
+  if (rollup > 0) {
+    adjusted[1] = (parseFloat(adjusted[1]) || 0) + rollup;
+  }
+  return adjusted;
+};
+
 exports.getAllPotData = async (req, res) => {
   console.log('Fetching all pot data...');
   const year = req.params.year;
@@ -572,19 +594,21 @@ exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res
   try {
     const year = req.params.year;
     const db = getFirestore();
-    const { catchYear, potYear, isReport, species, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
+    const { catchYear, potYear, isReport, species, speciesList, potName, entryAmount, tournamentCut, payoutStructure, numPlaces} = req.body;
 
-    // Fetch all catches for the given year and species
+    // Fetch all catches for the given year and species (supports single species or speciesList array)
     const catchesRef = db.collection(`catches${year}`);
-    const snapshot = await catchesRef.where('species', '==', species).get();
+    const speciesToQuery = speciesList || [species];
 
-    if (snapshot.empty) {
-      return res.status(200).json([]);
-    }
+    const snapshots = await Promise.all(
+      speciesToQuery.map(s => catchesRef.where('species', '==', s).get())
+    );
+
+    const allDocs = snapshots.flatMap(snap => snap.docs);
 
     // Aggregate points by team
     const teamPoints = {};
-    snapshot.forEach(doc => {
+    allDocs.forEach(doc => {
       const data = doc.data();
       const { teamId, teamName, points, dateTime } = data;
 
@@ -640,7 +664,14 @@ exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
-    // Assign places 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Roll up payouts to 1st place if fewer teams qualified than places
+    const adjustedPayoutStructure = applyPayoutRollup(payoutStructure, filteredTeams.length);
+
+    // Assign places
     let result;
     if (isReport) {
       result = filteredTeams.map((team, index) => ({
@@ -648,7 +679,7 @@ exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res
         team: team.team,
         points: team.points,
         lastCatch: team.lastCatch,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     } else {
@@ -657,7 +688,7 @@ exports.getBillfishPachangaBillfishSpeciesChampionPotStandings = async (req, res
         team: team.team,
         points: team.points,
         lastCatch: team.lastCatch,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     }
@@ -682,29 +713,27 @@ exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res
     const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('speciesType', '==', 'Catch & Release').get();
 
-    if (snapshot.empty) {
-      return res.status(200).json([]);
-    }
-
     // Aggregate points by team
     const teamPoints = {};
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const { teamId, teamName, points, dateTime } = data;
+    if (!snapshot.empty) {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const { teamId, teamName, points, dateTime } = data;
 
-      if (!teamPoints[teamId]) {
-        teamPoints[teamId] = {
-          team: teamName,
-          points: 0,
-          lastCatch: dateTime
-        };
-      }
+        if (!teamPoints[teamId]) {
+          teamPoints[teamId] = {
+            team: teamName,
+            points: 0,
+            lastCatch: dateTime
+          };
+        }
 
-      teamPoints[teamId].points += parseInt(points);
-      if (new Date(dateTime) > new Date(teamPoints[teamId].lastCatch)) {
-        teamPoints[teamId].lastCatch = dateTime;
-      }
-    });
+        teamPoints[teamId].points += parseInt(points);
+        if (new Date(dateTime) > new Date(teamPoints[teamId].lastCatch)) {
+          teamPoints[teamId].lastCatch = dateTime;
+        }
+      });
+    }
 
     // Convert the teamPoints object to an array and sort by points and last catch time
     const sortedTeams = Object.values(teamPoints).sort((a, b) => {
@@ -744,7 +773,14 @@ exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
-    // Assign places 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Roll up payouts to 1st place if fewer teams qualified than places
+    const adjustedPayoutStructure = applyPayoutRollup(payoutStructure, filteredTeams.length);
+
+    // Assign places
     let result;
     if (isReport) {
       result = filteredTeams.map((team, index) => ({
@@ -752,7 +788,7 @@ exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res
         team: team.team,
         points: team.points,
         lastCatch: team.lastCatch,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     } else {
@@ -761,7 +797,7 @@ exports.getBillfishPachangaOverallBillfishNonSonarPotStandings = async (req, res
         team: team.team,
         points: team.points,
         lastCatch: team.lastCatch,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     }
@@ -786,35 +822,31 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
     const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.where('species', '==', species).get();
 
-    if (snapshot.empty) {
-      return res.status(200).json([]);
-    }
-
     // Object to store the heaviest fish for each team
     const teamPoints = {};
 
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const { teamId, teamName, weight, length, girth } = data;
+    if (!snapshot.empty) {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const { teamId, teamName, weight, length, girth } = data;
 
-      // Ensure that weight, length, and girth are treated as numbers
-      const parsedWeight = parseFloat(weight);
-      const parsedLength = parseFloat(length);
-      const parsedGirth = parseFloat(girth);
+        const parsedWeight = parseFloat(weight);
+        const parsedLength = parseFloat(length);
+        const parsedGirth = parseFloat(girth);
 
-      // Check if this catch is the heaviest for the team, or breaks a tie
-      if (!teamPoints[teamId] || 
-          parsedWeight > teamPoints[teamId].weight || 
-          (parsedWeight === teamPoints[teamId].weight && parsedLength > teamPoints[teamId].length) ||
-          (parsedWeight === teamPoints[teamId].weight && parsedLength === teamPoints[teamId].length && parsedGirth > teamPoints[teamId].girth)) {
-        teamPoints[teamId] = {
-          team: teamName,
-          weight: parsedWeight,
-          length: parsedLength,
-          girth: parsedGirth
-        };
-      }
-    });
+        if (!teamPoints[teamId] ||
+            parsedWeight > teamPoints[teamId].weight ||
+            (parsedWeight === teamPoints[teamId].weight && parsedLength > teamPoints[teamId].length) ||
+            (parsedWeight === teamPoints[teamId].weight && parsedLength === teamPoints[teamId].length && parsedGirth > teamPoints[teamId].girth)) {
+          teamPoints[teamId] = {
+            team: teamName,
+            weight: parsedWeight,
+            length: parsedLength,
+            girth: parsedGirth
+          };
+        }
+      });
+    }
 
     // Convert the teamPoints object to an array and sort by weight, length, and girth
     const sortedTeams = Object.values(teamPoints).sort((a, b) => {
@@ -839,7 +871,6 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
       const data = doc.data();
       const { teamName, boardSelections } = data;
 
-      // Check if the team entered the specific pot
       const enteredPot = boardSelections.some(selection =>
         selection.potList.includes(potName)
       );
@@ -857,7 +888,14 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
-    // Assign places 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Roll up payouts to 1st place if fewer teams qualified than places
+    const adjustedPayoutStructure = applyPayoutRollup(payoutStructure, filteredTeams.length);
+
+    // Assign places
     let result;
     if (isReport) {
       result = filteredTeams.map((team, index) => ({
@@ -866,7 +904,7 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
         weight: team.weight,
         length: team.length,
         girth: team.girth,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     } else {
@@ -876,7 +914,7 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
         weight: team.weight,
         length: team.length,
         girth: team.girth,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     }
@@ -901,32 +939,30 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
     const catchesRef = db.collection(`catches${year}`);
     const snapshot = await catchesRef.get();
 
-    if (snapshot.empty) {
-      return res.status(200).json([]);
-    }
-
     // Aggregate points by team
     const teamPoints = {};
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const { teamId, teamName, points, speciesType, dateTime } = data;
+    if (!snapshot.empty) {
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const { teamId, teamName, points, speciesType, dateTime } = data;
 
-      if (!teamPoints[teamId]) {
-        teamPoints[teamId] = {
-          team: teamName,
-          points: 0,
-          lastCatch: null
-        };
-      }
-
-      teamPoints[teamId].points += parseInt(points);
-
-      if (speciesType === 'Catch & Release') {
-        if (!teamPoints[teamId].lastCatch || new Date(dateTime) > new Date(teamPoints[teamId].lastCatch)) {
-          teamPoints[teamId].lastCatch = dateTime;
+        if (!teamPoints[teamId]) {
+          teamPoints[teamId] = {
+            team: teamName,
+            points: 0,
+            lastCatch: null
+          };
         }
-      }
-    });
+
+        teamPoints[teamId].points += parseInt(points);
+
+        if (speciesType === 'Catch & Release') {
+          if (!teamPoints[teamId].lastCatch || new Date(dateTime) > new Date(teamPoints[teamId].lastCatch)) {
+            teamPoints[teamId].lastCatch = dateTime;
+          }
+        }
+      });
+    }
 
     // Convert the teamPoints object to an array and sort by points and last catch time
     const sortedTeams = Object.values(teamPoints).sort((a, b) => {
@@ -951,7 +987,6 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
       const data = doc.data();
       const { teamName, boardSelections } = data;
 
-      // Check if the team entered the specific pot
       const enteredPot = boardSelections.some(selection =>
         selection.potList.includes(potName)
       );
@@ -969,6 +1004,13 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Roll up payouts to 1st place if fewer teams qualified than places
+    const adjustedPayoutStructure = applyPayoutRollup(payoutStructure, filteredTeams.length);
+
     // Assign places and calculate payouts
     let result;
     if (isReport) {
@@ -976,7 +1018,7 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
         place: index + 1,
         team: team.team,
         points: team.points,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     } else {
@@ -984,7 +1026,7 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
         place: index + 1,
         team: team.team,
         points: team.points,
-        payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
+        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
     }

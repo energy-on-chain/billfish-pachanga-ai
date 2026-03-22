@@ -37,19 +37,35 @@ export const generatePotsReport = async (year, tournamentName) => {
       apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
     }
 
+    // Fetch pot config overrides from Firestore (via admin API)
+    let potConfigOverrides = {};
+    try {
+      const potConfigRes = await fetch(`${apiUrl}/api/${year}/admin_get_pot_config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      if (potConfigRes.ok) {
+        potConfigOverrides = await potConfigRes.json();
+      }
+    } catch (e) {
+      console.warn('Could not fetch pot config overrides:', e);
+    }
+
     // Build queries for payouts using dynamic config
     const queries = config.potsConfig.CONFIG_POTS_CATEGORIES.map((item) => {
+      const payoutStructure = potConfigOverrides[item.potName]?.payoutStructure || item.payoutStructure;
       let bodyData = {
-        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,  // Dynamically loaded config
-        potYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,  // Dynamically loaded config
+        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+        potYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
         isReport: true,
         title: item.title,
         subtitle: item.subtitle || "",
         potName: item.potName,
         entryAmount: item.entryAmount,
         tournamentCut: item.tournamentCut,
-        payoutStructure: item.payoutStructure,
-        numPlaces: Object.keys(item.payoutStructure).length,
+        payoutStructure: payoutStructure,
+        numPlaces: Object.keys(payoutStructure).length,
       };
 
       if (item.inputs && item.inputs.length > 0) {
@@ -65,7 +81,7 @@ export const generatePotsReport = async (year, tournamentName) => {
         body: JSON.stringify(bodyData),
         title: item.title,
         subtitle: item.subtitle || "",
-        numPlaces: Object.keys(item.payoutStructure).length,
+        numPlaces: Object.keys(payoutStructure).length,
         desktopColumns: item.desktopColumns,
         mobileColumns: item.mobileColumns,
       };

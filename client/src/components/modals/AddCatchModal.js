@@ -1,6 +1,6 @@
 import React, {useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { InputLabel, Select, MenuItem, Divider, Button, Grid, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Autocomplete} from "@mui/material";
+import { InputLabel, Select, MenuItem, Divider, Button, Grid, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Autocomplete, Checkbox, FormControlLabel} from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -174,6 +174,8 @@ const AddCatchModal = (props) => {
             weight: 0,
             points: 0,
             catchPhoto: null,
+            isTagged: false,
+            isSatelliteTagged: false,
           }
         )
       }
@@ -237,7 +239,7 @@ const AddCatchModal = (props) => {
       ...newCatchData[index],
       species: value["label"],
       speciesType: value["category"],
-      dateTime: value["dateTimeIsRequired"] ? null : dayjs(),  // Set to null if required, else to current dateTime
+      dateTime: value["dateTimeIsRequired"] ? dayjs() : null,  // Autofill current time when dateTime is required
       length: 0,  // Reset these values
       girth: 0,   // Reset these values
       weight: 0,  // Reset these values
@@ -250,6 +252,8 @@ const AddCatchModal = (props) => {
       girthIsRequired: value["girthIsRequired"],
       dateTimeIsRequired: value["dateTimeIsRequired"],
       photoIsRequired: value["photoIsRequired"],
+      isTagged: false,
+      isSatelliteTagged: false,
     };
   
     setCatchData(newCatchData);
@@ -477,6 +481,42 @@ const AddCatchModal = (props) => {
             </Grid>
           </div>
         }
+
+        {/* Tagged / Satellite Tagged */}
+        { catchData[index].species && (
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={6} lg={6} xl={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={catchData[index].isTagged || false}
+                    onChange={(e) => {
+                      let newCatchData = [...catchData];
+                      newCatchData[index].isTagged = e.target.checked;
+                      setCatchData(newCatchData);
+                    }}
+                  />
+                }
+                label="Tagged"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={6} lg={6} xl={6}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={catchData[index].isSatelliteTagged || false}
+                    onChange={(e) => {
+                      let newCatchData = [...catchData];
+                      newCatchData[index].isSatelliteTagged = e.target.checked;
+                      setCatchData(newCatchData);
+                    }}
+                  />
+                }
+                label="Satellite Tagged"
+              />
+            </Grid>
+          </Grid>
+        )}
         <br/>
 
       </div>
@@ -505,6 +545,8 @@ const AddCatchModal = (props) => {
         formData.append(`catchData[${index}][girth]`, item.girth);
         formData.append(`catchData[${index}][weight]`, item.weight);
         formData.append(`catchData[${index}][points]`, item.points);
+        formData.append(`catchData[${index}][isTagged]`, item.isTagged || false);
+        formData.append(`catchData[${index}][isSatelliteTagged]`, item.isSatelliteTagged || false);
         
         // Append the photo if it exists
         if (item.catchPhoto) {

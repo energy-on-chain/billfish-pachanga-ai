@@ -1,7 +1,22 @@
 const multer = require('multer');
+const sharp = require('sharp');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { getFirestore } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+
+// Convert HEIC/HEIF images to JPEG for browser compatibility
+const convertImageIfNeeded = async (buffer, mimetype, originalname) => {
+  const heicMimes = ['image/heic', 'image/heif'];
+  const heicExts = ['.heic', '.heif'];
+  const ext = path.extname(originalname).toLowerCase();
+  if (heicMimes.includes(mimetype) || heicExts.includes(ext)) {
+    const jpegBuffer = await sharp(buffer).jpeg({ quality: 90 }).toBuffer();
+    const jpegName = originalname.replace(/\.(heic|heif)$/i, '.jpg');
+    return { buffer: jpegBuffer, mimetype: 'image/jpeg', originalname: jpegName };
+  }
+  return { buffer, mimetype, originalname };
+};
 
 // Helpers
 const upload = multer({
@@ -281,14 +296,15 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
                   console.log('?? Uploading image:', originalname);
                   
                   try {
-                      const buffer = Buffer.from(fileData.buffer, 'base64');
-                      const sanitizedFilename = originalname.replace(/\s+/g, '-');
+                      const rawBuffer = Buffer.from(fileData.buffer, 'base64');
+                      const { buffer, mimetype, originalname: convertedName } = await convertImageIfNeeded(rawBuffer, fileData.mimetype, originalname);
+                      const sanitizedFilename = convertedName.replace(/\s+/g, '-');
                       const filename = `${uuidv4()}-${sanitizedFilename}`;
                       const fileUpload = bucket.file(filename);
 
                       await fileUpload.save(buffer, {
                           metadata: {
-                              contentType: fileData.mimetype,
+                              contentType: mimetype,
                           },
                       });
 

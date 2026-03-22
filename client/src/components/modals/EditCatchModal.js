@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, CircularProgress } from "@mui/material";
+import { InputLabel, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, CircularProgress, Checkbox, FormControlLabel } from "@mui/material";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers';
@@ -22,6 +22,8 @@ const EditCatchModal = (props) => {
   const [dateTime, setDateTime] = useState();
   const [catchPhoto, setCatchPhoto] = useState();
   const [catchPhotoUrl, setCatchPhotoUrl] = useState();
+  const [isTagged, setIsTagged] = useState(false);
+  const [isSatelliteTagged, setIsSatelliteTagged] = useState(false);
   const [speciesConfig, setSpeciesConfig] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);  // New state to track submission
   const [isSubmitted, setIsSubmitted] = useState(false);    // New state to track successful submission
@@ -41,6 +43,8 @@ const EditCatchModal = (props) => {
         setDateTime(props.editInfo.dateTime);
         setCatchPhoto(null);
         setCatchPhotoUrl(props.editInfo.catchPhoto);
+        setIsTagged(props.editInfo.isTagged || false);
+        setIsSatelliteTagged(props.editInfo.isSatelliteTagged || false);
 
         const speciesMatch = config.catchConfig.CONFIG_CATCHES_SPECIES_LIST.find(
           (species) => species.label === props.editInfo.species
@@ -107,6 +111,8 @@ const EditCatchModal = (props) => {
         formData.append("girth", girth);
         formData.append("weight", weight);
         formData.append("points", points);
+        formData.append("isTagged", isTagged || false);
+        formData.append("isSatelliteTagged", isSatelliteTagged || false);
 
         if (catchPhoto) {
           formData.append("catchPhoto", catchPhoto);
@@ -188,6 +194,7 @@ const EditCatchModal = (props) => {
                   onChange={(e) => handleDateTimeSelection(e)}
                   minDate={dayjs(day1)}
                   maxDate={dayjs(day2)}
+                  timeSteps={{ minutes: 1 }}
                 />
               </LocalizationProvider>
             }
@@ -246,6 +253,16 @@ const EditCatchModal = (props) => {
                 }
               </div>
             }
+
+            {/* Tagged / Satellite Tagged */}
+            <FormControlLabel
+              control={<Checkbox checked={isTagged} onChange={(e) => setIsTagged(e.target.checked)} />}
+              label="Tagged"
+            />
+            <FormControlLabel
+              control={<Checkbox checked={isSatelliteTagged} onChange={(e) => setIsSatelliteTagged(e.target.checked)} />}
+              label="Satellite Tagged"
+            />
 
             {/* Submit button */}
             {!isSubmitted ? (

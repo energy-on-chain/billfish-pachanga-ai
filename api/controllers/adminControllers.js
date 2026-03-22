@@ -1,7 +1,22 @@
 const multer = require('multer');
+const sharp = require('sharp');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { getFirestore } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
+
+// Convert HEIC/HEIF images to JPEG for browser compatibility
+const convertImageIfNeeded = async (buffer, mimetype, originalname) => {
+  const heicMimes = ['image/heic', 'image/heif'];
+  const heicExts = ['.heic', '.heif'];
+  const ext = path.extname(originalname).toLowerCase();
+  if (heicMimes.includes(mimetype) || heicExts.includes(ext)) {
+    const jpegBuffer = await sharp(buffer).jpeg({ quality: 90 }).toBuffer();
+    const jpegName = originalname.replace(/\.(heic|heif)$/i, '.jpg');
+    return { buffer: jpegBuffer, mimetype: 'image/jpeg', originalname: jpegName };
+  }
+  return { buffer, mimetype, originalname };
+};
 
 // Helpers
 const upload = multer({
@@ -184,15 +199,16 @@ module.exports = ({redisClient}) => {
     // Handle required image uploads
     console.log('metadata.imageBuffers:', metadata.imageBuffers);
     for (const [originalname, fileData] of Object.entries(metadata.imageBuffers)) {
-      const buffer = Buffer.from(fileData.buffer, 'base64');
-      const sanitizedFilename = originalname.replace(/\s+/g, '-');
+      const rawBuffer = Buffer.from(fileData.buffer, 'base64');
+      const { buffer, mimetype, originalname: convertedName } = await convertImageIfNeeded(rawBuffer, fileData.mimetype, originalname);
+      const sanitizedFilename = convertedName.replace(/\s+/g, '-');
       const filename = `${uuidv4()}-${sanitizedFilename}`;
       const fileUpload = bucket.file(filename);
 
       try {
         await fileUpload.save(buffer, {
           metadata: {
-            contentType: fileData.mimetype,
+            contentType: mimetype,
           },
         });
 
@@ -331,17 +347,18 @@ module.exports = ({redisClient}) => {
 
           // Save new images to firebase storage
           for (const [originalname, fileData] of Object.entries(imageBuffers)) {
-            const buffer = Buffer.from(fileData.buffer, 'base64');
-            const sanitizedFilename = originalname.replace(/\s+/g, '-');
+            const rawBuffer = Buffer.from(fileData.buffer, 'base64');
+            const { buffer, mimetype, originalname: convertedName } = await convertImageIfNeeded(rawBuffer, fileData.mimetype, originalname);
+            const sanitizedFilename = convertedName.replace(/\s+/g, '-');
             const filename = `${uuidv4()}-${sanitizedFilename}`;
             const fileUpload = bucket.file(filename);
-      
+
             try {
 
               // await fileUpload.save(buffer, {
               fileUpload.save(buffer, {
                 metadata: {
-                  contentType: fileData.mimetype,
+                  contentType: mimetype,
                 },
               });
       
@@ -506,12 +523,13 @@ module.exports = ({redisClient}) => {
 
         if (file) {
           console.log('There is a file!', file);
-          const filename = `${uuidv4()}-${file.originalname}`;  // Generate unique filename
+          const { buffer: convertedBuffer, mimetype: convertedMime, originalname: convertedName } = await convertImageIfNeeded(file.buffer, file.mimetype, file.originalname);
+          const filename = `${uuidv4()}-${convertedName}`;  // Generate unique filename
           const fileUpload = bucket.file(filename);
 
           // Upload the file to Firebase Storage
-          await fileUpload.save(file.buffer, {
-            metadata: { contentType: file.mimetype },
+          await fileUpload.save(convertedBuffer, {
+            metadata: { contentType: convertedMime },
           });
 
           // Get the public URL for the uploaded image
@@ -586,10 +604,11 @@ module.exports = ({redisClient}) => {
           }
   
           // Upload the new image to Firebase Storage
-          const filename = `${uuidv4()}-${file.originalname}`;
+          const { buffer: convertedBuffer, mimetype: convertedMime, originalname: convertedName } = await convertImageIfNeeded(file.buffer, file.mimetype, file.originalname);
+          const filename = `${uuidv4()}-${convertedName}`;
           const fileUpload = bucket.file(filename);
-          await fileUpload.save(file.buffer, {
-            metadata: { contentType: file.mimetype },
+          await fileUpload.save(convertedBuffer, {
+            metadata: { contentType: convertedMime },
           });
   
           // Update the `catchPhotoUrl` with the new file's public URL
@@ -866,7 +885,75 @@ module.exports = ({redisClient}) => {
       console.error('Error deleting pot entry:', error);
       res.status(500).json({ error: 'Failed to delete pot entry.' });
     }
-  }; 
+  };
+
+  const adminGetAwardsConfig = async (req, res) => {
+    console.log('Fetching awards config overrides...');
+    const year = req.params.year;
+    const db = getFirestore();
+    try {
+      const snapshot = await db.collection(`awardsConfig${year}`).get();
+      const configs = {};
+      snapshot.forEach(doc => {
+        configs[doc.id] = doc.data();
+      });
+      res.status(200).json(configs);
+    } catch (error) {
+      console.error('Error fetching awards config:', error);
+      res.status(500).json({ error: 'Failed to fetch awards config.' });
+    }
+  };
+
+  const adminSaveAwardsConfig = async (req, res) => {
+    console.log('Saving awards config override...');
+    const year = req.params.year;
+    const db = getFirestore();
+    const { categoryName, numAwards } = req.body;
+    if (!categoryName || numAwards === undefined) {
+      return res.status(400).json({ error: 'categoryName and numAwards are required.' });
+    }
+    try {
+      await db.collection(`awardsConfig${year}`).doc(categoryName).set({ categoryName, numAwards }, { merge: true });
+      res.status(200).json({ message: 'Awards config saved successfully.' });
+    } catch (error) {
+      console.error('Error saving awards config:', error);
+      res.status(500).json({ error: 'Failed to save awards config.' });
+    }
+  };
+
+  const adminGetPotConfig = async (req, res) => {
+    console.log('Fetching pot config overrides...');
+    const year = req.params.year;
+    const db = getFirestore();
+    try {
+      const snapshot = await db.collection(`potConfig${year}`).get();
+      const configs = {};
+      snapshot.forEach(doc => {
+        configs[doc.id] = doc.data();
+      });
+      res.status(200).json(configs);
+    } catch (error) {
+      console.error('Error fetching pot config:', error);
+      res.status(500).json({ error: 'Failed to fetch pot config.' });
+    }
+  };
+
+  const adminSavePotConfig = async (req, res) => {
+    console.log('Saving pot config override...');
+    const year = req.params.year;
+    const db = getFirestore();
+    const { potName, payoutStructure } = req.body;
+    if (!potName || !payoutStructure) {
+      return res.status(400).json({ error: 'potName and payoutStructure are required.' });
+    }
+    try {
+      await db.collection(`potConfig${year}`).doc(potName).set({ potName, payoutStructure }, { merge: true });
+      res.status(200).json({ message: 'Pot config saved successfully.' });
+    } catch (error) {
+      console.error('Error saving pot config:', error);
+      res.status(500).json({ error: 'Failed to save pot config.' });
+    }
+  };
 
   return {
     adminGetDatabaseList,
@@ -887,6 +974,10 @@ module.exports = ({redisClient}) => {
     adminGetTotalCatchCount,
     adminGetTotalCatchCountBySpecies,
     adminGetRegisteredTeamDataForReport,
+    adminGetPotConfig,
+    adminSavePotConfig,
+    adminGetAwardsConfig,
+    adminSaveAwardsConfig,
     upload
   };
 

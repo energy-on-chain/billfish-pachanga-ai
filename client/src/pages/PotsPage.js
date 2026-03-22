@@ -131,21 +131,38 @@ function PotsPage() {
       ? process.env.REACT_APP_SERVER_URL_PRODUCTION
       : process.env.REACT_APP_SERVER_URL_STAGING;
 
+      // Fetch pot config overrides from Firestore (via admin API)
+      let potConfigOverrides = {};
+      try {
+        const potConfigRes = await fetch(`${apiUrl}/api/${year}/admin_get_pot_config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (potConfigRes.ok) {
+          potConfigOverrides = await potConfigRes.json();
+        }
+      } catch (e) {
+        console.warn('Could not fetch pot config overrides:', e);
+      }
+
       // Build queries for payouts
       const queries = CONFIG_POTS_CATEGORIES.map((item) => {
+        // Use Firestore override if available, otherwise use config default
+        const payoutStructure = potConfigOverrides[item.potName]?.payoutStructure || item.payoutStructure;
 
         // Basic data
-        let bodyData = { 
+        let bodyData = {
           catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
           potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-          isReport: false, 
+          isReport: false,
           title: item.title,
           subtitle: item.subtitle || "",
           potName: item.potName,
           entryAmount: item.entryAmount,
           tournamentCut: item.tournamentCut,
-          payoutStructure: item.payoutStructure,
-          numPlaces: Object.keys(item.payoutStructure).length,
+          payoutStructure: payoutStructure,
+          numPlaces: Object.keys(payoutStructure).length,
         };
       
         // Add any extra inputs required (e.g. specific date)
@@ -163,7 +180,7 @@ function PotsPage() {
           body: JSON.stringify(bodyData),
           title: item.title,
           subtitle: item.subtitle || "",
-          numPlaces: Object.keys(item.payoutStructure).length,
+          numPlaces: Object.keys(payoutStructure).length,
           desktopColumns: item.desktopColumns,
           mobileColumns: item.mobileColumns,
         };
@@ -234,16 +251,19 @@ function PotsPage() {
         }).then(r => r.json()).then((result) => {
           var tempObject = {};
           var tempRows = [];
-          Object.keys(result).map((catchKey, i) => {
-            let tempObject = {...result[catchKey], id: i, catchId: catchKey};
-            tempRows.push(tempObject);
-          });
+          if (!result.noQualifyingEntrants) {
+            Object.keys(result).map((catchKey, i) => {
+              let tempObject = {...result[catchKey], id: i, catchId: catchKey};
+              tempRows.push(tempObject);
+            });
+          }
           tempObject = {
-            title: query.title, 
+            title: query.title,
             subtitle: query.subtitle,
             numPlaces: query.numPlaces,
-            rows: tempRows, 
-            desktopColumns: query.desktopColumns, 
+            rows: tempRows,
+            noQualifyingEntrants: result.noQualifyingEntrants || false,
+            desktopColumns: query.desktopColumns,
             mobileColumns: query.mobileColumns
           };
           console.log(tempObject);
@@ -779,6 +799,14 @@ function PotsPage() {
                 <>
                   <br/>
                   {payoutsResultArray.map(result => {
+                    if (result.noQualifyingEntrants) {
+                      return (
+                        <div key={result.title}>
+                          <h3 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>{result.title}</h3>
+                          <p style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No qualifying entrants</p>
+                        </div>
+                      );
+                    }
                     if (result.rows.length > 0) {
                       return (
                         <PotsResultTable
@@ -841,7 +869,9 @@ function PotsPage() {
                     { payoutsHasSelectedResult ? (
                       <div>
                         {payoutsSelectedResult.map(result => (
-                          result.rows.length > 0 ? (
+                          result.noQualifyingEntrants ? (
+                            <p key={result.title} style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No qualifying entrants</p>
+                          ) : result.rows.length > 0 ? (
                             <PotsResultTable
                               key={result.title}
                               style={{ width: '100%' }}

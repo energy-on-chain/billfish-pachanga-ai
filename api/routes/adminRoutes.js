@@ -22,6 +22,10 @@ module.exports = ({ redisClient }) => {
     adminGetTotalCatchCount,
     adminGetTotalCatchCountBySpecies,
     adminGetRegisteredTeamDataForReport,
+    adminGetPotConfig,
+    adminSavePotConfig,
+    adminGetAwardsConfig,
+    adminSaveAwardsConfig,
     upload
   } = require('../controllers/adminControllers')({ redisClient });
 
@@ -48,6 +52,10 @@ module.exports = ({ redisClient }) => {
   router.post('/api/:year/admin_get_total_catch_count', adminGetTotalCatchCount);
   router.post('/api/:year/admin_get_total_catch_count_by_species', adminGetTotalCatchCountBySpecies);
   router.post('/api/:year/admin_get_registered_team_data_for_report', adminGetRegisteredTeamDataForReport);
+  router.post('/api/:year/admin_get_pot_config', adminGetPotConfig);
+  router.post('/api/:year/admin_save_pot_config', adminSavePotConfig);
+  router.post('/api/:year/admin_get_awards_config', adminGetAwardsConfig);
+  router.post('/api/:year/admin_save_awards_config', adminSaveAwardsConfig);
 
   return router;
 };

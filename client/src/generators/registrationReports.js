@@ -30,7 +30,7 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
   doc.text(`Teams registered for ${tournamentName} as of ${currentDate}`, 10, 10);
 
   // Columns to display in the desired order
-  const selectedColumns = ['teamName', 'teamEmail', 'teamPhone', 'totalFeePaidAtCheckout', 'hasCheckedIn'];
+  const selectedColumns = ['teamName', 'teamEmail', 'teamPhone', 'totalFeePaidAtCheckout', 'Extra Wristbands', 'hasCheckedIn'];
 
   // Get headers for the selected columns in the desired order
   const visibleColumns = tableProperties.filter(col => selectedColumns.includes(col.field));
@@ -45,6 +45,9 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
     const teamData = visibleColumns.map(col => {
       if (col.field === 'totalFeePaidAtCheckout') {
         return formatCurrency(team[col.field] || 0);  // Format as currency
+      }
+      if (col.field === 'Extra Wristbands') {
+        return team[col.field] ?? 0;  // Default to 0 if not purchased
       }
       return team[col.field] || '';  // Populate data based on visible columns
     });
@@ -62,10 +65,11 @@ export const generateRegistrationReport = (teams, year, tableProperties, tournam
     columnStyles: {
       0: { cellWidth: 10 },   // #
       1: { cellWidth: 30 },   // Team Name
-      2: { cellWidth: 80 },  // Email (twice as wide)
+      2: { cellWidth: 70 },   // Email
       3: { cellWidth: 30 },   // Phone
       4: { cellWidth: 30 },   // Total Fee Paid (Currency)
-      5: { cellWidth: 30 },   // Checked-In (last column, smaller width)
+      5: { cellWidth: 25 },   // Extra Wristbands
+      6: { cellWidth: 25 },   // Checked-In
     },
     didDrawPage: function (data) {
       // Add header to each page

@@ -24,20 +24,32 @@ module.exports = {
   },
   CONFIG_DASHBOARD_UPCOMING_AND_ACTIVE_TOURNAMENT_DATA: [
     {
+      logo: './BillfishPachangaLogo2026.png',
+      title: "Billfish Pachanga 2026",
+      dates: "July 15th - 18th 2026",
+      home: "/2026/home",
+      register: "/2026/register",
+      leaderboard: "/2026/leaderboard",
+      pots: "/2026/pots",
+      newsfeed: "/2026/newsfeed",
+      auction: null,
+      admin: "/2026/admin",
+    },
+  ],
+
+  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA: [
+    {
       logo: './BillfishPachangaLogo2025.png',
       title: "Billfish Pachanga 2025",
       dates: "July 16th - 19th 2025",
       home: "/2025/home",
       register: "/2025/register",
       leaderboard: "/2025/leaderboard",
-      pots: "/2025/pots", 
+      pots: "/2025/pots",
       newsfeed: "/2025/newsfeed",
       auction: null,
       admin: "/2025/admin",
     },
-  ],
-
-  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA: [
     {
       logo: './BillfishPachangaLogo2024.png',
       title: "Billfish Pachanga 2024",
@@ -45,7 +57,7 @@ module.exports = {
       home: "/2024/home",
       register: "/2024/register",
       leaderboard: "/2024/leaderboard",
-      pots: "/2024/pots", 
+      pots: "/2024/pots",
       newsfeed: "/2024/newsfeed",
       auction: null,
       admin: "/2024/admin",
