@@ -3,6 +3,8 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AnimatePresence } from "framer-motion";
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import theme from './theme';
 
 import RootLayout from "./layouts/RootLayout";
 import ErrorPage from './pages/ErrorPage';
@@ -63,12 +65,13 @@ function App() {
   ]);
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <AnimatePresence>
         <RouterProvider router={router} />
         <ToastContainer />
       </AnimatePresence>
-    </>
+    </ThemeProvider>
   );
 }
 
