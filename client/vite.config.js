@@ -27,7 +27,6 @@ export default defineConfig({
   },
   envPrefix: 'VITE_',
   optimizeDeps: {
-    include: ['react-swipeable-views-react-18-fix'],
     esbuildOptions: {
       loader: { '.js': 'jsx' },
     },
