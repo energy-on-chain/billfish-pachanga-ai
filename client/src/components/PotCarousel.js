@@ -8,33 +8,32 @@ import PotsResultTable from './tables/PotsResultTable';
 function PotCarousel(props) {
 
   const theme = useTheme();
-  const matches = useMediaQuery(theme.breakpoints.up("sm"));
+  const isMobile = !useMediaQuery(theme.breakpoints.up("sm"));
   const [activeStep, setActiveStep] = useState(0);
-  const [maxSteps, setMaxSteps] = useState();
+  const [maxSteps, setMaxSteps] = useState(0);
   const [results, setResults] = useState([]);
   const touchStartX = useRef(null);
 
   useEffect(() => {
-    let filteredArray = props.results.filter(item => item.rows.length > 0);
+    const filteredArray = props.results.filter(item => item.rows.length > 0);
     setResults(filteredArray);
     setMaxSteps(filteredArray.length);
+    setActiveStep(0);
   }, [props.results]);
 
   const handleNext = () => {
-    setActiveStep((prev) => prev + 1);
+    setActiveStep((prev) => Math.min(prev + 1, maxSteps - 1));
   };
 
   const handleBack = () => {
-    setActiveStep((prev) => prev - 1);
+    setActiveStep((prev) => Math.max(prev - 1, 0));
   };
 
   useEffect(() => {
+    if (maxSteps < 2) return;
     const timer = setTimeout(() => {
-      setActiveStep(
-        activeStep === maxSteps - 1 ? 0 : activeStep + 1
-      );
+      setActiveStep((prev) => (prev === maxSteps - 1 ? 0 : prev + 1));
     }, 5000);
-
     return () => clearTimeout(timer);
   }, [activeStep, maxSteps]);
 
@@ -46,33 +45,41 @@ function PotCarousel(props) {
     if (touchStartX.current === null) return;
     const diff = touchStartX.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
-      if (diff > 0 && activeStep < maxSteps - 1) handleNext();
-      else if (diff < 0 && activeStep > 0) handleBack();
+      if (diff > 0) handleNext();
+      else handleBack();
     }
     touchStartX.current = null;
   };
 
+  if (results.length === 0) return null;
+
   return (
     <Box
-      sx={{ flexGrow: 1, fontSize: '16px', margin: 0, padding: 0 }}
+      sx={{ width: '100%', fontSize: '16px', margin: 0, padding: 0, overflow: 'hidden' }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {results.map((result, index) => (
-        index === activeStep ? (
-          <PotsResultTable
-            key={result.title}
-            style={{ width: '100%' }}
-            title={result.title}
-            subtitle={result.subtitle}
-            numPlaces={result.numPlaces}
-            rows={result.rows}
-            columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
-            scroll={matches ? null : "scroll"}
-            density="compact"
-          />
-        ) : null
-      ))}
+      <div style={{
+        display: 'flex',
+        transform: `translateX(-${activeStep * 100}%)`,
+        transition: 'transform 0.4s ease-in-out',
+        willChange: 'transform',
+      }}>
+        {results.map((result) => (
+          <div key={result.title} style={{ minWidth: '100%' }}>
+            <PotsResultTable
+              style={{ width: '100%' }}
+              title={result.title}
+              subtitle={result.subtitle}
+              numPlaces={result.numPlaces}
+              rows={result.rows}
+              columns={isMobile ? (result.mobileColumns || []) : (result.desktopColumns || [])}
+              isMobile={isMobile}
+              density="compact"
+            />
+          </div>
+        ))}
+      </div>
     </Box>
   );
 }

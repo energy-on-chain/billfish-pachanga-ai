@@ -138,7 +138,7 @@ function RootNavigation(props) {
         {config.CONFIG_GENERAL_HAS_INFO && isMobile && (
           Object.entries(config.CONFIG_GENERAL_INFO_LINK_OBJECT || {}).map(([label, url]) => (
             <li key={label} style={{ backgroundColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR, borderColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR }}>
-              <a href={url} target="_blank" style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}>{label}</a>
+              <a href={url} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}>{label}</a>
             </li>
           ))
         )}

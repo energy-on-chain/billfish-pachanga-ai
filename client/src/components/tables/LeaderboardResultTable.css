@@ -72,7 +72,8 @@
 .mobile-card-stat {
   display: flex;
   flex-direction: column;
-  min-width: 80px;
+  min-width: 0;
+  flex: 1 1 60px;
 }
 
 .mobile-card-label {
