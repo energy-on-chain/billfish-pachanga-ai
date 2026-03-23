@@ -64,26 +64,29 @@
 
 .mobile-card-stats {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px 16px;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .mobile-card-stat {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1 1 60px;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .mobile-card-label {
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   color: var(--color-text-muted);
-  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mobile-card-label::after {
+  content: ':';
 }
 
 .mobile-card-value {
@@ -91,6 +94,5 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
-  margin-top: 2px;
 }
 
