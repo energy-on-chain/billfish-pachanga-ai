@@ -1,17 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material/styles';
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Box from '@mui/material/Box';
-import SwipeableViews from 'react-swipeable-views-react-18-fix';
-
-// import Button from '@mui/material/Button';
-// import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-// import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
-// import { autoPlay } from 'react-swipeable-views-utils';
 
 import PotsResultTable from './tables/PotsResultTable';
-
-// const AutoPlaySwipeableViews = autoPlay(SwipeableViews);
 
 function PotCarousel(props) {
 
@@ -20,29 +12,20 @@ function PotCarousel(props) {
   const [activeStep, setActiveStep] = useState(0);
   const [maxSteps, setMaxSteps] = useState();
   const [results, setResults] = useState([]);
+  const touchStartX = useRef(null);
 
-  useEffect(() => { 
+  useEffect(() => {
     let filteredArray = props.results.filter(item => item.rows.length > 0);
     setResults(filteredArray);
     setMaxSteps(filteredArray.length);
-    console.log(filteredArray);
-    console.log(filteredArray.length);
-
-    console.log("Debug");
-    console.log(props.results);
-
   }, [props.results]);
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+    setActiveStep((prev) => prev + 1);
   };
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
-
-  const handleStepChange = (step) => {
-    setActiveStep(step);
+    setActiveStep((prev) => prev - 1);
   };
 
   useEffect(() => {
@@ -55,66 +38,43 @@ function PotCarousel(props) {
     return () => clearTimeout(timer);
   }, [activeStep, maxSteps]);
 
-  return (
-    <Box sx={{ flexGrow: 1, fontSize: '16px', margin: 0, padding: 0 }}>
-      <SwipeableViews
-        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-        index={activeStep}
-        onChangeIndex={handleStepChange}
-        enableMouseEvents
-      >
-        {results.map((result, index) => (
-          <div key={result.title}>
-            {Math.abs(activeStep - index) <= 2 ? (
-              <PotsResultTable
-                key={result.title}
-                style={{ width: '100%' }}
-                title={result.title}
-                subtitle={result.subtitle}
-                numPlaces={result.numPlaces}
-                rows={result.rows}
-                columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
-                scroll={matches ? (null) : ("scroll")}
-                density="compact"
-              />
-            ) : null}
-          </div>
-        ))}
-      </SwipeableViews>
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
 
-      {/* <MobileStepper
-        steps={maxSteps}
-        position="static"
-        activeStep={activeStep}
-        nextButton={
-          <Button
-            size="large"
-            onClick={handleNext}
-            disabled={activeStep === maxSteps - 1}
-          >
-            Next
-            {theme.direction === 'rtl' ? (
-              <KeyboardArrowLeft />
-            ) : (
-              <KeyboardArrowRight />
-            )}
-          </Button>
-        }
-        backButton={
-          <Button size="large" onClick={handleBack} disabled={activeStep === 0}>
-            {theme.direction === 'rtl' ? (
-              <KeyboardArrowRight />
-            ) : (
-              <KeyboardArrowLeft />
-            )}
-            Back
-          </Button>
-        }
-      /> */}
-      
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && activeStep < maxSteps - 1) handleNext();
+      else if (diff < 0 && activeStep > 0) handleBack();
+    }
+    touchStartX.current = null;
+  };
+
+  return (
+    <Box
+      sx={{ flexGrow: 1, fontSize: '16px', margin: 0, padding: 0 }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {results.map((result, index) => (
+        index === activeStep ? (
+          <PotsResultTable
+            key={result.title}
+            style={{ width: '100%' }}
+            title={result.title}
+            subtitle={result.subtitle}
+            numPlaces={result.numPlaces}
+            rows={result.rows}
+            columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
+            scroll={matches ? null : "scroll"}
+            density="compact"
+          />
+        ) : null
+      ))}
     </Box>
   );
 }
 
 export default PotCarousel;
-
