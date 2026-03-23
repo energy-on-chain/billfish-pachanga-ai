@@ -14,6 +14,8 @@ import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import CircularProgress from '@mui/material/CircularProgress';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 import AnimatedPage from './AnimatedPage';
 import CrudTable from '../components/tables/CrudTable';
@@ -121,6 +123,16 @@ function AdminPage() {
   const openDeletePotModal = () => {setIsDeletePotModalOpen(true)};
   const closeDeletePotModal = () => {setIsDeletePotModalOpen(false)};
 
+  // STATE - POT SPLITS
+  const [potSplits, setPotSplits] = useState({});
+  const [potSplitsHaveLoaded, setPotSplitsHaveLoaded] = useState(false);
+  const [potSplitsSaving, setPotSplitsSaving] = useState({});
+
+  // STATE - AWARDS
+  const [awardsConfig, setAwardsConfig] = useState({});
+  const [awardsConfigHaveLoaded, setAwardsConfigHaveLoaded] = useState(false);
+  const [awardsSaving, setAwardsSaving] = useState({});
+
   // STATE - AUCTION
   // FIXME
 
@@ -184,17 +196,21 @@ function AdminPage() {
           CONFIG_ADMIN_TABLE_PROPERTIES_FOR_AUCTIONS,
         },
         catchConfig: {
-          CONFIG_CATCHES_STATS_LIST, 
+          CONFIG_CATCHES_STATS_LIST,
           CONFIG_CATCHES_SPECIES_LIST,
+        },
+        leaderboardConfig: {
+          CONFIG_LEADERBOARD_CATEGORIES,
         },
         potsConfig: {
           CONFIG_POTS_BOARD_LIST,
+          CONFIG_POTS_CATEGORIES,
         },
       } = loadedConfig;
 
-      const apiUrl = process.env.REACT_APP_NODE_ENV === 'production'
-        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-        : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === 'production'
+        ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+        : import.meta.env.VITE_SERVER_URL_STAGING;
 
       // Clear all row data
       setTeamRows([]);
@@ -387,7 +403,11 @@ function AdminPage() {
       setApiUrl(apiUrl);
       setTableProperties(tempTableProperties);
       setStyle({ height: 800, width: '100%' });
-      setInitialState({ pagination: { paginationModel: { page: 0, pageSize: 10 } } });
+      const baseInitialState = { pagination: { paginationModel: { page: 0, pageSize: 10 } } };
+      setInitialState(tab === 'Catches'
+        ? { ...baseInitialState, sorting: { sortModel: [{ field: 'dateTime', sort: 'desc' }] } }
+        : baseInitialState
+      );
       setPageSizeOptions([5, 10, 25, 100]);
 
       // Set specific tab state
@@ -403,6 +423,57 @@ function AdminPage() {
       } else if (tab === 'Pots') {
         setPotRows(tempRows);
         setPotRowsHaveLoaded(true);
+      } else if (tab === 'Pot Splits') {
+        // Load current overrides from Firestore
+        try {
+          const overrideRes = await fetch(`${apiUrl}/api/${year}/admin_get_pot_config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const overrideData = await overrideRes.json();
+          // Build initial state: for each category, use Firestore override or config default
+          const splitsState = {};
+          CONFIG_POTS_CATEGORIES.forEach(cat => {
+            const override = overrideData[cat.potName];
+            splitsState[cat.potName] = override ? override.payoutStructure : { ...cat.payoutStructure };
+          });
+          setPotSplits(splitsState);
+          setPotSplitsHaveLoaded(true);
+        } catch (e) {
+          console.error('Error loading pot splits:', e);
+          // Fall back to config defaults
+          const splitsState = {};
+          CONFIG_POTS_CATEGORIES.forEach(cat => {
+            splitsState[cat.potName] = { ...cat.payoutStructure };
+          });
+          setPotSplits(splitsState);
+          setPotSplitsHaveLoaded(true);
+        }
+      } else if (tab === 'Awards') {
+        try {
+          const overrideRes = await fetch(`${apiUrl}/api/${year}/admin_get_awards_config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const overrideData = await overrideRes.json();
+          const awardsState = {};
+          CONFIG_LEADERBOARD_CATEGORIES.forEach(cat => {
+            const override = overrideData[cat.title];
+            awardsState[cat.title] = override !== undefined ? override.numAwards : cat.numTrophies;
+          });
+          setAwardsConfig(awardsState);
+          setAwardsConfigHaveLoaded(true);
+        } catch (e) {
+          console.error('Error loading awards config:', e);
+          const awardsState = {};
+          CONFIG_LEADERBOARD_CATEGORIES.forEach(cat => {
+            awardsState[cat.title] = cat.numTrophies;
+          });
+          setAwardsConfig(awardsState);
+          setAwardsConfigHaveLoaded(true);
+        }
       } else if (tab === 'Auction') {
         // FIXME
       }
@@ -970,6 +1041,147 @@ function AdminPage() {
                               openDeleteModal={openDeletePotModal}
                               closeDeleteModal={closeDeletePotModal}
                             />
+                          </div>
+                        )}
+                      </TabPanel>
+                    );
+                  } else if (tab === "Awards") {
+                    return (
+                      <TabPanel key="Awards" value="Awards">
+                        {!awardsConfigHaveLoaded ? (
+                          <CircularProgress />
+                        ) : (
+                          <div>
+                            <Typography variant="h6" gutterBottom>Trophy Awards Configuration</Typography>
+                            <Typography variant="body2" gutterBottom>
+                              Set the number of trophy places per leaderboard category. Changes are saved to Firestore and used in the awards report.
+                            </Typography>
+                            <br />
+                            {config?.leaderboardConfig?.CONFIG_LEADERBOARD_CATEGORIES.map(cat => {
+                              const numAwards = awardsConfig[cat.title] ?? cat.numTrophies;
+                              const isSaving = awardsSaving[cat.title];
+                              return (
+                                <div key={cat.title} style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+                                  <Typography style={{ minWidth: '280px' }}>{cat.title}</Typography>
+                                  <TextField
+                                    type="number"
+                                    label="# Trophies"
+                                    size="small"
+                                    value={numAwards}
+                                    inputProps={{ min: 0, max: 10, step: 1 }}
+                                    style={{ width: '100px' }}
+                                    onChange={(e) => {
+                                      const val = parseInt(e.target.value) || 0;
+                                      setAwardsConfig(prev => ({ ...prev, [cat.title]: val }));
+                                    }}
+                                  />
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    disabled={isSaving}
+                                    onClick={async () => {
+                                      setAwardsSaving(prev => ({ ...prev, [cat.title]: true }));
+                                      try {
+                                        const res = await fetch(`${apiUrl}/api/${year}/admin_save_awards_config`, {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ categoryName: cat.title, numAwards: awardsConfig[cat.title] })
+                                        });
+                                        if (res.ok) {
+                                          toast.success(`Saved trophy count for ${cat.title}`);
+                                        } else {
+                                          toast.error(`Failed to save for ${cat.title}`);
+                                        }
+                                      } catch (e) {
+                                        toast.error(`Error saving for ${cat.title}`);
+                                      } finally {
+                                        setAwardsSaving(prev => ({ ...prev, [cat.title]: false }));
+                                      }
+                                    }}
+                                  >
+                                    {isSaving ? 'Saving...' : 'Save'}
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </TabPanel>
+                    );
+                  } else if (tab === "Pot Splits") {
+                    return (
+                      <TabPanel key="Pot Splits" value="Pot Splits">
+                        {!potSplitsHaveLoaded ? (
+                          <CircularProgress />
+                        ) : (
+                          <div>
+                            <Typography variant="h6" gutterBottom>Pot Payout Splits</Typography>
+                            <Typography variant="body2" gutterBottom>
+                              Edit the payout percentages for each pot. Values must sum to 1.0 (e.g. 0.7 + 0.3 = 1.0). Changes are saved to Firestore and override the default config.
+                            </Typography>
+                            <br />
+                            {config?.potsConfig?.CONFIG_POTS_CATEGORIES.map(cat => {
+                              const structure = potSplits[cat.potName] || cat.payoutStructure;
+                              const places = Object.keys(structure).filter(p => parseFloat(structure[p]) > 0 || parseInt(p) === 1);
+                              const isSaving = potSplitsSaving[cat.potName];
+                              return (
+                                <div key={cat.potName} style={{ marginBottom: '24px', padding: '12px', border: '1px solid #ccc', borderRadius: '4px' }}>
+                                  <Typography variant="subtitle1"><strong>{cat.title}</strong></Typography>
+                                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                    {Object.keys(structure).map(place => (
+                                      <TextField
+                                        key={place}
+                                        label={`Place ${place}`}
+                                        type="number"
+                                        size="small"
+                                        value={structure[place]}
+                                        inputProps={{ step: 0.01, min: 0, max: 1 }}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const val = parseFloat(e.target.value) || 0;
+                                          setPotSplits(prev => ({
+                                            ...prev,
+                                            [cat.potName]: { ...prev[cat.potName], [place]: val }
+                                          }));
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                  <div style={{ marginTop: '8px' }}>
+                                    <Typography variant="caption">
+                                      Sum: {Object.values(structure).reduce((s, v) => s + parseFloat(v || 0), 0).toFixed(2)}
+                                    </Typography>
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      disabled={isSaving}
+                                      style={{ marginLeft: '16px' }}
+                                      onClick={async () => {
+                                        setPotSplitsSaving(prev => ({ ...prev, [cat.potName]: true }));
+                                        try {
+                                          const res = await fetch(`${apiUrl}/api/${year}/admin_save_pot_config`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ potName: cat.potName, payoutStructure: potSplits[cat.potName] })
+                                          });
+                                          if (res.ok) {
+                                            toast.success(`Saved splits for ${cat.title}`);
+                                          } else {
+                                            toast.error(`Failed to save splits for ${cat.title}`);
+                                          }
+                                        } catch (e) {
+                                          toast.error(`Error saving splits for ${cat.title}`);
+                                        } finally {
+                                          setPotSplitsSaving(prev => ({ ...prev, [cat.potName]: false }));
+                                        }
+                                      }}
+                                    >
+                                      {isSaving ? 'Saving...' : 'Save'}
+                                    </Button>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </TabPanel>

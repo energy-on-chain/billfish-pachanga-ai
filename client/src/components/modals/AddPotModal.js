@@ -35,9 +35,9 @@ const AdminAddPotModal = (props) => {
       const loadedConfig = await loadConfigForYear(year); // Load the config dynamically
       setConfig(loadedConfig); // Set the loaded configuration
 
-      const apiUrl = process.env.REACT_APP_NODE_ENV === 'production'
-        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-        : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === 'production'
+        ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+        : import.meta.env.VITE_SERVER_URL_STAGING;
 
       // Get registered (eligible) teams
       fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {    
@@ -114,10 +114,10 @@ const AdminAddPotModal = (props) => {
       setIsSubmitting(true);
 
       let apiUrl = null;
-      if (process.env.REACT_APP_NODE_ENV === "staging") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-      } else if (process.env.REACT_APP_NODE_ENV === "production") {
-        apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+      if (import.meta.env.VITE_NODE_ENV === "staging") {
+        apiUrl = import.meta.env.VITE_SERVER_URL_STAGING;
+      } else if (import.meta.env.VITE_NODE_ENV === "production") {
+        apiUrl = import.meta.env.VITE_SERVER_URL_PRODUCTION;
       }
   
       // Check for duplicate teamId in the current potYear collection

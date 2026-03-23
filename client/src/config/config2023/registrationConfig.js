@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // REGISTRATION SETTINGS ////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
-module.exports = {
+export default {
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION: true,
   CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS: "1686805200000",    // Thursday, June 15th 2023 at 00:00AM
   CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS: "1689570000000",    // Monday, 17-July-2023 at 00:00 AM

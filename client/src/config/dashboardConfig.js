@@ -1,28 +1,43 @@
 /////////////////////////////////////////////////////////////////////////////
 // DASHBOARD SETTINGS ///////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
-module.exports = {
+export default {
   firebaseStagingConfig: {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_STAGING,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_STAGING,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_STAGING,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY_STAGING,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN_STAGING,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID_STAGING,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET_STAGING,
     messagingSenderId:
-      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_STAGING,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID_STAGING,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_STAGING,
+      import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID_STAGING,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID_STAGING,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID_STAGING,
   },
   firebaseProductionConfig: {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY_PRODUCTION,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN_PRODUCTION,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID_PRODUCTION,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY_PRODUCTION,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN_PRODUCTION,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID_PRODUCTION,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET_PRODUCTION,
     messagingSenderId:
-      process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID_PRODUCTION,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID_PRODUCTION,
+      import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID_PRODUCTION,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID_PRODUCTION,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID_PRODUCTION,
   },
   CONFIG_DASHBOARD_UPCOMING_AND_ACTIVE_TOURNAMENT_DATA: [
+    {
+      logo: './BillfishPachangaLogo2026.png',
+      title: "Billfish Pachanga 2026",
+      dates: "July 15th - 18th 2026",
+      home: "/2026/home",
+      register: "/2026/register",
+      leaderboard: "/2026/leaderboard",
+      pots: "/2026/pots",
+      newsfeed: "/2026/newsfeed",
+      auction: null,
+      admin: "/2026/admin",
+    },
+  ],
+
+  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA: [
     {
       logo: './BillfishPachangaLogo2025.png',
       title: "Billfish Pachanga 2025",
@@ -30,14 +45,11 @@ module.exports = {
       home: "/2025/home",
       register: "/2025/register",
       leaderboard: "/2025/leaderboard",
-      pots: "/2025/pots", 
+      pots: "/2025/pots",
       newsfeed: "/2025/newsfeed",
       auction: null,
       admin: "/2025/admin",
     },
-  ],
-
-  CONFIG_DASHBOARD_PAST_TOURNAMENT_DATA: [
     {
       logo: './BillfishPachangaLogo2024.png',
       title: "Billfish Pachanga 2024",
@@ -45,7 +57,7 @@ module.exports = {
       home: "/2024/home",
       register: "/2024/register",
       leaderboard: "/2024/leaderboard",
-      pots: "/2024/pots", 
+      pots: "/2024/pots",
       newsfeed: "/2024/newsfeed",
       auction: null,
       admin: "/2024/admin",

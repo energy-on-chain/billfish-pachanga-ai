@@ -1,24 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { AnimatePresence } from "framer-motion";
+import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
+import theme from './theme';
 
 import RootLayout from "./layouts/RootLayout";
 import ErrorPage from './pages/ErrorPage';
-import Redirect from './Redirect'; // Auto redirect for root path
-import HomePage from './pages/HomePage';
-import RegisterPage from './pages/RegisterPage';
-import RegisterSuccessPage from "./pages/RegisterSuccessPage";
-import RegisterErrorPage from "./pages/RegisterErrorPage";
-import AdminPage from "./pages/AdminPage";
-import DashboardPage from "./pages/DashboardPage";
-import NewsfeedPage from "./pages/NewsfeedPage";
-import LeaderboardPage from "./pages/LeaderboardPage";
-import PotsPage from "./pages/PotsPage";
-// import AuctionPage from "./pages/AuctionPage";
+import Redirect from './Redirect';
+
+// Lazy-loaded pages — each page is a separate chunk, loaded only when navigated to
+const HomePage = lazy(() => import('./pages/HomePage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const RegisterSuccessPage = lazy(() => import('./pages/RegisterSuccessPage'));
+const RegisterErrorPage = lazy(() => import('./pages/RegisterErrorPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const NewsfeedPage = lazy(() => import('./pages/NewsfeedPage'));
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
+const PotsPage = lazy(() => import('./pages/PotsPage'));
 
 import './App.css';
+
+const PageFallback = () => (
+  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '40vh' }}>
+    <CircularProgress sx={{ color: 'primary.main' }} />
+  </Box>
+);
 
 function App() {
   const [loading, setLoading] = useState(false);
@@ -32,45 +41,44 @@ function App() {
 
   const router = createBrowserRouter([
     {
-      path: '/', 
-      element: <Redirect />,  // This ensures the root path redirects to the current year
+      path: '/',
+      element: <Redirect />,
       errorElement: <ErrorPage />,
     },
     {
       path: '/dashboard',
-      element: <RootLayout />, // Use RootLayout for this path
+      element: <RootLayout />,
       errorElement: <ErrorPage />,
       children: [
-        { path: '', element: <DashboardPage /> }, // DashboardPage as a child of RootLayout
+        { path: '', element: <Suspense fallback={<PageFallback />}><DashboardPage /></Suspense> },
       ]
     },
     {
-      path: '/:year', 
-      element: <RootLayout delayRefresh={delayRefresh} />, 
+      path: '/:year',
+      element: <RootLayout delayRefresh={delayRefresh} />,
       errorElement: <ErrorPage />,
       children: [
-        { path: 'home', element: <HomePage /> }, 
-        { path: 'register', element: <RegisterPage delayRefresh={delayRefresh} /> },
-        { path: 'registration_success', element: <RegisterSuccessPage /> },   
-        { path: 'registration_error', element: <RegisterErrorPage /> },   
-        { path: 'admin', element: <AdminPage /> },    
-        { path: 'newsfeed', element: <NewsfeedPage /> },    
-        { path: 'leaderboard', element: <LeaderboardPage /> },    
-        { path: 'pots', element: <PotsPage /> },    
-        // { path: 'auction', element: <AuctionPage /> },    
+        { path: 'home', element: <Suspense fallback={<PageFallback />}><HomePage /></Suspense> },
+        { path: 'register', element: <Suspense fallback={<PageFallback />}><RegisterPage delayRefresh={delayRefresh} /></Suspense> },
+        { path: 'registration_success', element: <Suspense fallback={<PageFallback />}><RegisterSuccessPage /></Suspense> },
+        { path: 'registration_error', element: <Suspense fallback={<PageFallback />}><RegisterErrorPage /></Suspense> },
+        { path: 'admin', element: <Suspense fallback={<PageFallback />}><AdminPage /></Suspense> },
+        { path: 'newsfeed', element: <Suspense fallback={<PageFallback />}><NewsfeedPage /></Suspense> },
+        { path: 'leaderboard', element: <Suspense fallback={<PageFallback />}><LeaderboardPage /></Suspense> },
+        { path: 'pots', element: <Suspense fallback={<PageFallback />}><PotsPage /></Suspense> },
       ],
     },
   ]);
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <AnimatePresence>
         <RouterProvider router={router} />
         <ToastContainer />
       </AnimatePresence>
-    </>
+    </ThemeProvider>
   );
 }
 
 export default App;
-

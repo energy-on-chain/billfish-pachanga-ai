@@ -4,7 +4,7 @@ import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { Select, MenuItem, InputLabel, Autocomplete, TextField } from "@mui/material";
+import { Select, MenuItem, InputLabel, Autocomplete, TextField, Skeleton } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -52,7 +52,7 @@ function PotsPage() {
   // STATE - PAYOUTS
   const payoutsViewOptions = ["By Pot", "By Team"];    // for payouts
   const [payoutsViewSelection, setPayoutsViewSelection] = useState("By Pot");
-  const payoutsDisplayOptions = ["List", "Select", "Slideshow"];
+  const payoutsDisplayOptions = ["List", "Cards", "Select", "Slideshow"];
   const [payoutsDisplaySelection, setPayoutsDisplaySelection] = useState("List");
   const [payoutsSelectedResult, setPayoutsSelectedResult] = useState([]);
   const [payoutsHasSelectedResult, setPayoutsHasSelectedResult] = useState(false);
@@ -127,25 +127,42 @@ function PotsPage() {
         setIsPreliminaryResults(false);
       };
 
-      const apiUrl = process.env.REACT_APP_NODE_ENV === "production"
-      ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-      : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === "production"
+      ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+      : import.meta.env.VITE_SERVER_URL_STAGING;
+
+      // Fetch pot config overrides from Firestore (via admin API)
+      let potConfigOverrides = {};
+      try {
+        const potConfigRes = await fetch(`${apiUrl}/api/${year}/admin_get_pot_config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        if (potConfigRes.ok) {
+          potConfigOverrides = await potConfigRes.json();
+        }
+      } catch (e) {
+        console.warn('Could not fetch pot config overrides:', e);
+      }
 
       // Build queries for payouts
       const queries = CONFIG_POTS_CATEGORIES.map((item) => {
+        // Use Firestore override if available, otherwise use config default
+        const payoutStructure = potConfigOverrides[item.potName]?.payoutStructure || item.payoutStructure;
 
         // Basic data
-        let bodyData = { 
+        let bodyData = {
           catchYear: CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
           potYear: CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
-          isReport: false, 
+          isReport: false,
           title: item.title,
           subtitle: item.subtitle || "",
           potName: item.potName,
           entryAmount: item.entryAmount,
           tournamentCut: item.tournamentCut,
-          payoutStructure: item.payoutStructure,
-          numPlaces: Object.keys(item.payoutStructure).length,
+          payoutStructure: payoutStructure,
+          numPlaces: Object.keys(payoutStructure).length,
         };
       
         // Add any extra inputs required (e.g. specific date)
@@ -163,7 +180,7 @@ function PotsPage() {
           body: JSON.stringify(bodyData),
           title: item.title,
           subtitle: item.subtitle || "",
-          numPlaces: Object.keys(item.payoutStructure).length,
+          numPlaces: Object.keys(payoutStructure).length,
           desktopColumns: item.desktopColumns,
           mobileColumns: item.mobileColumns,
         };
@@ -234,16 +251,19 @@ function PotsPage() {
         }).then(r => r.json()).then((result) => {
           var tempObject = {};
           var tempRows = [];
-          Object.keys(result).map((catchKey, i) => {
-            let tempObject = {...result[catchKey], id: i, catchId: catchKey};
-            tempRows.push(tempObject);
-          });
+          if (!result.noQualifyingEntrants) {
+            Object.keys(result).map((catchKey, i) => {
+              let tempObject = {...result[catchKey], id: i, catchId: catchKey};
+              tempRows.push(tempObject);
+            });
+          }
           tempObject = {
-            title: query.title, 
+            title: query.title,
             subtitle: query.subtitle,
             numPlaces: query.numPlaces,
-            rows: tempRows, 
-            desktopColumns: query.desktopColumns, 
+            rows: tempRows,
+            noQualifyingEntrants: result.noQualifyingEntrants || false,
+            desktopColumns: query.desktopColumns,
             mobileColumns: query.mobileColumns
           };
           console.log(tempObject);
@@ -772,13 +792,26 @@ function PotsPage() {
             { (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "List") && tournamentHasStarted &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
                   <CircularProgress />
                 </div>
               ) : (
                 <>
                   <br/>
                   {payoutsResultArray.map(result => {
+                    if (result.noQualifyingEntrants) {
+                      return (
+                        <div key={result.title}>
+                          <h3 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>{result.title}</h3>
+                          <p style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No qualifying entrants</p>
+                        </div>
+                      );
+                    }
                     if (result.rows.length > 0) {
                       return (
                         <PotsResultTable
@@ -789,7 +822,7 @@ function PotsPage() {
                           numPlaces={result.numPlaces}
                           rows={result.rows}
                           columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
-                          scroll={matches ? null : "scroll"}
+                          isMobile={!matches}
                           density="compact"
                         />
                       );
@@ -803,7 +836,12 @@ function PotsPage() {
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
                   <CircularProgress />
                 </div>
               ) : (
@@ -814,10 +852,51 @@ function PotsPage() {
               ))
             }
 
+            { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Cards") && (tournamentHasStarted) ) &&
+              (!hasLoaded ? (
+                <div>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
+                  <CircularProgress />
+                </div>
+              ) : (
+                <div className="desktop-card-grid">
+                  {payoutsResultArray.map(result => {
+                    if (result.rows.length > 0) {
+                      return (
+                        <div key={result.title} className="desktop-card-grid-item">
+                          <PotsResultTable
+                            style={{ width: '100%' }}
+                            title={result.title}
+                            subtitle={result.subtitle}
+                            numPlaces={result.numPlaces}
+                            rows={result.rows}
+                            columns={result.desktopColumns || []}
+                            useCards={true}
+                            density="compact"
+                          />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              ))
+            }
+
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
-                  <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
                   <CircularProgress />
                 </div>
                 ) : (
@@ -841,7 +920,9 @@ function PotsPage() {
                     { payoutsHasSelectedResult ? (
                       <div>
                         {payoutsSelectedResult.map(result => (
-                          result.rows.length > 0 ? (
+                          result.noQualifyingEntrants ? (
+                            <p key={result.title} style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>No qualifying entrants</p>
+                          ) : result.rows.length > 0 ? (
                             <PotsResultTable
                               key={result.title}
                               style={{ width: '100%' }}
@@ -850,7 +931,7 @@ function PotsPage() {
                               numPlaces={result.numPlaces}
                               rows={result.rows}
                               columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
-                              scroll={matches ? (null) : ("scroll")}
+                              isMobile={!matches}
                               density="compact"
                             />
                           ) : (
@@ -869,10 +950,12 @@ function PotsPage() {
             {/* PAYOUTS - BY TEAM */}
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "List") && (tournamentHasStarted) ) &&
             (!hasLoaded ? (
-              <div>
-                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
             ) : (
               <>
                 <br/>
@@ -881,7 +964,7 @@ function PotsPage() {
                   title="Team Payout Summary"
                   rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
                   columns={matches ? config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
-                  scroll={matches ? null : "scroll"}
+                  isMobile={!matches}
                   density="compact"
                 />
               </>
@@ -889,10 +972,12 @@ function PotsPage() {
 
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
             (!hasLoaded ? (
-              <div>
-                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
               ) : (
                 <>
                   <br/>
@@ -933,7 +1018,7 @@ function PotsPage() {
                             place: formatPlace(result.place)  // Format the place value
                           }))}
                           columns={matches ? config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
-                          scroll={matches ? null : "scroll"}
+                          isMobile={!matches}
                           density="compact"
                         />
                       ) : (
@@ -945,12 +1030,36 @@ function PotsPage() {
               )
             )}
 
-            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) && 
+            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Cards") && (tournamentHasStarted) &&
             (!hasLoaded ? (
-              <div>
-                <h1 style={{color: config?.stylingConfig?.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR}}>Loading...</h1>
-                <CircularProgress />
-              </div>
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
+            ) : (
+              <>
+                <br/>
+                <PotsResultTable
+                  style={{ width: '100%' }}
+                  title="Team Payout Summary"
+                  rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
+                  columns={config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS}
+                  useCards={true}
+                  density="compact"
+                />
+              </>
+            ))}
+
+            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) &&
+            (!hasLoaded ? (
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
             ) : (
               <>
                 <br/>

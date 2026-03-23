@@ -1,3 +1,4 @@
+import { CircularProgress, Box } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useSearchParams } from 'react-router-dom';
@@ -60,7 +61,7 @@ function DashboardPage() {
   }, [year]);
 
   if (!configs) {
-    return <div>Loading...</div>; // Show a loading state while configs are being fetched
+    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
   }
 
   const {

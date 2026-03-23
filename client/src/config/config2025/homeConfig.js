@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // HOMEPAGE SETTINGS ////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
-module.exports = {
+export default {
   CONFIG_HOME_TOURNAMENT_DATE_STRING: "July 16 - 19, 2025",
   CONFIG_HOME_TOURNAMENT_START_IN_LOCAL_TIME_IN_MS: "1752642000000",    // 00:00 AM on 16-Jul-2025
   // CONFIG_HOME_TOURNAMENT_START_IN_LOCAL_TIME_IN_MS: "1721192400000",    // 17-Jul-2024... testing

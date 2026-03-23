@@ -38,6 +38,14 @@ function RootNavigation(props) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const closeMenu = () => {
+    const toggle = document.getElementById('menu-toggle');
+    if (toggle) {
+      toggle.checked = false;
+      document.getElementById('menu').style.marginTop = '0px';
+    }
+  };
+
   useEffect(() => {
     const menu = document.getElementById('menu-toggle');
   
@@ -121,7 +129,7 @@ function RootNavigation(props) {
 
         {/* HOME */}
         <li style={{ backgroundColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR, borderColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR }}>
-          <NavLink to={`/${year}/home`} className={({ isActive }) => isActive ? "active" : undefined} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}>Home</NavLink>
+          <NavLink to={`/${year}/home`} className={({ isActive }) => isActive ? "active" : undefined} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }} onClick={closeMenu}>Home</NavLink>
         </li>
 
         {/* INFO LINKS */}
@@ -138,7 +146,7 @@ function RootNavigation(props) {
         {config.CONFIG_GENERAL_HAS_INFO && isMobile && (
           Object.entries(config.CONFIG_GENERAL_INFO_LINK_OBJECT || {}).map(([label, url]) => (
             <li key={label} style={{ backgroundColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR, borderColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR }}>
-              <a href={url} target="_blank" style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}>{label}</a>
+              <a href={url} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }} onClick={closeMenu}>{label}</a>
             </li>
           ))
         )}
@@ -159,7 +167,7 @@ function RootNavigation(props) {
         {isMobile && (
           Object.entries(config.CONFIG_GENERAL_TOURNAMENT_LINK_OBJECT || {}).map(([label, url]) => (
             <li key={label} style={{ backgroundColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR, borderColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR }}>
-              <NavLink to={url} className={({ isActive }) => isActive ? "active" : undefined} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}>{label}</NavLink>
+              <NavLink to={url} className={({ isActive }) => isActive ? "active" : undefined} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }} onClick={closeMenu}>{label}</NavLink>
             </li>
           ))
         )}
@@ -199,20 +207,20 @@ function RootNavigation(props) {
           Object.entries(config.CONFIG_GENERAL_ADMIN_LINK_OBJECT || {}).map(([label, url]) => (
             <li key={label} style={{ backgroundColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR, borderColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR }}>
               {label === 'Dashboard' ? (
-                // If label is 'Dashboard', append the year as a query parameter for mobile
                 <NavLink
                   to={`${url}?year=${year}`}
                   className={({ isActive }) => (isActive ? 'active' : undefined)}
                   style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}
+                  onClick={closeMenu}
                 >
                   {label}
                 </NavLink>
               ) : (
-                // Otherwise, render the regular NavLink
                 <NavLink
                   to={url}
                   className={({ isActive }) => (isActive ? 'active' : undefined)}
                   style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}
+                  onClick={closeMenu}
                 >
                   {label}
                 </NavLink>
@@ -224,7 +232,7 @@ function RootNavigation(props) {
         {/* REGISTRATION LINKS */}
         {config.CONFIG_GENERAL_HAS_REGISTRATION && (
           <li className="navButtonHamburgerToggle" style={{ backgroundColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR, borderColor: stylingConfig.CONFIG_STYLING_NAVBAR_BACKGROUND_COLOR }}>
-            <NavLink to={`/${year}/register`} className={({ isActive }) => isActive ? "active" : undefined} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }}>Register</NavLink>
+            <NavLink to={`/${year}/register`} className={({ isActive }) => isActive ? "active" : undefined} style={{ color: stylingConfig.CONFIG_STYLING_NAVBAR_TEXT_COLOR }} onClick={closeMenu}>Register</NavLink>
           </li>
         )}
         <div className="navButtonHamburgerToggle2">

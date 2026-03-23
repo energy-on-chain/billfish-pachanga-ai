@@ -1,13 +1,16 @@
 const express = require("express");
 const cors = require('cors');
+const morgan = require('morgan');
 const bodyParser = require("body-parser");
 const path = require('path');
 const dotenv = require('dotenv');
 const admin = require("firebase-admin");    // firebase
-const {firebaseStagingConfig, firebaseProductionConfig} = require("../client/src/config/dashboardConfig.js");
 const session = require('express-session');
-const RedisStore = require('connect-redis').default; // Corrected way to import connect-redis
+const RedisStore = require('connect-redis').default;
 const redis = require('redis');
+
+const { errorHandler } = require('./middleware/errorHandler');
+const cache = require('./services/cache');
 
 // ROUTES
 const homeRoutes = require('./routes/homeRoutes');
@@ -49,7 +52,6 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
       "universe_domain": process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_UNIVERSE_DOMAIN_STAGING
     }),
     storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_STAGING,
-    config: firebaseStagingConfig
   });
 
   clientUrl = process.env.REACT_APP_CLIENT_URL_STAGING;    // stripe
@@ -77,7 +79,6 @@ if (process.env.REACT_APP_NODE_ENV === "staging") {
       "universe_domain": process.env.REACT_APP_GOOGLE_SERVICE_ACCOUNT_UNIVERSE_DOMAIN_PRODUCTION
     }),
     storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET_PRODUCTION,
-    config: firebaseProductionConfig
   });
 
   clientUrl = process.env.REACT_APP_CLIENT_URL_PRODUCTION;    // stripe
@@ -108,12 +109,15 @@ redisClient.on('end', () => console.log('Redis client disconnected'));
 (async () => {
   try {
     await redisClient.connect();
+    cache.init(redisClient); // wire cache service after connection is established
   } catch (err) {
     console.error('Failed to connect to Redis:', err);
   }
 })();
 
 // MIDDLEWARE
+app.use(morgan('dev')); // request logging: METHOD /path status ms
+
 const allowedOrigins = [
   clientUrl,
   serverUrl,
@@ -165,6 +169,9 @@ if (process.env.REACT_APP_NODE_ENV === "staging" || process.env.REACT_APP_NODE_E
     res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
   });
 }
+
+// CENTRALIZED ERROR HANDLER (must be last middleware)
+app.use(errorHandler);
 
 // LISTEN
 app.listen(port, () => {

@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // LEADERBOARD SETTINGS /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
-module.exports = {
+export default {
   CONFIG_LEADERBOARD_INCLUDE_PRELIMINARY_RESULTS_DISCLAIMER: true,
   CONFIG_LEADERBOARD_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1721538000000",    // Sunday, 21-July-2024 at 00:00 AM
   // CONFIG_LEADERBOARD_PRELIMINARY_RESULTS_DISCLAIMER_CUTOFF_IN_LOCAL_TIME_IN_MS: "1753074000000",    // TEST: Monday, 21-July-2025 00:00 AM

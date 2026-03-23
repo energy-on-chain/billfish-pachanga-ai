@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import Box from '@mui/material/Box';
-import { Select, MenuItem } from "@mui/material";
+import { Select, MenuItem, Skeleton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import dayjs from 'dayjs';
@@ -30,7 +30,7 @@ function LeaderboardPage() {
   const [isPreliminaryResults, setIsPreliminaryResults] = useState(true);
   
   // View state
-  const viewList = ["List", "Select", "Slideshow"];
+  const viewList = ["List", "Cards", "Select", "Slideshow"];
   const [viewAlignment, setViewAlignment] = useState('List');
   const [selectedResult, setSelectedResult] = useState([]);
   const [hasSelectedResult, setHasSelectedResult] = useState(false);
@@ -67,9 +67,9 @@ function LeaderboardPage() {
         setIsPreliminaryResults(false);
       }
 
-      const apiUrl = process.env.REACT_APP_NODE_ENV === "production"
-        ? process.env.REACT_APP_SERVER_URL_PRODUCTION
-        : process.env.REACT_APP_SERVER_URL_STAGING;
+      const apiUrl = import.meta.env.VITE_NODE_ENV === "production"
+        ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+        : import.meta.env.VITE_SERVER_URL_STAGING;
 
       // Build queries
       const queries = CONFIG_LEADERBOARD_CATEGORIES.map((item) => {
@@ -228,9 +228,12 @@ function LeaderboardPage() {
                 {/* List view */}
                 {viewAlignment === "List" && tournamentHasStarted && (
                   !hasLoaded ? (
-                    <div>
-                      <h1>Loading...</h1>
-                    </div>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
                   ) : (
                     <div>
                       <br/>
@@ -245,9 +248,43 @@ function LeaderboardPage() {
                               numPlaces={result.numPlaces}
                               rows={result.rows}
                               columns={matches ? result.desktopColumns : result.mobileColumns}
-                              scroll={matches ? null : "scroll"}
+                              isMobile={!matches}
                               density="compact"
                             />
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )
+                )}
+
+                {/* Cards View */}
+                {viewAlignment === "Cards" && tournamentHasStarted && (
+                  !hasLoaded ? (
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
+                  ) : (
+                    <div className="desktop-card-grid">
+                      {resultArray.map(result => {
+                        if (result.rows.length > 0) {
+                          return (
+                            <div key={result.title} className="desktop-card-grid-item">
+                              <LeaderboardResultTable
+                                style={{ width: '100%' }}
+                                title={result.title}
+                                subtitle={result.subtitle}
+                                numPlaces={result.numPlaces}
+                                rows={result.rows}
+                                columns={result.desktopColumns}
+                                useCards={true}
+                                density="compact"
+                              />
+                            </div>
                           );
                         }
                         return null;
@@ -259,9 +296,12 @@ function LeaderboardPage() {
                 {/* Slideshow View */}
                 {viewAlignment === "Slideshow" && tournamentHasStarted && (
                   !hasLoaded ? (
-                    <div>
-                      <h1>Loading...</h1>
-                    </div>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
                   ) : (
                     <div>
                       <br/>
@@ -273,9 +313,12 @@ function LeaderboardPage() {
                 {/* Select View */}
                 {viewAlignment === "Select" && tournamentHasStarted && (
                   !hasLoaded ? (
-                    <div>
-                      <h1>Loading...</h1>
-                    </div>
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
                   ) : (
                     <div>
                       <div className="select-div">
@@ -306,7 +349,7 @@ function LeaderboardPage() {
                                 numPlaces={result.numPlaces}
                                 rows={result.rows}
                                 columns={matches ? result.desktopColumns : result.mobileColumns}
-                                scroll={matches ? null : "scroll"}
+                                isMobile={!matches}
                                 density="compact"
                               />
                             ) : (

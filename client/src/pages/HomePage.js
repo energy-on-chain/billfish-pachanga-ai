@@ -1,3 +1,4 @@
+import { CircularProgress, Box } from '@mui/material';
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { loadConfigForYear } from '../config/masterConfig';
@@ -75,14 +76,15 @@ function HomePage() {
       CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS,
     } = configs.registrationConfig;
 
-    const apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
-      ? process.env.REACT_APP_SERVER_URL_STAGING
-      : process.env.REACT_APP_SERVER_URL_PRODUCTION;
+    const apiUrl = import.meta.env.VITE_NODE_ENV === "staging"
+      ? import.meta.env.VITE_SERVER_URL_STAGING
+      : import.meta.env.VITE_SERVER_URL_PRODUCTION;
 
-    // Check if the current time is past the cutoff, and disable registration if so
+    // Check if the current time is past the cutoff (or prices are still pending), and disable registration if so
     const currentTime = new Date().getTime();
-    if (currentTime > CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS) {
-      setIsRegistrationDisabled(true); // Disable the registration button
+    const pending = configs.registrationConfig.CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION || false;
+    if (pending || currentTime > CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS) {
+      setIsRegistrationDisabled(true);
     }
 
     // Fetch teams
@@ -150,7 +152,7 @@ function HomePage() {
   };
 
   if (!configs) {
-    return <div>Loading...</div>; // Show a loading state while configs are being fetched
+    return <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>;
   }
 
   // CONFIG
@@ -166,7 +168,8 @@ function HomePage() {
     CONFIG_REGISTRATION_EARLYBIRD_DATE_STRING,
     CONFIG_REGISTRATION_EARLYBIRD_FEE,
     CONFIG_REGISTRATION_NORMAL_DATE_STRING,
-    CONFIG_REGISTRATION_NORMAL_FEE
+    CONFIG_REGISTRATION_NORMAL_FEE,
+    CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION
   } = configs.registrationConfig;
 
   const {
@@ -194,18 +197,32 @@ function HomePage() {
         <section style={{backgroundColor: CONFIG_STYLING_HOME_INFO_BACKGROUND_COLOR}} className="section-hero2">
           {configs.generalConfig.CONFIG_GENERAL_HAS_REGISTRATION && (
             <div className="registration-info">
+              {CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION && (
+                <div className="prices-pending-banner">
+                  <strong>Registration coming soon</strong>
+                  <p>
+                    Pricing and dates shown below are preliminary and subject to change.
+                    This page will be updated with confirmed details before registration officially opens.
+                    Contact us at{' '}
+                    <a href="mailto:support@customtournamentsolutions.com">
+                      support@customtournamentsolutions.com
+                    </a>{' '}
+                    with any questions.
+                  </p>
+                </div>
+              )}
               <Link to={`/${year}/register`}>
-                <button 
-                  style={{ 
-                    backgroundColor: isRegistrationDisabled ? '#AEBDC4' : CONFIG_STYLING_BUTTON_BACKGROUND_COLOR, // Grey background if disabled
-                    color: isRegistrationDisabled ? 'white' : CONFIG_STYLING_BUTTON_TEXT_COLOR,  // Light text color if disabled
-                    borderColor: isRegistrationDisabled ? 'black' : CONFIG_STYLING_BUTTON_BORDER_COLOR  // Grey border if disabled
-                  }} 
-                  className="home-signup-button" 
+                <button
+                  style={{
+                    backgroundColor: isRegistrationDisabled ? '#AEBDC4' : CONFIG_STYLING_BUTTON_BACKGROUND_COLOR,
+                    color: isRegistrationDisabled ? 'white' : CONFIG_STYLING_BUTTON_TEXT_COLOR,
+                    borderColor: isRegistrationDisabled ? 'black' : CONFIG_STYLING_BUTTON_BORDER_COLOR
+                  }}
+                  className="home-signup-button"
                   type="button"
-                  disabled={isRegistrationDisabled} // Disable the button if the cutoff is reached
+                  disabled={isRegistrationDisabled}
                 >
-                  {isRegistrationDisabled ? "Signup Closed!" : "Register Now!"} {/* Change the label */}
+                  {CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION ? "Coming Soon" : isRegistrationDisabled ? "Signup Closed!" : "Register Now!"}
                 </button>
               </Link>
               <br />

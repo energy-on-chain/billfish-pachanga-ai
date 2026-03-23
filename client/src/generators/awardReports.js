@@ -46,28 +46,46 @@ export const generateAwardsReport = async (year, tournamentName) => {
 
   try {
     // Define environment
-    let apiUrl = process.env.REACT_APP_NODE_ENV === "staging"
-      ? process.env.REACT_APP_SERVER_URL_STAGING
-      : process.env.REACT_APP_SERVER_URL_PRODUCTION;
+    let apiUrl = import.meta.env.VITE_NODE_ENV === "staging"
+      ? import.meta.env.VITE_SERVER_URL_STAGING
+      : import.meta.env.VITE_SERVER_URL_PRODUCTION;
+
+    // Fetch awards config overrides from Firestore
+    let awardsConfigOverrides = {};
+    try {
+      const awardsConfigRes = await fetch(`${apiUrl}/api/${year}/admin_get_awards_config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      if (awardsConfigRes.ok) {
+        awardsConfigOverrides = await awardsConfigRes.json();
+      }
+    } catch (e) {
+      console.warn('Could not fetch awards config overrides:', e);
+    }
 
     // Fetch leaderboard data
-    const leaderboardQueries = config.leaderboardConfig.CONFIG_LEADERBOARD_CATEGORIES.map(item => ({
-      title: item.title,
-      subtitle: item.subtitle || "",
-      numPlaces: item.numPlaces,
-      numTrophies: item.numTrophies,
-      url: item.url,
-      body: JSON.stringify({
-        catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+    const leaderboardQueries = config.leaderboardConfig.CONFIG_LEADERBOARD_CATEGORIES.map(item => {
+      const numTrophies = awardsConfigOverrides[item.title]?.numAwards ?? item.numTrophies;
+      return {
+        title: item.title,
+        subtitle: item.subtitle || "",
         numPlaces: item.numPlaces,
-        isReport: true,
-        ...(item.inputs && item.inputs.length > 0
-          ? item.inputs.reduce((acc, input) => ({ ...acc, ...input }), {})
-          : {})
-      }),
-      desktopColumns: item.desktopColumns,
-      mobileColumns: item.mobileColumns
-    }));
+        numTrophies,
+        url: item.url,
+        body: JSON.stringify({
+          catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
+          numPlaces: item.numPlaces,
+          isReport: true,
+          ...(item.inputs && item.inputs.length > 0
+            ? item.inputs.reduce((acc, input) => ({ ...acc, ...input }), {})
+            : {})
+        }),
+        desktopColumns: item.desktopColumns,
+        mobileColumns: item.mobileColumns
+      };
+    });
 
     const leaderboardResults = await Promise.all(leaderboardQueries.map(query => {
       return fetch(`${apiUrl}/api/${year}/${query.url}`, {
@@ -82,8 +100,24 @@ export const generateAwardsReport = async (year, tournamentName) => {
       }));
     }));
 
+    // Fetch pot config overrides from Firestore
+    let potConfigOverrides = {};
+    try {
+      const potConfigRes = await fetch(`${apiUrl}/api/${year}/admin_get_pot_config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      if (potConfigRes.ok) {
+        potConfigOverrides = await potConfigRes.json();
+      }
+    } catch (e) {
+      console.warn('Could not fetch pot config overrides:', e);
+    }
+
     // Fetch pot data
     const potQueries = config.potsConfig.CONFIG_POTS_CATEGORIES.map(item => {
+      const payoutStructure = potConfigOverrides[item.potName]?.payoutStructure || item.payoutStructure;
       const bodyData = {
         catchYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_CATCHES_TABLE_NAME,
         potYear: config.generalConfig.CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME,
@@ -93,8 +127,8 @@ export const generateAwardsReport = async (year, tournamentName) => {
         potName: item.potName,
         entryAmount: item.entryAmount,
         tournamentCut: item.tournamentCut,
-        payoutStructure: item.payoutStructure,
-        numPlaces: Object.keys(item.payoutStructure).length,
+        payoutStructure: payoutStructure,
+        numPlaces: Object.keys(payoutStructure).length,
       };
 
       if (item.inputs && item.inputs.length > 0) {
@@ -110,7 +144,7 @@ export const generateAwardsReport = async (year, tournamentName) => {
         body: JSON.stringify(bodyData),
         title: item.title,
         subtitle: item.subtitle || "",
-        numPlaces: Object.keys(item.payoutStructure).length,
+        numPlaces: Object.keys(payoutStructure).length,
         desktopColumns: item.desktopColumns,
         mobileColumns: item.mobileColumns,
       };
@@ -124,7 +158,7 @@ export const generateAwardsReport = async (year, tournamentName) => {
       }).then(r => r.json()).then(result => ({
         title: query.title,
         subtitle: query.subtitle,
-        rows: Object.values(result).filter(row => row.payout > 0)
+        rows: result.noQualifyingEntrants ? [] : Object.values(result).filter(row => row.payout > 0)
       }));
     }));
 

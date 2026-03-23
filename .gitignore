@@ -18,11 +18,13 @@ client/data
 # google credentials (FIXME)
 billfish-pachanga-2024-prod-f2137b19898a.json
 billfish-pachanga-2024-staging-6d8062fd0da0.json
+scripts/keys/
 scripts/backups/
 
 # misc
 *.env
 *.json
+!scripts/package.json
 .DS_Store
 .env.local
 .env.development.local

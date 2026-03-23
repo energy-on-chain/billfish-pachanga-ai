@@ -44,7 +44,7 @@ export const generateCatchesBySpeciesReport = (data, year, tournamentName, speci
     doc.text(`Catches for ${species} - ${tournamentName} ${year}`, 10, 10);
     doc.text(`Report generated on ${currentDate}`, 10, 18);
 
-    const tableColumn = ["No.", "Species", "Team Name", "Date", "Weight", "Length", "Girth"];
+    const tableColumn = ["No.", "Species", "Team Name", "Date", "Weight", "Length", "Girth", "Tagged", "Sat. Tagged"];
     const tableRows = [];
 
     catches.forEach((catchItem, idx) => {
@@ -56,6 +56,8 @@ export const generateCatchesBySpeciesReport = (data, year, tournamentName, speci
         catchItem.weight || 'N/A',
         catchItem.length || 'N/A',
         catchItem.girth || 'N/A',
+        catchItem.isTagged ? 'Yes' : 'No',
+        catchItem.isSatelliteTagged ? 'Yes' : 'No',
       ]);
     });
 
@@ -79,8 +81,9 @@ export const generateCatchesByTeamReport = (data, year, tournamentName, teamRows
 
   console.log(data);
 
-  // Group data by team
-  const teamGroups = teamRows.reduce((acc, teamName) => {
+  // Group data by team (sorted alphabetically)
+  const sortedTeamRows = [...teamRows].sort((a, b) => a.localeCompare(b));
+  const teamGroups = sortedTeamRows.reduce((acc, teamName) => {
     acc[teamName] = [];
     return acc;
   }, {});
@@ -108,26 +111,33 @@ export const generateCatchesByTeamReport = (data, year, tournamentName, teamRows
     doc.text(`Catches for ${team} - ${tournamentName} ${year} (${totalCatches} total)`, 10, 10);
     doc.text(`Report generated on ${currentDate}`, 10, 18);
 
-    const tableColumn = ["Species", "Date", "Weight", "Length", "Girth"];
+    const tableColumn = ["Species", "Date", "Points", "Weight", "Length", "Girth", "Tagged", "Sat. Tagged"];
     const tableRows = [];
 
     catches.forEach(catchItem => {
       tableRows.push([
         catchItem.species,
         dayjs(catchItem.dateTime).format('MMMM D, YYYY h:mm A'),
+        catchItem.points || 0,
         catchItem.weight || 'N/A',
         catchItem.length || 'N/A',
         catchItem.girth || 'N/A',
+        catchItem.isTagged ? 'Yes' : 'No',
+        catchItem.isSatelliteTagged ? 'Yes' : 'No',
       ]);
     });
+
+    const totalPoints = catches.reduce((sum, catchItem) => sum + (parseFloat(catchItem.points) || 0), 0);
 
     doc.autoTable({
       startY: 30,
       head: [tableColumn],
       body: tableRows,
+      foot: [['', 'TOTAL', totalPoints, '', '', '', '', '']],
       theme: 'striped',
       styles: { fontSize: 10, halign: 'center', valign: 'middle', overflow: 'linebreak' },
       headStyles: { fillColor: '#02133E', textColor: '#ffffff', halign: 'center' },
+      footStyles: { fillColor: '#02133E', textColor: '#ffffff', halign: 'center', fontStyle: 'bold' },
     });
   });
 
@@ -142,10 +152,10 @@ export const fetchAndGenerateCatchesReport = async (year, type, tournamentName) 
   const config = await loadConfigForYear(year);
   
   let apiUrl = null; 
-  if (process.env.REACT_APP_NODE_ENV === "staging") {
-    apiUrl = process.env.REACT_APP_SERVER_URL_STAGING;
-  } else if (process.env.REACT_APP_NODE_ENV === "production") {
-    apiUrl = process.env.REACT_APP_SERVER_URL_PRODUCTION;
+  if (import.meta.env.VITE_NODE_ENV === "staging") {
+    apiUrl = import.meta.env.VITE_SERVER_URL_STAGING;
+  } else if (import.meta.env.VITE_NODE_ENV === "production") {
+    apiUrl = import.meta.env.VITE_SERVER_URL_PRODUCTION;
   }
 
   try { 
