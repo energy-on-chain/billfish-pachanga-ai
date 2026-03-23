@@ -95,7 +95,7 @@ function PotsResultTable(props) {
   });
 
   return (
-    <div style={{ ...props.style, overflowX: props.isMobile ? 'hidden' : 'auto' }}>
+    <div style={{ ...props.style, overflowX: (props.isMobile || props.useCards) ? 'hidden' : 'auto' }}>
       <h1 style={{ fontSize: '26px', color: config.stylingConfig.CONFIG_STYLING_POTS_TITLE_TEXT_COLOR, marginBottom: '16px' }}>
         {props.title}
         {totalPayout > 0 && (
@@ -110,7 +110,7 @@ function PotsResultTable(props) {
         )}
       </h1>
 
-      {props.isMobile ? (
+      {(props.isMobile || props.useCards) ? (
         <MobileCardList rows={props.rows} columns={props.columns} config={config} />
       ) : (
         <DataGrid

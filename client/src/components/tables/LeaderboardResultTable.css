@@ -96,3 +96,16 @@
   line-height: 1.4;
 }
 
+/* ── Desktop card grid ───────────────────────────────────── */
+.desktop-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+  align-items: start;
+  width: 100%;
+}
+
+.desktop-card-grid-item {
+  min-width: 0;
+}
+

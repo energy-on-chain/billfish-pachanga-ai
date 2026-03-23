@@ -336,11 +336,12 @@ const AddCatchModal = (props) => {
         <Grid container spacing={2}>
           <Grid item xs={12} sm={4} md={4} lg={4} xl={4}>
             <Autocomplete
-              disablePortal
               id={"select-angler-species-box-" + index}
               value={(catchData[index].species) || null}
               options={speciesList}
               groupBy={(option) => option.category}
+              getOptionLabel={(option) => typeof option === 'string' ? option : option.label}
+              isOptionEqualToValue={(option, value) => option.label === value}
               renderInput={(params) => <TextField {...params} label="Select species" />}
               onChange={handleSpeciesSelection}
             />

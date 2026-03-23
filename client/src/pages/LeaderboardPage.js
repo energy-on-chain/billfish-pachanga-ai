@@ -30,7 +30,7 @@ function LeaderboardPage() {
   const [isPreliminaryResults, setIsPreliminaryResults] = useState(true);
   
   // View state
-  const viewList = ["List", "Select", "Slideshow"];
+  const viewList = ["List", "Cards", "Select", "Slideshow"];
   const [viewAlignment, setViewAlignment] = useState('List');
   const [selectedResult, setSelectedResult] = useState([]);
   const [hasSelectedResult, setHasSelectedResult] = useState(false);
@@ -251,6 +251,40 @@ function LeaderboardPage() {
                               isMobile={!matches}
                               density="compact"
                             />
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )
+                )}
+
+                {/* Cards View */}
+                {viewAlignment === "Cards" && tournamentHasStarted && (
+                  !hasLoaded ? (
+                    <Box sx={{ px: 2, py: 1 }}>
+                      <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                      <Skeleton variant="rectangular" height={36} />
+                    </Box>
+                  ) : (
+                    <div className="desktop-card-grid">
+                      {resultArray.map(result => {
+                        if (result.rows.length > 0) {
+                          return (
+                            <div key={result.title} className="desktop-card-grid-item">
+                              <LeaderboardResultTable
+                                style={{ width: '100%' }}
+                                title={result.title}
+                                subtitle={result.subtitle}
+                                numPlaces={result.numPlaces}
+                                rows={result.rows}
+                                columns={result.desktopColumns}
+                                useCards={true}
+                                density="compact"
+                              />
+                            </div>
                           );
                         }
                         return null;

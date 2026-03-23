@@ -52,7 +52,7 @@ function PotsPage() {
   // STATE - PAYOUTS
   const payoutsViewOptions = ["By Pot", "By Team"];    // for payouts
   const [payoutsViewSelection, setPayoutsViewSelection] = useState("By Pot");
-  const payoutsDisplayOptions = ["List", "Select", "Slideshow"];
+  const payoutsDisplayOptions = ["List", "Cards", "Select", "Slideshow"];
   const [payoutsDisplaySelection, setPayoutsDisplaySelection] = useState("List");
   const [payoutsSelectedResult, setPayoutsSelectedResult] = useState([]);
   const [payoutsHasSelectedResult, setPayoutsHasSelectedResult] = useState(false);
@@ -852,6 +852,42 @@ function PotsPage() {
               ))
             }
 
+            { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Cards") && (tournamentHasStarted) ) &&
+              (!hasLoaded ? (
+                <div>
+                  <Box sx={{ px: 2, py: 1 }}>
+                    <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                    <Skeleton variant="rectangular" height={36} />
+                  </Box>
+                  <CircularProgress />
+                </div>
+              ) : (
+                <div className="desktop-card-grid">
+                  {payoutsResultArray.map(result => {
+                    if (result.rows.length > 0) {
+                      return (
+                        <div key={result.title} className="desktop-card-grid-item">
+                          <PotsResultTable
+                            style={{ width: '100%' }}
+                            title={result.title}
+                            subtitle={result.subtitle}
+                            numPlaces={result.numPlaces}
+                            rows={result.rows}
+                            columns={result.desktopColumns || []}
+                            useCards={true}
+                            density="compact"
+                          />
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              ))
+            }
+
             { ( (displaySelection === "Payouts") && (payoutsViewSelection === "By Pot") && (payoutsDisplaySelection === "Select") && (tournamentHasStarted) ) &&
               (!hasLoaded ? (
                 <div>
@@ -994,7 +1030,29 @@ function PotsPage() {
               )
             )}
 
-            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) && 
+            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Cards") && (tournamentHasStarted) &&
+            (!hasLoaded ? (
+              <Box sx={{ px: 2, py: 1 }}>
+                <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} sx={{ mb: 0.5 }} />
+                <Skeleton variant="rectangular" height={36} />
+              </Box>
+            ) : (
+              <>
+                <br/>
+                <PotsResultTable
+                  style={{ width: '100%' }}
+                  title="Team Payout Summary"
+                  rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
+                  columns={config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS}
+                  useCards={true}
+                  density="compact"
+                />
+              </>
+            ))}
+
+            {(displaySelection === "Payouts") && (payoutsViewSelection === "By Team") && (payoutsDisplaySelection === "Slideshow") && (tournamentHasStarted) &&
             (!hasLoaded ? (
               <Box sx={{ px: 2, py: 1 }}>
                 <Skeleton variant="rectangular" height={40} sx={{ mb: 1, borderRadius: 1 }} />
