@@ -7,7 +7,7 @@ export default {
   CONFIG_HOME_PAST_TOURNAMENT_RESULT_STRINGS: [
     "2023 Tournament: 36 teams / 114 billfish / $654,750 total pot",
     "2024 Tournament: 31 teams / 187 billfish / $845,250 total pot",
-    // "2025 Tournament: TBD",
+    "2025 Tournament: 31 teams / 197 billfish / $902,000 total pot",
   ],
   CONFIG_HOME_SPECIES_TYPE_LIST_FOR_CATCH_COUNT: [
     "Catch & Release",

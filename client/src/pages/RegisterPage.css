@@ -318,3 +318,37 @@ a:hover{
   text-transform: uppercase;
   padding-bottom: 15px;
 }
+
+/* Prices-pending notice banner (shown when CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION is true) */
+.prices-pending-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 90%;
+  max-width: 640px;
+  background-color: #fff8e1;
+  border: 2px solid #f59e0b;
+  border-radius: var(--radius-md, 8px);
+  padding: 16px 24px;
+  margin-bottom: 28px;
+  gap: 6px;
+}
+
+.prices-pending-banner strong {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 16px;
+  color: #92400e;
+}
+
+.prices-pending-banner p {
+  font-family: var(--font-sans, sans-serif);
+  font-size: 14px;
+  color: #78350f;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.prices-pending-banner a {
+  color: #b45309;
+}

@@ -323,13 +323,12 @@ module.exports = ({redisClient}) => {
 
       if (req.files.newImages) {
 
-        req.files.newImages.forEach((element) => {
-
+        // Collect buffers and delete old images (sync — no await needed here)
+        for (const element of req.files.newImages) {
           // Delete images that have been replaced
-          let oldImageUrl = teamData[element.originalname];
+          const oldImageUrl = teamData[element.originalname];
           if (oldImageUrl) {
             try {
-              // await bucket.file(oldImageUrl).delete();
               const filePath = decodeURIComponent(oldImageUrl.split('/').slice(4).join('/'));
               bucket.file(filePath).delete();
               console.log(`Deleted old image: ${filePath}`);
@@ -338,40 +337,35 @@ module.exports = ({redisClient}) => {
             }
           }
 
-          // Create buffers for new images
           imageBuffers[element.originalname] = {
-            buffer: element.buffer.toString('base64'), // Convert buffer to base64
+            buffer: element.buffer.toString('base64'),
             fieldName: element.originalname,
             mimetype: element.mimetype,
           };
+        }
 
-          // Save new images to firebase storage
-          for (const [originalname, fileData] of Object.entries(imageBuffers)) {
-            const rawBuffer = Buffer.from(fileData.buffer, 'base64');
-            const { buffer, mimetype, originalname: convertedName } = await convertImageIfNeeded(rawBuffer, fileData.mimetype, originalname);
-            const sanitizedFilename = convertedName.replace(/\s+/g, '-');
-            const filename = `${uuidv4()}-${sanitizedFilename}`;
-            const fileUpload = bucket.file(filename);
+        // Save new images to firebase storage (async — needs await)
+        for (const [originalname, fileData] of Object.entries(imageBuffers)) {
+          const rawBuffer = Buffer.from(fileData.buffer, 'base64');
+          const { buffer, mimetype, originalname: convertedName } = await convertImageIfNeeded(rawBuffer, fileData.mimetype, originalname);
+          const sanitizedFilename = convertedName.replace(/\s+/g, '-');
+          const filename = `${uuidv4()}-${sanitizedFilename}`;
+          const fileUpload = bucket.file(filename);
 
-            try {
+          try {
+            await fileUpload.save(buffer, {
+              metadata: {
+                contentType: mimetype,
+              },
+            });
 
-              // await fileUpload.save(buffer, {
-              fileUpload.save(buffer, {
-                metadata: {
-                  contentType: mimetype,
-                },
-              });
-      
-              const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
-              newImageFields[originalname] = publicUrl;
-              console.log(`Stored new image: ${originalname} at URL: ${publicUrl}`);
-
-            } catch (error) {
-              console.error(`Error storing image ${originalname}:`, error);
-            }
+            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+            newImageFields[originalname] = publicUrl;
+            console.log(`Stored new image: ${originalname} at URL: ${publicUrl}`);
+          } catch (error) {
+            console.error(`Error storing image ${originalname}:`, error);
           }
-
-        })
+        }
       }
 
       // Update the team document with the new data and new image URLs

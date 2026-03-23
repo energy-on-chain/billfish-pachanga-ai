@@ -1,87 +1,97 @@
-* {
+/* ============================================================
+   GLOBAL RESET & DESIGN TOKENS
+   ============================================================ */
+*, *::before, *::after {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: sans-serif;
+}
+
+:root {
+  /* Brand */
+  --color-primary:       #288DAF;
+  --color-primary-dark:  #1a6b8a;
+  --color-primary-light: #4aaecf;
+  --color-secondary:     #004B8C;
+  --color-accent:        #00A686;
+  --color-accent-dark:   #008c70;
+
+  /* Neutrals */
+  --color-white:         #ffffff;
+  --color-surface:       #f8fafc;
+  --color-border:        #e2e8f0;
+  --color-text:          #1e293b;
+  --color-text-muted:    #64748b;
+  --color-dark:          #0f172a;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Nav */
+  --nav-height: 72px;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:  0 10px 40px rgba(0,0,0,0.12);
+
+  /* Border radius */
+  --radius-sm:  6px;
+  --radius-md:  12px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
 }
 
 html {
   height: 100%;
   width: 100%;
-  margin: 0px;
-  padding: 0px;
-  overflow-x: hidden; 
-}
-
-main {
-  text-align: center;
-  color: #304365;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
   height: 100%;
-  margin: 0px;
-  padding: 0px;
-  min-width:320px;        /* Suppose you want minimum width of 1000px */
-  width: auto !important;  /* Firefox will set width as auto */
-  width:320px;     
-}
-
-:root {
-  
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  min-width: 320px;
+  font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  background-color: white;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-white);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-
-  --color-gray-100: #f4f3f1;
-  --color-gray-200: #dddbd8;
-  --color-gray-300: #ccc9c6;
-  --color-gray-400: #aeaba7;
-  --color-gray-500: #8a8784;
-  --color-gray-600: #656360;
-  --color-gray-700: #4b4a47;
-  --color-gray-800: #31302e;
-  --color-gray-900: #1f1d1b;
-
-  --color-primary-100: #fcf3e1;
-  --color-primary-200: #fceccd;
-  --color-primary-300: #fae1af;
-  --color-primary-400: #fbd997;
-  --color-primary-500: #ffd37c;
-  --color-primary-600: #f9c762;
-  --color-primary-700: #fbc14d;
-  --color-primary-800: #fab833;
-  --color-primary-900: #f6ad1b;
 }
 
+main {
+  text-align: center;
+  color: var(--color-text);
+}
+
+/* ── Global button ──────────────────────────────────────────── */
 button {
-  font-size: 28px;
-  text-decoration: none;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
   color: white;
-  background-color: #00A686;
+  background-color: var(--color-accent);
   border: none;
-  border-radius: 60px;
-  padding: 24px 60px;
-  margin: 0 10px;
+  border-radius: var(--radius-xl);
+  padding: 12px 28px;
+  margin: 0 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
-  background-color: #304365;
+  background-color: var(--color-accent-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
 }
 
 button:disabled {
-  border: 1px solid #999999;
-  background-color: #cccccc;
-  color: #666666;
+  background-color: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
-

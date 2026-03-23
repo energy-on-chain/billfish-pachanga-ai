@@ -822,7 +822,7 @@ function PotsPage() {
                           numPlaces={result.numPlaces}
                           rows={result.rows}
                           columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
-                          scroll={matches ? null : "scroll"}
+                          isMobile={!matches}
                           density="compact"
                         />
                       );
@@ -895,7 +895,7 @@ function PotsPage() {
                               numPlaces={result.numPlaces}
                               rows={result.rows}
                               columns={matches ? (result.desktopColumns || []) : (result.mobileColumns || [])}
-                              scroll={matches ? (null) : ("scroll")}
+                              isMobile={!matches}
                               density="compact"
                             />
                           ) : (
@@ -928,7 +928,7 @@ function PotsPage() {
                   title="Team Payout Summary"
                   rows={payoutsTeamResultSummary.map((team, index) => ({ ...team, id: index }))}
                   columns={matches ? config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : config?.potsConfig?.CONFIG_POTS_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
-                  scroll={matches ? null : "scroll"}
+                  isMobile={!matches}
                   density="compact"
                 />
               </>
@@ -982,7 +982,7 @@ function PotsPage() {
                             place: formatPlace(result.place)  // Format the place value
                           }))}
                           columns={matches ? config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_DESKTOP_COLUMN_DEFINITIONS : config?.potsConfig?.CONFIG_POTS_INDIVIDUAL_TEAM_SUMMARY_MOBILE_COLUMN_DEFINITIONS}
-                          scroll={matches ? null : "scroll"}
+                          isMobile={!matches}
                           density="compact"
                         />
                       ) : (

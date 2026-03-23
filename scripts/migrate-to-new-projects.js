@@ -5,7 +5,7 @@
  * 2026 Firebase projects (staging and/or production).
  *
  * OLD projects (source):
- *   Prod:     billfish-pachanga-2024-prod
+ *   Prod:     billfish-pachanga-2024-prod  (contains 2023, 2024, and 2025 data)
  *   Staging:  billfish-pachanga-2024-staging
  *
  * NEW projects (destination):
@@ -47,15 +47,20 @@
  *   node scripts/migrate-to-new-projects.js --source prod --dest production
  */
 
-const admin = require('firebase-admin');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
 
-// Load .env from project root (one level up from scripts/)
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+// All deps via api/node_modules — no separate install needed
+const admin = require(path.join(__dirname, '../api/node_modules/firebase-admin'));
+require(path.join(__dirname, '../api/node_modules/dotenv')).config({
+  path: path.join(__dirname, '../.env'),
+});
 
 // ─── Collections to migrate ───────────────────────────────────────────────────
 const ALL_COLLECTIONS = [
+  'teams2023',
+  'catches2023',
+  'pots2023',
   'teams2024',
   'catches2024',
   'pots2024',

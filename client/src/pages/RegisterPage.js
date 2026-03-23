@@ -25,14 +25,15 @@ function RegisterPage(props) {
   const [buttonBgColor, setButtonBgColor] = useState();
   const [buttonTextColor, setButtonTextColor] = useState();
   const [buttonBorderColor, setButtonBorderColor] = useState();
-  const [isRegistrationDisabled, setIsRegistrationDisabled] = useState(false); // New state to track registration button state
+  const [isRegistrationDisabled, setIsRegistrationDisabled] = useState(false);
+  const [pricesPendingConfirmation, setPricesPendingConfirmation] = useState(false);
 
   // Registration config state
   const [earlyBird, setEarlyBird] = useState({});
   const [normalFee, setNormalFee] = useState({});
   const [paidAddOns, setPaidAddOns] = useState({});
   const [disclaimers, setDisclaimers] = useState([]);
-  const [configLoaded, setConfigLoaded] = useState(false); // Track if the config has loaded
+  const [configLoaded, setConfigLoaded] = useState(false);
 
   const openAddTeamModal = () => {
     setIsAddTeamModalOpen(true);
@@ -73,9 +74,12 @@ function RegisterPage(props) {
         setPaidAddOns(registrationConfig.CONFIG_REGISTRATION_PAID_ADD_ONS);
         setDisclaimers(registrationConfig.CONFIG_REGISTRATION_DISCLAIMERS || []);
 
+        const pending = registrationConfig.CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION || false;
+        setPricesPendingConfirmation(pending);
+
         const currentTime = new Date().getTime();
-        if (currentTime > registrationConfig.CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS) {
-          setIsRegistrationDisabled(true); // Disable the registration button
+        if (pending || currentTime > registrationConfig.CONFIG_REGISTRATION_CUTOFF_IN_LOCAL_TIME_IN_MS) {
+          setIsRegistrationDisabled(true);
         }
 
         setConfigLoaded(true); // Set config loaded to true once everything is ready
@@ -99,6 +103,21 @@ function RegisterPage(props) {
         </section>
 
         <section className="section-register">
+          {pricesPendingConfirmation && (
+            <div className="prices-pending-banner">
+              <strong>Registration coming soon</strong>
+              <p>
+                Pricing and dates shown below are preliminary and subject to change.
+                This page will be updated with confirmed details before registration officially opens.
+                Contact us at{' '}
+                <a href="mailto:support@customtournamentsolutions.com">
+                  support@customtournamentsolutions.com
+                </a>{' '}
+                with any questions.
+              </p>
+            </div>
+          )}
+
           <h1 style={{ color: titleTextColor }}>Entry Fee</h1>
 
           {earlyBird.hasEarlyBird && earlyBird.fee && (
@@ -145,7 +164,7 @@ function RegisterPage(props) {
             disabled={isRegistrationDisabled} // Disable the button if the cutoff is reached
             type="button"
           >
-            {isRegistrationDisabled ? "Signup Closed!" : "Register Now!"} {/* Change the label */}
+            {pricesPendingConfirmation ? "Coming Soon" : isRegistrationDisabled ? "Signup Closed!" : "Register Now!"}
           </button>
           <AddTeamModal isAdmin={false} status={isAddTeamModalOpen} open={openAddTeamModal} close={closeAddTeamModal} />
 

@@ -248,7 +248,7 @@ function LeaderboardPage() {
                               numPlaces={result.numPlaces}
                               rows={result.rows}
                               columns={matches ? result.desktopColumns : result.mobileColumns}
-                              scroll={matches ? null : "scroll"}
+                              isMobile={!matches}
                               density="compact"
                             />
                           );
@@ -315,7 +315,7 @@ function LeaderboardPage() {
                                 numPlaces={result.numPlaces}
                                 rows={result.rows}
                                 columns={matches ? result.desktopColumns : result.mobileColumns}
-                                scroll={matches ? null : "scroll"}
+                                isMobile={!matches}
                                 density="compact"
                               />
                             ) : (
