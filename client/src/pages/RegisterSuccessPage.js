@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import { loadConfigForYear } from '../config/masterConfig'; // Dynamic config loader
@@ -6,6 +7,9 @@ import './HomePage.css';
 import "./RegisterPage.css";
 
 function RegisterSuccessPage(props) {
+  const { year: yearFromParams } = useParams();
+  const year = props.year || yearFromParams;
+
   const [bannerBgColor, setBannerBgColor] = useState('');
   const [bannerTextColor, setBannerTextColor] = useState('');
   const [h2Color, setH2Color] = useState('');
@@ -14,7 +18,7 @@ function RegisterSuccessPage(props) {
   // Load dynamic config based on the year
   useEffect(() => {
     const fetchConfig = async () => {
-      const config = await loadConfigForYear(props.year);  // Load config based on the year from props
+      const config = await loadConfigForYear(year);  // Load config based on the year from params
       const stylingConfig = config.stylingConfig;
 
       setBannerBgColor(stylingConfig.CONFIG_STYLING_BANNER_BACKGROUND_COLOR);
@@ -24,7 +28,7 @@ function RegisterSuccessPage(props) {
     };
 
     fetchConfig();
-  }, [props.year]);
+  }, [year]);
 
   return (
     <AnimatedPage>
