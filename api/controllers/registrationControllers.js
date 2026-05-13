@@ -302,13 +302,17 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
                       const filename = `${uuidv4()}-${sanitizedFilename}`;
                       const fileUpload = bucket.file(filename);
 
+                      const downloadToken = uuidv4();
                       await fileUpload.save(buffer, {
                           metadata: {
                               contentType: mimetype,
+                              metadata: {
+                                  firebaseStorageDownloadTokens: downloadToken,
+                              },
                           },
                       });
 
-                      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+                      const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media&token=${downloadToken}`;
 
                       if (fileData.fieldname === 'requiredImageUploads') {
                           requiredImageFields[originalname] = publicUrl;
