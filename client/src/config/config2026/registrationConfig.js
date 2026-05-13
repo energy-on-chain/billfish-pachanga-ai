@@ -4,7 +4,7 @@
 export default {
   // Set to false once registration prices and earlybird dates are officially confirmed.
   // While true: the register page shows a "pricing pending" notice and the button is disabled.
-  CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION: true,
+  CONFIG_REGISTRATION_PRICES_PENDING_CONFIRMATION: false,
 
   CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION: true,
   CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS: "1781499600000",    // Monday, June 15th 2026 at 00:00AM CDT

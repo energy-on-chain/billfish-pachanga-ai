@@ -75,10 +75,8 @@ const AddTeamModal = (props) => {
   
       // Assess earlybird registration condition
       if (CONFIG_REGISTRATION_HAS_EARLYBIRD_REGISTRATION) {
-        let now = new Date();
-        let localTime = now.getTime() - (now.getTimezoneOffset() * 60000);
-  
-        if ((CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS - localTime) > 0) {
+        const now = new Date();
+        if (CONFIG_REGISTRATION_EARLYBIRD_CUTOFF_IN_LOCAL_TIME_IN_MS > now.getTime()) {
           setRegistrationFee(CONFIG_REGISTRATION_EARLYBIRD_FEE);
           setIsEarlybird(true);
         } else {
