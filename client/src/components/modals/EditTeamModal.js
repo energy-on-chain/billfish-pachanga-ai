@@ -62,7 +62,10 @@ const EditTeamModal = (props) => {
     const previews = {};
     Object.keys(data).forEach((key) => {
       const value = data[key];
-      if (typeof value === 'string' && value.startsWith('https://storage.googleapis.com/')) {
+      if (typeof value === 'string' && (
+        value.startsWith('https://storage.googleapis.com/') ||
+        value.startsWith('https://firebasestorage.googleapis.com/')
+      )) {
         previews[key] = {
           file: null,
           fieldName: key,
