@@ -183,9 +183,6 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
           return res.status(400).send(`Error while attempting to create webhook event: ${err.message}`);
       }
 
-      // Send an immediate response to Stripe
-      res.status(200).end();
-
       if (event.type === 'checkout.session.completed') {
           const metadataKey = event.data.object.metadata.metadataKey;
           console.log('?? Processing checkout.session.completed for metadataKey:', metadataKey);
@@ -196,10 +193,10 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
               // Step 1: Retrieve metadata from Redis
               console.log('?? Attempting to retrieve metadata from Redis...');
               const storedMetadata = await redisClient.get(metadataKey);
-              
+
               if (!storedMetadata) {
                   console.error('? No metadata found in Redis for key:', metadataKey);
-                  return;
+                  return res.status(500).send('Metadata not found — Stripe will retry.');
               }
 
               console.log('? Retrieved metadata from Redis successfully');
@@ -211,23 +208,24 @@ module.exports = ({ clientUrl, serverUrl, stripe, webhookSecret, redisClient }) 
               await processFirestore(metadata, event.data.object);
               console.log('? Successfully processed Firestore operations');
 
-              // Step 3: Clear Redis
+              // Step 3: Clear Redis and acknowledge
               console.log('?? Clearing metadata from Redis...');
               await redisClient.del(metadataKey);
               console.log('? Cleared metadata from Redis');
 
               console.log('?? WEBHOOK COMPLETED SUCCESSFULLY');
+              res.status(200).end();
 
           } catch (error) {
               console.error("? ERROR in webhook processing:");
               console.error("Error name:", error.name);
               console.error("Error message:", error.message);
               console.error("Error stack:", error.stack);
-              console.error("Error code:", error.code);
-              
-              // Don't delete the Redis key if there was an error, so we can retry
-              console.log('?? Keeping Redis data for potential retry due to error');
+              // Return 500 so Stripe retries automatically
+              res.status(500).send(`Processing error: ${error.message}`);
           }
+      } else {
+          res.status(200).end();
       }
 
       console.log('=== WEBHOOK END ===');
