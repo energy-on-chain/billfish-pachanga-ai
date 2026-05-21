@@ -329,9 +329,17 @@ module.exports = ({redisClient}) => {
           const oldImageUrl = teamData[element.originalname];
           if (oldImageUrl) {
             try {
-              const filePath = decodeURIComponent(oldImageUrl.split('/').slice(4).join('/'));
-              bucket.file(filePath).delete();
-              console.log(`Deleted old image: ${filePath}`);
+              let filePath;
+              if (oldImageUrl.includes('firebasestorage.googleapis.com')) {
+                const match = oldImageUrl.match(/\/o\/([^?]+)/);
+                filePath = match ? decodeURIComponent(match[1]) : null;
+              } else {
+                filePath = decodeURIComponent(oldImageUrl.split('/').slice(4).join('/'));
+              }
+              if (filePath) {
+                bucket.file(filePath).delete();
+                console.log(`Deleted old image: ${filePath}`);
+              }
             } catch (error) {
               console.error(`Error deleting old image: ${oldImageUrl}`, error);
             }
@@ -353,13 +361,15 @@ module.exports = ({redisClient}) => {
           const fileUpload = bucket.file(filename);
 
           try {
+            const downloadToken = uuidv4();
             await fileUpload.save(buffer, {
               metadata: {
                 contentType: mimetype,
+                metadata: { firebaseStorageDownloadTokens: downloadToken },
               },
             });
 
-            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${filename}`;
+            const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media&token=${downloadToken}`;
             newImageFields[originalname] = publicUrl;
             console.log(`Stored new image: ${originalname} at URL: ${publicUrl}`);
           } catch (error) {
