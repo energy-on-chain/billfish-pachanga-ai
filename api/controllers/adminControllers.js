@@ -360,21 +360,17 @@ module.exports = ({redisClient}) => {
           const filename = `${uuidv4()}-${sanitizedFilename}`;
           const fileUpload = bucket.file(filename);
 
-          try {
-            const downloadToken = uuidv4();
-            await fileUpload.save(buffer, {
-              metadata: {
-                contentType: mimetype,
-                metadata: { firebaseStorageDownloadTokens: downloadToken },
-              },
-            });
+          const downloadToken = uuidv4();
+          await fileUpload.save(buffer, {
+            metadata: {
+              contentType: mimetype,
+              metadata: { firebaseStorageDownloadTokens: downloadToken },
+            },
+          });
 
-            const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media&token=${downloadToken}`;
-            newImageFields[originalname] = publicUrl;
-            console.log(`Stored new image: ${originalname} at URL: ${publicUrl}`);
-          } catch (error) {
-            console.error(`Error storing image ${originalname}:`, error);
-          }
+          const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(filename)}?alt=media&token=${downloadToken}`;
+          newImageFields[originalname] = publicUrl;
+          console.log(`Stored new image: ${originalname} at URL: ${publicUrl}`);
         }
       }
 
