@@ -5,6 +5,9 @@ const { v4: uuidv4 } = require('uuid');
 const { getFirestore } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 
+// multipart/form-data always sends boolean fields as the strings "true"/"false"
+const parseBoolean = (value) => value === true || value === 'true';
+
 // Convert HEIC/HEIF images to JPEG for browser compatibility
 const convertImageIfNeeded = async (buffer, mimetype, originalname) => {
   const heicMimes = ['image/heic', 'image/heif'];
@@ -547,6 +550,8 @@ module.exports = ({redisClient}) => {
           girth: item.girth,
           weight: item.weight,
           points: item.points,
+          isTagged: parseBoolean(item.isTagged),
+          isSatelliteTagged: parseBoolean(item.isSatelliteTagged),
           catchPhoto: catchPhotoUrl,  // Save the image URL here
         });
   
@@ -624,6 +629,8 @@ module.exports = ({redisClient}) => {
         girth: req.body.girth,
         weight: req.body.weight,
         points: req.body.points,
+        isTagged: parseBoolean(req.body.isTagged),
+        isSatelliteTagged: parseBoolean(req.body.isSatelliteTagged),
         catchPhoto: catchPhotoUrl,  // Update the catchPhoto URL
       });
   
