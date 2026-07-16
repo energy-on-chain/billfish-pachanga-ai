@@ -151,11 +151,6 @@ const AddCatchModal = (props) => {
         toast.warning(`A photo is required for catch#${i + 1}`);
         inputIsValid = false;
       }
-
-      if (entry.isTagged && (!entry.tagNumber || entry.tagNumber.trim() === "")) {
-        toast.warning(`Please enter a tag number for catch#${i + 1}`);
-        inputIsValid = false;
-      }
     });
   
     return inputIsValid;
@@ -532,7 +527,6 @@ const AddCatchModal = (props) => {
                   label="Tag Number"
                   placeholder="e.g. BF1260"
                   fullWidth
-                  required
                   value={catchData[index].tagNumber || ''}
                   onChange={(e) => {
                     let newCatchData = [...catchData];

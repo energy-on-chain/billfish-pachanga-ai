@@ -93,10 +93,6 @@ const EditCatchModal = (props) => {
       toast.warning("A photo is required");
       inputIsValid = false;
     }
-    if (isTagged && (!tagNumber || tagNumber.trim() === "")) {
-      toast.warning("Please enter a tag number");
-      inputIsValid = false;
-    }
     return inputIsValid;
   };
 
@@ -281,7 +277,6 @@ const EditCatchModal = (props) => {
                 label="Tag Number"
                 placeholder="e.g. BF1260"
                 fullWidth
-                required
                 value={tagNumber}
                 onChange={(e) => setTagNumber(e.target.value)}
               />
