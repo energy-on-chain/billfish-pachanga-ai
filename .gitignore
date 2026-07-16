@@ -43,3 +43,7 @@ key.pem
 
 # session (redis) database file
 *dump.rdb
+
+# raw pot spreadsheet - not meant for version control
+scripts/data/2026/*.xlsx
+scripts/data/2026/*.xls

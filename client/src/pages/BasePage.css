@@ -62,7 +62,8 @@
 .pot-table {
   font-size: 14px;
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .pot-table th,

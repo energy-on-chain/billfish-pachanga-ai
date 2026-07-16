@@ -37,7 +37,7 @@ function PotsPage() {
   const [potEntryData, setPotEntryData] = useState();    // data
   const [potEntryDataHasLoaded, setPotEntryDataHasLoaded] = useState(false);
   const displayOptions = ["Entries", "Payouts"];    // display options
-  const [displaySelection, setDisplaySelection] = useState("Payouts");
+  const [displaySelection, setDisplaySelection] = useState("Entries");
   const entriesViewOptions = ["Board", "By Pot", "By Team"]    // for entries
   const [entriesViewSelection, setEntriesViewSelection] = useState("Board");
   const [entriesBoardOptions, setEntriesBoardOptions] = useState();
