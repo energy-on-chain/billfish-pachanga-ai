@@ -151,6 +151,11 @@ const AddCatchModal = (props) => {
         toast.warning(`A photo is required for catch#${i + 1}`);
         inputIsValid = false;
       }
+
+      if (entry.isTagged && (!entry.tagNumber || entry.tagNumber.trim() === "")) {
+        toast.warning(`Please enter a tag number for catch#${i + 1}`);
+        inputIsValid = false;
+      }
     });
   
     return inputIsValid;
@@ -176,6 +181,7 @@ const AddCatchModal = (props) => {
             catchPhoto: null,
             isTagged: false,
             isSatelliteTagged: false,
+            tagNumber: '',
           }
         )
       }
@@ -254,6 +260,7 @@ const AddCatchModal = (props) => {
       photoIsRequired: value["photoIsRequired"],
       isTagged: false,
       isSatelliteTagged: false,
+      tagNumber: '',
     };
   
     setCatchData(newCatchData);
@@ -494,6 +501,9 @@ const AddCatchModal = (props) => {
                     onChange={(e) => {
                       let newCatchData = [...catchData];
                       newCatchData[index].isTagged = e.target.checked;
+                      if (!e.target.checked) {
+                        newCatchData[index].tagNumber = '';
+                      }
                       setCatchData(newCatchData);
                     }}
                   />
@@ -516,6 +526,22 @@ const AddCatchModal = (props) => {
                 label="Satellite Tagged"
               />
             </Grid>
+            { catchData[index].isTagged && (
+              <Grid item xs={12}>
+                <TextField
+                  label="Tag Number"
+                  placeholder="e.g. BF1260"
+                  fullWidth
+                  required
+                  value={catchData[index].tagNumber || ''}
+                  onChange={(e) => {
+                    let newCatchData = [...catchData];
+                    newCatchData[index].tagNumber = e.target.value;
+                    setCatchData(newCatchData);
+                  }}
+                />
+              </Grid>
+            )}
           </Grid>
         )}
         <br/>
@@ -548,6 +574,7 @@ const AddCatchModal = (props) => {
         formData.append(`catchData[${index}][points]`, item.points);
         formData.append(`catchData[${index}][isTagged]`, item.isTagged || false);
         formData.append(`catchData[${index}][isSatelliteTagged]`, item.isSatelliteTagged || false);
+        formData.append(`catchData[${index}][tagNumber]`, item.tagNumber || '');
         
         // Append the photo if it exists
         if (item.catchPhoto) {

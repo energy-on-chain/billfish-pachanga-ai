@@ -24,6 +24,7 @@ const EditCatchModal = (props) => {
   const [catchPhotoUrl, setCatchPhotoUrl] = useState();
   const [isTagged, setIsTagged] = useState(false);
   const [isSatelliteTagged, setIsSatelliteTagged] = useState(false);
+  const [tagNumber, setTagNumber] = useState('');
   const [speciesConfig, setSpeciesConfig] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);  // New state to track submission
   const [isSubmitted, setIsSubmitted] = useState(false);    // New state to track successful submission
@@ -45,6 +46,7 @@ const EditCatchModal = (props) => {
         setCatchPhotoUrl(props.editInfo.catchPhoto);
         setIsTagged(props.editInfo.isTagged || false);
         setIsSatelliteTagged(props.editInfo.isSatelliteTagged || false);
+        setTagNumber(props.editInfo.tagNumber || '');
 
         const speciesMatch = config.catchConfig.CONFIG_CATCHES_SPECIES_LIST.find(
           (species) => species.label === props.editInfo.species
@@ -91,6 +93,10 @@ const EditCatchModal = (props) => {
       toast.warning("A photo is required");
       inputIsValid = false;
     }
+    if (isTagged && (!tagNumber || tagNumber.trim() === "")) {
+      toast.warning("Please enter a tag number");
+      inputIsValid = false;
+    }
     return inputIsValid;
   };
 
@@ -113,6 +119,7 @@ const EditCatchModal = (props) => {
         formData.append("points", points);
         formData.append("isTagged", isTagged || false);
         formData.append("isSatelliteTagged", isSatelliteTagged || false);
+        formData.append("tagNumber", tagNumber || '');
 
         if (catchPhoto) {
           formData.append("catchPhoto", catchPhoto);
@@ -256,9 +263,29 @@ const EditCatchModal = (props) => {
 
             {/* Tagged / Satellite Tagged */}
             <FormControlLabel
-              control={<Checkbox checked={isTagged} onChange={(e) => setIsTagged(e.target.checked)} />}
+              control={
+                <Checkbox
+                  checked={isTagged}
+                  onChange={(e) => {
+                    setIsTagged(e.target.checked);
+                    if (!e.target.checked) {
+                      setTagNumber('');
+                    }
+                  }}
+                />
+              }
               label="Tagged"
             />
+            {isTagged && (
+              <TextField
+                label="Tag Number"
+                placeholder="e.g. BF1260"
+                fullWidth
+                required
+                value={tagNumber}
+                onChange={(e) => setTagNumber(e.target.value)}
+              />
+            )}
             <FormControlLabel
               control={<Checkbox checked={isSatelliteTagged} onChange={(e) => setIsSatelliteTagged(e.target.checked)} />}
               label="Satellite Tagged"

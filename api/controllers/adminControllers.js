@@ -552,6 +552,7 @@ module.exports = ({redisClient}) => {
           points: item.points,
           isTagged: parseBoolean(item.isTagged),
           isSatelliteTagged: parseBoolean(item.isSatelliteTagged),
+          tagNumber: parseBoolean(item.isTagged) ? (item.tagNumber || '') : '',
           catchPhoto: catchPhotoUrl,  // Save the image URL here
         });
   
@@ -631,6 +632,7 @@ module.exports = ({redisClient}) => {
         points: req.body.points,
         isTagged: parseBoolean(req.body.isTagged),
         isSatelliteTagged: parseBoolean(req.body.isSatelliteTagged),
+        tagNumber: parseBoolean(req.body.isTagged) ? (req.body.tagNumber || '') : '',
         catchPhoto: catchPhotoUrl,  // Update the catchPhoto URL
       });
   
