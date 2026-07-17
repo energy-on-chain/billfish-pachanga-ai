@@ -212,6 +212,10 @@ exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
     // Assign places and calculate payouts
     let result;
     if (isReport) {
@@ -315,7 +319,11 @@ exports.getBillfishPachangaOverallBillfishChampionPotStandings = async (req, res
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
-    // Assign places 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Assign places
     let result;
     if (isReport) {
       result = filteredTeams.map((team, index) => ({
@@ -443,7 +451,11 @@ exports.getBillfishPachangaGrandSlamsPotStandings = async (req, res) => {
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
-    // Assign places 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Assign places
     let result;
     if (isReport) {
       result = filteredTeams.map((team, index) => ({
@@ -558,7 +570,11 @@ exports.getBillfishPachangaBillfishDayChampionPotStandings = async (req, res) =>
     // Filter out teams that are not in the pot
     const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
 
-    // Assign places 
+    if (filteredTeams.length === 0) {
+      return res.status(200).json({ noQualifyingEntrants: true });
+    }
+
+    // Assign places
     let result;
     if (isReport) {
       result = filteredTeams.map((team, index) => ({
