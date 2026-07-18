@@ -113,6 +113,7 @@ function PotsSlideshowPage() {
 
       confirmTournamentStarted(apiUrl, loadedConfig);
       fetchData(apiUrl, queries);
+      fetchTotalPotValue(apiUrl, CONFIG_GENERAL_FIREBASE_POTS_TABLE_NAME);
       setHasLoaded(true);
 
     } catch (error) {
@@ -150,13 +151,27 @@ function PotsSlideshowPage() {
       }));
       setPayoutsResultArray(res);
 
-      const total = res.reduce((acc, potResult) => {
-        return acc + potResult.rows.reduce((rowAcc, row) => rowAcc + (row.payout || 0), 0);
-      }, 0);
-      setTotalGrossPot(total);
-
     } catch (error) {
       console.error('Error fetching data: ', error);
+    }
+  };
+
+  const fetchTotalPotValue = async (apiUrl, potYear) => {
+    try {
+      const res = await fetch(`${apiUrl}/api/${year}/get_all_pot_data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ potYear })
+      });
+      const data = await res.json();
+      // Satellite Tag buy-ins aren't a real pot with a payout - exclude
+      // them so the displayed total pot value only reflects actual pots.
+      const total = (data.data || []).reduce((acc, entry) => {
+        return acc + (entry.totalPotFee || 0) - (entry.totalSatelliteTagFee || 0);
+      }, 0);
+      setTotalGrossPot(total);
+    } catch (error) {
+      console.error('Error fetching total pot value: ', error);
     }
   };
 

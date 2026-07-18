@@ -13,7 +13,6 @@ const {
   getBillfishPachangaOverallBillfishNonSonarPotStandings,
   getBillfishPachangaCaptainAndMatePotStandings,
   getBillfishPachangaMostTagsPotStandings,
-  getBillfishPachangaSatelliteTagPotStandings,
 } = require('../controllers/potControllers');
 
 const c = cache.middleware(60); // 60-second TTL for all pot endpoints
@@ -29,6 +28,5 @@ router.post('/api/:year/get_billfish_pachanga_meatfish_species_champion_pot_stan
 router.post('/api/:year/get_billfish_pachanga_overall_billfish_non_sonar_pot_standings', c, getBillfishPachangaOverallBillfishNonSonarPotStandings);
 router.post('/api/:year/get_billfish_pachanga_captain_and_mate_pot_standings', c, getBillfishPachangaCaptainAndMatePotStandings);
 router.post('/api/:year/get_billfish_pachanga_most_tags_pot_standings', c, getBillfishPachangaMostTagsPotStandings);
-router.post('/api/:year/get_billfish_pachanga_satellite_tag_pot_standings', c, getBillfishPachangaSatelliteTagPotStandings);
 
 module.exports = router;

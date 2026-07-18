@@ -69,7 +69,9 @@ function PotsPage() {
   useEffect(() => {
     if (potEntryData) {
       const totalPot = potEntryData.reduce((acc, entry) => {
-        return acc + (entry.totalPotFee || 0); // Sum totalPotFee from each entry
+        // Satellite Tag buy-ins aren't a real pot with a payout - exclude
+        // them so the displayed total pot value only reflects actual pots.
+        return acc + (entry.totalPotFee || 0) - (entry.totalSatelliteTagFee || 0);
       }, 0);
       setTotalGrossPot(totalPot);
     }
@@ -748,16 +750,20 @@ function PotsPage() {
                         .filter(entry => entry.teamName === entriesTeamSelection)
                         .map((entry, index) => {
                           // Collect all pot names from different boards into a single list
+                          // (Satellite Tag is a separate fee, not a pot with a payout, so
+                          // it's excluded here even though it's still stored on the entry)
                           let potsEntered = [];
                           entry.boardSelections.forEach(boardSelection => {
-                            potsEntered = potsEntered.concat(boardSelection.potList);
+                            if (boardSelection.board !== 'Satellite Tag') {
+                              potsEntered = potsEntered.concat(boardSelection.potList);
+                            }
                           });
 
                           // Sort the pot names alphabetically
                           potsEntered = potsEntered.sort();
 
                           // Total Pot Fee for the team
-                          const totalPotFee = entry.totalPotFee;
+                          const totalPotFee = (entry.totalPotFee || 0) - (entry.totalSatelliteTagFee || 0);
 
                           return (
                             <div key={index}>

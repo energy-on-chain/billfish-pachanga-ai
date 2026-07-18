@@ -107,7 +107,9 @@ exports.getTotalPotSizeData = async (req, res) => {
     // Process the snapshot to calculate the total money in each board
     snapshot.forEach(doc => {
       const data = doc.data();
-      totalPotSize += parseFloat(data.totalPotFee || 0);
+      // Satellite Tag buy-ins aren't a real pot with a payout - exclude them
+      // so the publicly-displayed total pot size only reflects actual pots.
+      totalPotSize += parseFloat(data.totalPotFee || 0) - parseFloat(data.totalSatelliteTagFee || 0);
 
       // Sum the fees for each board
       boardNames.forEach(board => {
@@ -952,7 +954,7 @@ exports.getBillfishPachangaMostTagsPotStandings = async (req, res) => {
     const { isReport, payoutStructure, numPlaces } = req.body;
 
     // Count conventionally tagged catches per team (isTagged only - satellite
-    // tags are their own separate pot, see getBillfishPachangaSatelliteTagPotStandings).
+    // tag buy-ins are a separate fee, not a pot with its own standings).
     // Eligibility is every registered team (no pot buy-in required) - unlike
     // other pots, this one is funded separately (see grossTotal calc below)
     // rather than by a per-boat entry fee.
@@ -1030,102 +1032,6 @@ exports.getBillfishPachangaMostTagsPotStandings = async (req, res) => {
 
   } catch (e) {
     console.log('Error fetching billfish pachanga most tags standings:', e);
-    res.status(500).json({ error: e.message });
-  }
-};
-
-exports.getBillfishPachangaSatelliteTagPotStandings = async (req, res) => {
-  console.log('Fetching billfish pachanga satellite tag standings...');
-  try {
-    const year = req.params.year;
-    const db = getFirestore();
-    const { isReport, potName, entryAmount, tournamentCut, payoutStructure, numPlaces } = req.body;
-
-    // Rank teams by their earliest satellite-tagged catch. Each entrant only
-    // carries one satellite tag, so in practice this is "whoever tags first wins" -
-    // tagCount is tracked for consistency with other pots and as a safety net.
-    const catchesRef = db.collection(`catches${year}`);
-    const snapshot = await catchesRef.where('isSatelliteTagged', '==', true).get();
-
-    const teamTags = {};
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      const { teamId, teamName, dateTime } = data;
-
-      if (!teamTags[teamId]) {
-        teamTags[teamId] = { team: teamName, tagCount: 0, firstTag: dateTime };
-      }
-
-      teamTags[teamId].tagCount += 1;
-      if (dateTime && (!teamTags[teamId].firstTag || new Date(dateTime) < new Date(teamTags[teamId].firstTag))) {
-        teamTags[teamId].firstTag = dateTime;
-      }
-    });
-
-    const sortedTeams = Object.values(teamTags).sort((a, b) => {
-      if (b.tagCount !== a.tagCount) {
-        return b.tagCount - a.tagCount;
-      }
-      return new Date(a.firstTag) - new Date(b.firstTag);
-    });
-
-    // Only teams that bought into this pot are eligible (same filtering
-    // pattern as every other buy-in pot)
-    const potRef = db.collection(`pots${year}`);
-    const potSnapshot = await potRef.get();
-
-    let teamsInPot = [];
-    let numTeamsInPot = 0;
-    let grossTotal = 0;
-
-    potSnapshot.forEach(doc => {
-      const data = doc.data();
-      const { teamName, boardSelections } = data;
-
-      const enteredPot = boardSelections.some(selection =>
-        selection.potList.includes(potName)
-      );
-
-      if (enteredPot) {
-        numTeamsInPot++;
-        grossTotal += parseFloat(entryAmount);
-        teamsInPot.push(teamName);
-      }
-    });
-
-    const netTotal = grossTotal * (1 - parseFloat(tournamentCut));
-
-    const filteredTeams = sortedTeams.filter(team => teamsInPot.includes(team.team));
-
-    if (filteredTeams.length === 0) {
-      return res.status(200).json({ noQualifyingEntrants: true });
-    }
-
-    const adjustedPayoutStructure = applyPayoutRollup(payoutStructure, filteredTeams.length);
-
-    let result;
-    if (isReport) {
-      result = filteredTeams.map((team, index) => ({
-        place: index + 1,
-        team: team.team,
-        tagCount: team.tagCount,
-        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
-        totalPayout: netTotal,
-      }));
-    } else {
-      result = filteredTeams.slice(0, numPlaces).map((team, index) => ({
-        place: index + 1,
-        team: team.team,
-        tagCount: team.tagCount,
-        payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
-        totalPayout: netTotal,
-      }));
-    }
-
-    res.status(200).json(result);
-
-  } catch (e) {
-    console.log('Error fetching billfish pachanga satellite tag standings:', e);
     res.status(500).json({ error: e.message });
   }
 };

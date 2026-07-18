@@ -60,10 +60,6 @@ export default {
       {title: "Tuna ($1,000)", amount: 1000, tournamentCut: 0.08},
       {title: "Tuna ($1,500)", amount: 1500, tournamentCut: 0.08},
     ]},
-    {"Satellite Tag": [
-      {title: "Satellite Tag ($2,500)", amount: 2500, tournamentCut: 0},
-    ]},
-
   ],
   CONFIG_POTS_CATEGORIES: [
 
@@ -1083,39 +1079,6 @@ export default {
         5: 0.0,
       },
       url: "get_billfish_pachanga_most_tags_pot_standings",
-      inputs: [
-      ],
-      desktopColumns: [
-        { field: 'place', headerName: 'Place', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'team', headerName: 'Team', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'tagCount', headerName: 'Tags', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false},
-        { field: 'payout', headerName: 'Payout', flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ],
-      mobileColumns: [
-        { field: 'place', headerName: 'Place', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'team', headerName: 'Team', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'tagCount', headerName: 'Tags', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center'},
-        { field: 'payout', headerName: 'Payout', minWidth: 80, flex: 1, headerClassName: 'super-app-theme--header', headerAlign: 'center', align: 'center', isDateTime: false, isCurrency: true},
-      ]
-    },
-
-    // Satellite Tag (only the 3 teams who bought in are eligible, filtered
-    // via boardSelections like any other buy-in pot - ranked by earliest
-    // satellite-tagged catch, i.e. whoever tags first wins)
-    {
-      title: "Satellite Tag",
-      subtitle: "",
-      potName: "Satellite Tag ($2,500)",
-      entryAmount: 2500,
-      tournamentCut: 0,
-      payoutStructure: {
-        1: 1.0,
-        2: 0.0,
-        3: 0.0,
-        4: 0.0,
-        5: 0.0,
-      },
-      url: "get_billfish_pachanga_satellite_tag_pot_standings",
       inputs: [
       ],
       desktopColumns: [
