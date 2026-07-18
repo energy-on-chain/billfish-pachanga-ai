@@ -5,12 +5,18 @@ import { loadConfigForYear } from '../config/masterConfig';
 const SLIDE_WIDTH_IN = 6967538 / 914400;
 const SLIDE_HEIGHT_IN = 12192000 / 914400;
 
+// Standard 16:9 widescreen, in case the ceremony display changes again -
+// pptxgenjs's built-in LAYOUT_16x9 preset (13.333in x 7.5in)
+const WIDE_WIDTH_IN = 13.333;
+const WIDE_HEIGHT_IN = 7.5;
+
 // Layout tuned for viewing on a large ceremony screen from a distance -
 // bigger type throughout, with table row height flexing to fit whatever
 // number of itemized wins a boat has without ever overflowing the slide.
 const MARGIN_X = 0.35;
 const CONTENT_W = SLIDE_WIDTH_IN - MARGIN_X * 2;
 const PHOTO_H = SLIDE_HEIGHT_IN * 0.36;
+const IDEAL_ROW_H = 0.46;
 
 // Tournament brand colors, pulled from client/src/index.css (--color-primary
 // etc.) and stylingConfig.js rather than invented - TEAL is the turquoise
@@ -24,7 +30,6 @@ const ROW_TEXT = '2C2C2C'; // CONFIG_STYLING_POTS_ROW_TEXT_COLOR
 const ROW_FILL_A = 'FFFFFF';
 const ROW_FILL_B = 'EAEAEA'; // CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR
 const BORDER_COLOR = 'E2E8F0'; // --color-border
-const IDEAL_ROW_H = 0.46;
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('en-US', {
@@ -113,10 +118,14 @@ const addAwardsTable = (slide, rows, { x, y, w, colW, rowH }) => {
   return rowH * rows.length;
 };
 
-export const generateAwardsPowerpoint = async (year, tournamentName) => {
+// Fetches and combines leaderboard + pot standings + boat photos per team.
+// Shared by both the portrait (matches the ceremony template) and 16:9
+// (standard widescreen) slide builders below, so the underlying data/
+// filtering/sort/photo logic can't drift between the two.
+const fetchTeamAwardsData = async (year) => {
   const config = await loadConfigForYear(year);
 
-  let apiUrl = import.meta.env.VITE_NODE_ENV === "staging"
+  const apiUrl = import.meta.env.VITE_NODE_ENV === "staging"
     ? import.meta.env.VITE_SERVER_URL_STAGING
     : import.meta.env.VITE_SERVER_URL_PRODUCTION;
 
@@ -270,7 +279,15 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
     }));
   }
 
-  // Build the presentation
+  return { qualifyingTeams, teamAwards, photoDataByTeam };
+};
+
+// Portrait, matching the ceremony template's exact custom dimensions
+// (7.62in x 13.33in): photo on top, name + total winnings banner below,
+// then the two award tables stacked underneath.
+export const generateAwardsPowerpoint = async (year, tournamentName) => {
+  const { qualifyingTeams, teamAwards, photoDataByTeam } = await fetchTeamAwardsData(year);
+
   const pptx = new PptxGenJS();
   pptx.defineLayout({ name: 'CEREMONY', width: SLIDE_WIDTH_IN, height: SLIDE_HEIGHT_IN });
   pptx.layout = 'CEREMONY';
@@ -382,4 +399,129 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
   });
 
   await pptx.writeFile({ fileName: `Awards_Ceremony_${tournamentName}_${year}.pptx` });
+};
+
+// Standard 16:9 widescreen: photo fills the left half, name + total winnings
+// banner + tables stack in the right half. Same underlying data/order as the
+// portrait version - just a different arrangement for a wide screen.
+export const generateAwardsPowerpoint16x9 = async (year, tournamentName) => {
+  const { qualifyingTeams, teamAwards, photoDataByTeam } = await fetchTeamAwardsData(year);
+
+  const pptx = new PptxGenJS();
+  // pptxgenjs's built-in 'LAYOUT_16x9' preset is the legacy 10in x 5.625in
+  // size (same 16:9 ratio, smaller absolute size) - define the modern
+  // widescreen dimensions explicitly instead, same pattern as the portrait
+  // layout above.
+  pptx.defineLayout({ name: 'WIDE', width: WIDE_WIDTH_IN, height: WIDE_HEIGHT_IN });
+  pptx.layout = 'WIDE';
+
+  const photoW = WIDE_WIDTH_IN * 0.48;
+  const dividerW = 0.06;
+  const colX = photoW + dividerW + 0.3;
+  const colW = WIDE_WIDTH_IN - colX - 0.3;
+  const marginTop = 0.3;
+
+  qualifyingTeams.forEach(teamName => {
+    const data = teamAwards[teamName];
+    const slide = pptx.addSlide();
+    slide.background = { color: WHITE };
+
+    // Boat photo (or a branded placeholder block if none on file), left half
+    const photoData = photoDataByTeam[teamName];
+    if (photoData) {
+      slide.addImage({
+        data: photoData,
+        x: 0, y: 0, w: photoW, h: WIDE_HEIGHT_IN,
+        sizing: { type: 'cover', w: photoW, h: WIDE_HEIGHT_IN },
+      });
+    } else {
+      slide.addShape('rect', { x: 0, y: 0, w: photoW, h: WIDE_HEIGHT_IN, fill: { color: NAVY } });
+      slide.addText('⚓', {
+        x: 0, y: 0, w: photoW, h: WIDE_HEIGHT_IN - 0.5,
+        align: 'center', valign: 'middle', color: TEAL, fontSize: 60,
+      });
+      slide.addText('No Boat Photo On File', {
+        x: 0, y: WIDE_HEIGHT_IN - 0.5, w: photoW, h: 0.5,
+        align: 'center', valign: 'middle', color: WHITE, fontSize: 14, italic: true,
+      });
+    }
+
+    // Accent divider between photo and text column
+    slide.addShape('rect', { x: photoW, y: 0, w: dividerW, h: WIDE_HEIGHT_IN, fill: { color: TEAL } });
+
+    let y = marginTop;
+
+    // Boat name
+    slide.addText(teamName, {
+      x: colX, y, w: colW, h: 0.55,
+      fontSize: 26, bold: true, color: NAVY, align: 'center', fontFace: 'Arial',
+    });
+    y += 0.62;
+
+    // Total pot winnings banner
+    const bannerH = 0.62;
+    slide.addShape('roundRect', {
+      x: colX, y, w: colW, h: bannerH,
+      fill: { color: TEAL }, rectRadius: 0.07,
+    });
+    slide.addText([
+      { text: 'TOTAL POT WINNINGS\n', options: { fontSize: 11, color: WHITE, bold: true, charSpacing: 2 } },
+      { text: formatCurrency(data.totalPayout), options: { fontSize: 22, color: WHITE, bold: true } },
+    ], {
+      x: colX, y, w: colW, h: bannerH, align: 'center', valign: 'middle', lineSpacing: 22,
+    });
+    y += bannerH + 0.18;
+
+    const availableH = WIDE_HEIGHT_IN - y - 0.25;
+    const sectionHeaderH = 0.3;
+    const numSections = (data.pot.length > 0 ? 1 : 0) + (data.leaderboard.length > 0 ? 1 : 0);
+    const tableBudget = availableH - sectionHeaderH * numSections - (numSections > 1 ? 0.12 : 0);
+    const rowH = computeRowHeight(data.pot.length, data.leaderboard.length, tableBudget);
+
+    if (data.pot.length > 0) {
+      slide.addText('POT AWARDS', {
+        x: colX, y, w: colW, h: sectionHeaderH,
+        fontSize: 15, bold: true, color: NAVY, charSpacing: 1,
+      });
+      y += sectionHeaderH;
+
+      const potRows = [
+        [{ text: 'Pot', options: {} }, { text: 'Place', options: { align: 'center' } }, { text: 'Payout', options: { align: 'right' } }],
+        ...data.pot.map(a => [
+          { text: a.title, options: {} },
+          { text: a.place, options: { align: 'center' } },
+          { text: formatCurrency(a.payout), options: { align: 'right', bold: true } },
+        ]),
+      ];
+      const usedH = addAwardsTable(slide, potRows, {
+        x: colX, y, w: colW,
+        colW: [colW * 0.55, colW * 0.2, colW * 0.25],
+        rowH,
+      });
+      y += usedH + 0.12;
+    }
+
+    if (data.leaderboard.length > 0) {
+      slide.addText('LEADERBOARD AWARDS', {
+        x: colX, y, w: colW, h: sectionHeaderH,
+        fontSize: 15, bold: true, color: NAVY, charSpacing: 1,
+      });
+      y += sectionHeaderH;
+
+      const boardRows = [
+        [{ text: 'Category', options: {} }, { text: 'Place', options: { align: 'center' } }],
+        ...data.leaderboard.map(a => [
+          { text: a.title, options: {} },
+          { text: a.place, options: { align: 'center', bold: true } },
+        ]),
+      ];
+      addAwardsTable(slide, boardRows, {
+        x: colX, y, w: colW,
+        colW: [colW * 0.75, colW * 0.25],
+        rowH,
+      });
+    }
+  });
+
+  await pptx.writeFile({ fileName: `Awards_Ceremony_16x9_${tournamentName}_${year}.pptx` });
 };

@@ -26,7 +26,7 @@ import { fetchAndGenerateCatchesReport } from '../generators/catchesReports';
 import { generateLeaderboardReport } from '../generators/leaderboardReports';
 import { generatePotsReport } from '../generators/potReports';
 import { generateAwardsReport } from '../generators/awardReports';
-import { generateAwardsPowerpoint } from '../generators/awardsPowerpointGenerator';
+import { generateAwardsPowerpoint, generateAwardsPowerpoint16x9 } from '../generators/awardsPowerpointGenerator';
 import { generateCatchVerificationLog } from '../generators/catchVerificationLogGenerator';
 import { generatePotSummaryByTeamReport } from '../generators/potSummaryByTeamReport';
 import "./RegisterPage.css";
@@ -147,6 +147,7 @@ function AdminPage() {
   const [isPotsReportLoading, setIsPotsReportLoading] = useState(false);
   const [isAwardsReportLoading, setIsAwardsReportLoading] = useState(false);
   const [isAwardsPowerpointLoading, setIsAwardsPowerpointLoading] = useState(false);
+  const [isAwardsPowerpoint16x9Loading, setIsAwardsPowerpoint16x9Loading] = useState(false);
   const [isCatchVerificationLogLoading, setIsCatchVerificationLogLoading] = useState(false);
   const [isPotSummaryByTeamLoading, setIsPotSummaryByTeamLoading] = useState(false);
 
@@ -693,6 +694,18 @@ function AdminPage() {
     }
   };
 
+  const handleGenerateAwardsPowerpoint16x9 = async (year) => {
+    setIsAwardsPowerpoint16x9Loading(true);
+    try {
+      console.log('In handleGenerateAwardsPowerpoint16x9...');
+      await generateAwardsPowerpoint16x9(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating 16x9 awards powerpoint:", error);
+    } finally {
+      setIsAwardsPowerpoint16x9Loading(false);
+    }
+  };
+
   return (
     <AnimatedPage>
       <main>
@@ -919,6 +932,15 @@ function AdminPage() {
                                   disabled={isAwardsPowerpointLoading}
                                 >
                                   {isAwardsPowerpointLoading ? "Processing..." : "Download Awards Ceremony PowerPoint"}
+                                </Button>
+                                <br /><br />
+                                <Button
+                                  onClick={() => handleGenerateAwardsPowerpoint16x9(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isAwardsPowerpoint16x9Loading}
+                                >
+                                  {isAwardsPowerpoint16x9Loading ? "Processing..." : "Download Awards Ceremony PowerPoint (16:9)"}
                                 </Button>
                                 <br /><br />
                               </div>
