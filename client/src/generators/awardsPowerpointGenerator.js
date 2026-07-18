@@ -5,6 +5,21 @@ import { loadConfigForYear } from '../config/masterConfig';
 const SLIDE_WIDTH_IN = 6967538 / 914400;
 const SLIDE_HEIGHT_IN = 12192000 / 914400;
 
+// Layout tuned for viewing on a large ceremony screen from a distance -
+// bigger type throughout, with table row height flexing to fit whatever
+// number of itemized wins a boat has without ever overflowing the slide.
+const MARGIN_X = 0.35;
+const CONTENT_W = SLIDE_WIDTH_IN - MARGIN_X * 2;
+const PHOTO_H = SLIDE_HEIGHT_IN * 0.36;
+const NAVY = '0E2841';
+const TEAL = '156082';
+const WHITE = 'FFFFFF';
+const ROW_FILL_A = 'FFFFFF';
+const ROW_FILL_B = 'F2F6F8';
+const IDEAL_ROW_H = 0.46;
+const MIN_ROW_H = 0.3;
+const HEADER_ROW_H = 0.42;
+
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -22,24 +37,59 @@ const formatPlace = (num) => {
   return `${num}th`;
 };
 
-// Fetch an image and convert it to a base64 data URI - pptxgenjs embeds images
-// most reliably via `data`, avoiding any cross-origin fetch issues at render time.
-const imageUrlToBase64 = async (url) => {
+// Firebase Storage blocks cross-origin fetch() of the raw image bytes (the
+// existing app only ever displays these via <img src>, which isn't subject to
+// CORS the same way). Route through a small backend proxy instead, which
+// reads the file server-side via the Admin SDK and returns it as base64.
+const imageUrlToBase64 = async (apiUrl, year, url) => {
   if (!url) return null;
   try {
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const blob = await response.blob();
-    return await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
+    const response = await fetch(`${apiUrl}/api/${year}/admin_get_image_as_base64`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageUrl: url }),
     });
+    if (!response.ok) return null;
+    const { dataUri } = await response.json();
+    return dataUri || null;
   } catch (e) {
     console.warn(`Could not load boat photo from ${url}:`, e);
     return null;
   }
+};
+
+// Splits the vertical space left after the photo/name/total between the Pot
+// Awards and Leaderboard Awards tables, proportional to how many rows each
+// needs, and picks a row height that fits the larger of the two sections
+// (each table gets header + N item rows) within that shared budget.
+const computeRowHeight = (potCount, boardCount, availableH) => {
+  const potUnits = potCount > 0 ? potCount + 1 : 0;
+  const boardUnits = boardCount > 0 ? boardCount + 1 : 0;
+  const totalUnits = potUnits + boardUnits;
+  if (totalUnits === 0) return IDEAL_ROW_H;
+  const maxRowH = availableH / totalUnits;
+  return Math.max(MIN_ROW_H, Math.min(IDEAL_ROW_H, maxRowH));
+};
+
+const addAwardsTable = (slide, rows, { x, y, w, colW, rowH }) => {
+  const tableRows = rows.map((cells, idx) => {
+    const fill = idx === 0 ? NAVY : (idx % 2 === 0 ? ROW_FILL_B : ROW_FILL_A);
+    const color = idx === 0 ? WHITE : NAVY;
+    const bold = idx === 0;
+    return cells.map(cell => ({
+      text: cell.text,
+      options: { ...cell.options, fill: { color: fill }, color, bold: bold || cell.options?.bold },
+    }));
+  });
+  slide.addTable(tableRows, {
+    x, y, w, h: rowH * rows.length,
+    colW,
+    border: { type: 'solid', color: 'DDDDDD', pt: 0.5 },
+    autoPage: false,
+    valign: 'middle',
+    fontSize: 15,
+  });
+  return rowH * rows.length;
 };
 
 export const generateAwardsPowerpoint = async (year, tournamentName) => {
@@ -189,7 +239,7 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
   // Pre-fetch all boat photos as base64 before building slides
   const photoDataByTeam = {};
   await Promise.all(qualifyingTeams.map(async (teamName) => {
-    photoDataByTeam[teamName] = await imageUrlToBase64(boatPhotoByTeam[teamName]);
+    photoDataByTeam[teamName] = await imageUrlToBase64(apiUrl, year, boatPhotoByTeam[teamName]);
   }));
 
   // Build the presentation
@@ -197,15 +247,12 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
   pptx.defineLayout({ name: 'CEREMONY', width: SLIDE_WIDTH_IN, height: SLIDE_HEIGHT_IN });
   pptx.layout = 'CEREMONY';
 
-  const PHOTO_H = SLIDE_HEIGHT_IN * 0.42;
-  const NAVY = '0E2841';
-  const WHITE = 'FFFFFF';
-
   qualifyingTeams.forEach(teamName => {
     const data = teamAwards[teamName];
     const slide = pptx.addSlide();
+    slide.background = { color: WHITE };
 
-    // Boat photo (or a placeholder block if none on file)
+    // Boat photo (or a branded placeholder block if none on file)
     const photoData = photoDataByTeam[teamName];
     if (photoData) {
       slide.addImage({
@@ -215,71 +262,92 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
       });
     } else {
       slide.addShape('rect', { x: 0, y: 0, w: SLIDE_WIDTH_IN, h: PHOTO_H, fill: { color: NAVY } });
-      slide.addText('No Boat Photo', {
-        x: 0, y: 0, w: SLIDE_WIDTH_IN, h: PHOTO_H,
-        align: 'center', valign: 'middle', color: WHITE, fontSize: 24, bold: true,
+      slide.addText('⚓', {
+        x: 0, y: 0, w: SLIDE_WIDTH_IN, h: PHOTO_H - 0.5,
+        align: 'center', valign: 'middle', color: TEAL, fontSize: 60,
+      });
+      slide.addText('No Boat Photo On File', {
+        x: 0, y: PHOTO_H - 0.5, w: SLIDE_WIDTH_IN, h: 0.5,
+        align: 'center', valign: 'middle', color: WHITE, fontSize: 16, italic: true,
       });
     }
 
-    let y = PHOTO_H + 0.15;
+    // Accent divider under the photo
+    slide.addShape('rect', { x: 0, y: PHOTO_H, w: SLIDE_WIDTH_IN, h: 0.06, fill: { color: TEAL } });
 
-    // Boat name
+    let y = PHOTO_H + 0.22;
+
+    // Boat name - the marquee element
     slide.addText(teamName, {
-      x: 0.3, y, w: SLIDE_WIDTH_IN - 0.6, h: 0.6,
-      fontSize: 32, bold: true, color: NAVY, align: 'center',
+      x: MARGIN_X, y, w: CONTENT_W, h: 0.8,
+      fontSize: 40, bold: true, color: NAVY, align: 'center', fontFace: 'Arial',
     });
-    y += 0.65;
+    y += 0.82;
 
-    // Total pot winnings
-    slide.addText(`Total Pot Winnings: ${formatCurrency(data.totalPayout)}`, {
-      x: 0.3, y, w: SLIDE_WIDTH_IN - 0.6, h: 0.4,
-      fontSize: 18, bold: true, color: '156082', align: 'center',
+    // Total pot winnings - the "hero number", set in a highlighted banner
+    const bannerH = 0.75;
+    slide.addShape('roundRect', {
+      x: MARGIN_X, y, w: CONTENT_W, h: bannerH,
+      fill: { color: NAVY }, rectRadius: 0.08,
     });
-    y += 0.55;
+    slide.addText([
+      { text: 'TOTAL POT WINNINGS\n', options: { fontSize: 13, color: 'A9C6D8', bold: true, charSpacing: 2 } },
+      { text: formatCurrency(data.totalPayout), options: { fontSize: 30, color: WHITE, bold: true } },
+    ], {
+      x: MARGIN_X, y, w: CONTENT_W, h: bannerH, align: 'center', valign: 'middle', lineSpacing: 28,
+    });
+    y += bannerH + 0.25;
+
+    // Shared vertical budget for both tables, computed from what's actually left
+    const availableH = SLIDE_HEIGHT_IN - y - 0.2;
+    const sectionHeaderH = 0.4;
+    const numSections = (data.pot.length > 0 ? 1 : 0) + (data.leaderboard.length > 0 ? 1 : 0);
+    const tableBudget = availableH - sectionHeaderH * numSections - (numSections > 1 ? 0.2 : 0);
+    const rowH = computeRowHeight(data.pot.length, data.leaderboard.length, tableBudget);
 
     // Itemized Pot Awards
     if (data.pot.length > 0) {
-      slide.addText('Pot Awards', {
-        x: 0.3, y, w: SLIDE_WIDTH_IN - 0.6, h: 0.35,
-        fontSize: 16, bold: true, color: NAVY,
+      slide.addText('POT AWARDS', {
+        x: MARGIN_X, y, w: CONTENT_W, h: sectionHeaderH,
+        fontSize: 20, bold: true, color: NAVY, charSpacing: 1,
       });
-      y += 0.35;
+      y += sectionHeaderH;
 
-      const potRows = data.pot.map(a => [
-        { text: a.title, options: { fontSize: 12 } },
-        { text: a.place, options: { fontSize: 12, align: 'center' } },
-        { text: formatCurrency(a.payout), options: { fontSize: 12, align: 'right' } },
-      ]);
-      const potTableH = Math.min(potRows.length * 0.32, 3.0);
-      slide.addTable(potRows, {
-        x: 0.3, y, w: SLIDE_WIDTH_IN - 0.6, h: potTableH,
-        colW: [(SLIDE_WIDTH_IN - 0.6) * 0.55, (SLIDE_WIDTH_IN - 0.6) * 0.2, (SLIDE_WIDTH_IN - 0.6) * 0.25],
-        border: { type: 'solid', color: 'DDDDDD', pt: 0.5 },
-        autoPage: false,
-        valign: 'middle',
+      const potRows = [
+        [{ text: 'Pot', options: {} }, { text: 'Place', options: { align: 'center' } }, { text: 'Payout', options: { align: 'right' } }],
+        ...data.pot.map(a => [
+          { text: a.title, options: {} },
+          { text: a.place, options: { align: 'center' } },
+          { text: formatCurrency(a.payout), options: { align: 'right', bold: true } },
+        ]),
+      ];
+      const usedH = addAwardsTable(slide, potRows, {
+        x: MARGIN_X, y, w: CONTENT_W,
+        colW: [CONTENT_W * 0.55, CONTENT_W * 0.2, CONTENT_W * 0.25],
+        rowH,
       });
-      y += potTableH + 0.2;
+      y += usedH + 0.2;
     }
 
     // Itemized Leaderboard Awards
     if (data.leaderboard.length > 0) {
-      slide.addText('Leaderboard Awards', {
-        x: 0.3, y, w: SLIDE_WIDTH_IN - 0.6, h: 0.35,
-        fontSize: 16, bold: true, color: NAVY,
+      slide.addText('LEADERBOARD AWARDS', {
+        x: MARGIN_X, y, w: CONTENT_W, h: sectionHeaderH,
+        fontSize: 20, bold: true, color: NAVY, charSpacing: 1,
       });
-      y += 0.35;
+      y += sectionHeaderH;
 
-      const boardRows = data.leaderboard.map(a => [
-        { text: a.title, options: { fontSize: 12 } },
-        { text: a.place, options: { fontSize: 12, align: 'center' } },
-      ]);
-      const boardTableH = Math.min(boardRows.length * 0.32, 3.0);
-      slide.addTable(boardRows, {
-        x: 0.3, y, w: SLIDE_WIDTH_IN - 0.6, h: boardTableH,
-        colW: [(SLIDE_WIDTH_IN - 0.6) * 0.75, (SLIDE_WIDTH_IN - 0.6) * 0.25],
-        border: { type: 'solid', color: 'DDDDDD', pt: 0.5 },
-        autoPage: false,
-        valign: 'middle',
+      const boardRows = [
+        [{ text: 'Category', options: {} }, { text: 'Place', options: { align: 'center' } }],
+        ...data.leaderboard.map(a => [
+          { text: a.title, options: {} },
+          { text: a.place, options: { align: 'center', bold: true } },
+        ]),
+      ];
+      addAwardsTable(slide, boardRows, {
+        x: MARGIN_X, y, w: CONTENT_W,
+        colW: [CONTENT_W * 0.75, CONTENT_W * 0.25],
+        rowH,
       });
     }
   });

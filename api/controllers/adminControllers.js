@@ -87,6 +87,39 @@ module.exports = ({redisClient}) => {
     }
   };
   
+  // Fetches a Firebase Storage image server-side and returns it as a base64
+  // data URI. Needed because the browser can't read the bytes of a
+  // cross-origin image via fetch() (CORS) even though <img> tags display it
+  // fine - this only matters for features that need to embed the image data
+  // itself, like the awards ceremony PowerPoint generator.
+  const adminGetImageAsBase64 = async (req, res) => {
+    console.log('In api/admin_get_image_as_base64...');
+
+    try {
+      const { imageUrl } = req.body;
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'imageUrl is required' });
+      }
+
+      const match = imageUrl.match(/\/o\/([^?]+)/);
+      if (!match) {
+        return res.status(400).json({ error: 'Could not parse Storage file path from imageUrl' });
+      }
+      const filePath = decodeURIComponent(match[1]);
+
+      const bucket = getStorage().bucket();
+      const file = bucket.file(filePath);
+      const [buffer] = await file.download();
+      const [metadata] = await file.getMetadata();
+      const contentType = metadata.contentType || 'image/jpeg';
+
+      res.status(200).json({ dataUri: `data:${contentType};base64,${buffer.toString('base64')}` });
+    } catch (e) {
+      console.error('Error in adminGetImageAsBase64:', e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
   // Teams
   const adminAddTeam = async (req, res) => {
     console.log('In api/admin_add_team...');
@@ -967,6 +1000,7 @@ module.exports = ({redisClient}) => {
   return {
     adminGetDatabaseList,
     adminGetOldTeamNameList,
+    adminGetImageAsBase64,
     adminAddTeam,
     adminEditTeam,
     adminDeleteTeam,
