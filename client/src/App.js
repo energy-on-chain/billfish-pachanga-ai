@@ -20,6 +20,8 @@ const DashboardPage = lazy(() => import('./pages/DashboardPage'));
 const NewsfeedPage = lazy(() => import('./pages/NewsfeedPage'));
 const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const PotsPage = lazy(() => import('./pages/PotsPage'));
+const LeaderboardSlideshowPage = lazy(() => import('./pages/LeaderboardSlideshowPage'));
+const PotsSlideshowPage = lazy(() => import('./pages/PotsSlideshowPage'));
 
 import './App.css';
 
@@ -66,6 +68,8 @@ function App() {
         { path: 'newsfeed', element: <Suspense fallback={<PageFallback />}><NewsfeedPage /></Suspense> },
         { path: 'leaderboard', element: <Suspense fallback={<PageFallback />}><LeaderboardPage /></Suspense> },
         { path: 'pots', element: <Suspense fallback={<PageFallback />}><PotsPage /></Suspense> },
+        { path: 'leaderboard-slideshow', element: <Suspense fallback={<PageFallback />}><LeaderboardSlideshowPage /></Suspense> },
+        { path: 'pots-slideshow', element: <Suspense fallback={<PageFallback />}><PotsSlideshowPage /></Suspense> },
       ],
     },
   ]);

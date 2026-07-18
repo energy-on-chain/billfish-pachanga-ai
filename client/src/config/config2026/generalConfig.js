@@ -27,6 +27,8 @@ export default {
     Newsfeed: "/2026/newsfeed",
     Leaderboard: "/2026/leaderboard",
     Pots: "/2026/pots",
+    "Leaderboard Slideshow": "/2026/leaderboard-slideshow",
+    "Pots Slideshow": "/2026/pots-slideshow",
     // "Auction": "/2026/auction",
   },
   CONFIG_GENERAL_ADMIN_LINK_OBJECT: {
