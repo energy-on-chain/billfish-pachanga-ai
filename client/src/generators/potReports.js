@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import dayjs from 'dayjs';
 import { loadConfigForYear } from '../config/masterConfig';  // Dynamic config loader
+import { formatCentralDateTime, currentCentralTimestamp } from './utils/formatCentralDateTime';
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -24,7 +24,7 @@ const formatCurrency = (value) => {
 
 export const generatePotsReport = async (year, tournamentName) => {
   const doc = new jsPDF('landscape');
-  const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
+  const currentDate = currentCentralTimestamp();
 
   try {
     // Load dynamic config for the specific year
@@ -127,6 +127,9 @@ export const generatePotsReport = async (year, tournamentName) => {
           // Format the payout column as currency
           if (column.field === 'payout') {
             return formatCurrency(row[column.field] || 0);
+          }
+          if (column.isDateTime) {
+            return formatCentralDateTime(row[column.field]) || 'N/A';
           }
           return row[column.field] || 'N/A';
         });

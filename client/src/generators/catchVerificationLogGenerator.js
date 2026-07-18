@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import dayjs from 'dayjs';
 import { loadConfigForYear } from '../config/masterConfig';
+import { formatCentralDate, formatCentralTime } from './utils/formatCentralDateTime';
 // A truecolor (RGBA) copy of the tournament logo, not the shared dashboard
 // asset directly - the original is an indexed/palette PNG, which jsPDF's
 // image embedding corrupts (produces a broken PDF image stream). Converting
@@ -104,8 +104,8 @@ export const generateCatchVerificationLog = async (year, tournamentName) => {
         i + 1,
         '',
         c ? c.species : '',
-        c ? dayjs(c.dateTime).format('h:mm A') : '',
-        c ? dayjs(c.dateTime).format('MM/DD/YYYY') : '',
+        c ? formatCentralTime(c.dateTime) : '',
+        c ? formatCentralDate(c.dateTime) : '',
         '',
       ]);
     }

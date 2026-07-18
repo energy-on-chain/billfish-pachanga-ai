@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import dayjs from 'dayjs';
 import { loadConfigForYear } from '../config/masterConfig'; // Dynamic config loader
+import { formatCentralDateTime, currentCentralTimestamp } from './utils/formatCentralDateTime';
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -23,7 +23,7 @@ const formatCurrency = (value) => {
 
 export const generateLeaderboardReport = async (year, tournamentName) => {
   const doc = new jsPDF('landscape');
-  const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
+  const currentDate = currentCentralTimestamp();
 
   // Load dynamic config for the specific year
   const config = await loadConfigForYear(year);
@@ -83,7 +83,12 @@ export const generateLeaderboardReport = async (year, tournamentName) => {
 
       // Generate table columns based on category desktopColumns
       const tableColumns = category.desktopColumns.map(col => col.headerName);
-      const tableRows = category.rows.map(row => category.desktopColumns.map(col => row[col.field] || 'N/A'));
+      const tableRows = category.rows.map(row => category.desktopColumns.map(col => {
+        if (col.isDateTime) {
+          return formatCentralDateTime(row[col.field]) || 'N/A';
+        }
+        return row[col.field] || 'N/A';
+      }));
 
       doc.autoTable({
         startY: 30,

@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import dayjs from 'dayjs';
 import { loadConfigForYear } from '../config/masterConfig'; // Import the dynamic config loader
+import { currentCentralTimestamp } from './utils/formatCentralDateTime';
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -39,7 +39,7 @@ const formatPlace = (num) => {
 
 export const generateAwardsReport = async (year, tournamentName) => {
   const doc = new jsPDF('portrait');
-  const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
+  const currentDate = currentCentralTimestamp();
 
   // Dynamically load the configuration for the year
   const config = await loadConfigForYear(year);

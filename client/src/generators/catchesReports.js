@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import dayjs from 'dayjs';
 import { loadConfigForYear } from '../config/masterConfig'; // Import dynamic config loader
+import { formatCentralDateTime, currentCentralTimestamp } from './utils/formatCentralDateTime';
 
 const addPageNumbers = (doc) => {
   const pageCount = doc.internal.getNumberOfPages();
@@ -14,7 +14,7 @@ const addPageNumbers = (doc) => {
 
 export const generateCatchesBySpeciesReport = (data, year, tournamentName, speciesList) => {
   const doc = new jsPDF('landscape');
-  const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
+  const currentDate = currentCentralTimestamp();
 
   console.log(data);
 
@@ -52,7 +52,7 @@ export const generateCatchesBySpeciesReport = (data, year, tournamentName, speci
         idx + 1, // Row number
         catchItem.species, // Species Type
         catchItem.teamName,
-        dayjs(catchItem.dateTime).format('MMMM D, YYYY h:mm A'),
+        formatCentralDateTime(catchItem.dateTime),
         catchItem.weight || 'N/A',
         catchItem.length || 'N/A',
         catchItem.girth || 'N/A',
@@ -77,7 +77,7 @@ export const generateCatchesBySpeciesReport = (data, year, tournamentName, speci
 
 export const generateCatchesByTeamReport = (data, year, tournamentName, teamRows) => {
   const doc = new jsPDF('landscape');
-  const currentDate = dayjs().format('MMMM D, YYYY h:mm A [CST]');
+  const currentDate = currentCentralTimestamp();
 
   console.log(data);
 
@@ -98,8 +98,8 @@ export const generateCatchesByTeamReport = (data, year, tournamentName, teamRows
   Object.keys(teamGroups).forEach((team, index) => {
     let catches = teamGroups[team];
 
-    // Sort all catches by dateTime in descending order
-    catches.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+    // Oldest catch first, newest last
+    catches.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
 
     if (index > 0) doc.addPage();
 
@@ -117,7 +117,7 @@ export const generateCatchesByTeamReport = (data, year, tournamentName, teamRows
     catches.forEach(catchItem => {
       tableRows.push([
         catchItem.species,
-        dayjs(catchItem.dateTime).format('MMMM D, YYYY h:mm A'),
+        formatCentralDateTime(catchItem.dateTime),
         catchItem.points || 0,
         catchItem.weight || 'N/A',
         catchItem.length || 'N/A',

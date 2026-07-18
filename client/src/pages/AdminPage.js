@@ -28,6 +28,7 @@ import { generatePotsReport } from '../generators/potReports';
 import { generateAwardsReport } from '../generators/awardReports';
 import { generateAwardsPowerpoint } from '../generators/awardsPowerpointGenerator';
 import { generateCatchVerificationLog } from '../generators/catchVerificationLogGenerator';
+import { generatePotSummaryByTeamReport } from '../generators/potSummaryByTeamReport';
 import "./RegisterPage.css";
 import { loadConfigForYear } from '../config/masterConfig';
 
@@ -147,6 +148,7 @@ function AdminPage() {
   const [isAwardsReportLoading, setIsAwardsReportLoading] = useState(false);
   const [isAwardsPowerpointLoading, setIsAwardsPowerpointLoading] = useState(false);
   const [isCatchVerificationLogLoading, setIsCatchVerificationLogLoading] = useState(false);
+  const [isPotSummaryByTeamLoading, setIsPotSummaryByTeamLoading] = useState(false);
 
   // INITIALIZE
   useEffect(() => {
@@ -643,6 +645,18 @@ function AdminPage() {
     }
   };
 
+  const handleGeneratePotSummaryByTeamReport = async (year) => {
+    setIsPotSummaryByTeamLoading(true);
+    try {
+      console.log('In handleGeneratePotSummaryByTeamReport...');
+      await generatePotSummaryByTeamReport(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating pot summary by team report:", error);
+    } finally {
+      setIsPotSummaryByTeamLoading(false);
+    }
+  };
+
   const handleGeneratePotsReport = async (year) => {
     setIsPotsReportLoading(true);
     try {
@@ -872,6 +886,15 @@ function AdminPage() {
                                 disabled={isPotsReportLoading}
                               >
                                 {isPotsReportLoading ? "Processing..." : "Download Pot Standings"}
+                              </Button>
+                              <br /><br />
+                              <Button
+                                onClick={() => handleGeneratePotSummaryByTeamReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isPotSummaryByTeamLoading}
+                              >
+                                {isPotSummaryByTeamLoading ? "Processing..." : "Download Pot Summary (By Team)"}
                               </Button>
                               <br /><br />
                             </div>
