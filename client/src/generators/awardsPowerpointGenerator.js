@@ -11,11 +11,19 @@ const SLIDE_HEIGHT_IN = 12192000 / 914400;
 const MARGIN_X = 0.35;
 const CONTENT_W = SLIDE_WIDTH_IN - MARGIN_X * 2;
 const PHOTO_H = SLIDE_HEIGHT_IN * 0.36;
-const NAVY = '0E2841';
-const TEAL = '156082';
+
+// Tournament brand colors, pulled from client/src/index.css (--color-primary
+// etc.) and stylingConfig.js rather than invented - TEAL is the turquoise
+// used for every banner/table-header on the site (CONFIG_STYLING_BANNER_
+// BACKGROUND_COLOR / CONFIG_STYLING_TABLE_HEADER_BACKGROUND_COLOR), NAVY is
+// the deep blue used for titles (CONFIG_STYLING_POTS_TITLE_TEXT_COLOR).
+const TEAL = '288DAF';
+const NAVY = '004B8C';
 const WHITE = 'FFFFFF';
+const ROW_TEXT = '2C2C2C'; // CONFIG_STYLING_POTS_ROW_TEXT_COLOR
 const ROW_FILL_A = 'FFFFFF';
-const ROW_FILL_B = 'F2F6F8';
+const ROW_FILL_B = 'EAEAEA'; // CONFIG_STYLING_TABLE_ODD_ROW_BACKGROUND_COLOR
+const BORDER_COLOR = 'E2E8F0'; // --color-border
 const IDEAL_ROW_H = 0.46;
 
 const formatCurrency = (value) => {
@@ -83,8 +91,11 @@ const fontSizeForRowHeight = (rowH) => {
 const addAwardsTable = (slide, rows, { x, y, w, colW, rowH }) => {
   const fontSize = fontSizeForRowHeight(rowH);
   const tableRows = rows.map((cells, idx) => {
-    const fill = idx === 0 ? NAVY : (idx % 2 === 0 ? ROW_FILL_B : ROW_FILL_A);
-    const color = idx === 0 ? WHITE : NAVY;
+    // Header row matches the site's own table header styling (turquoise
+    // fill, white text); data rows use the same zebra-stripe + row text
+    // color already established for pot tables elsewhere on the site.
+    const fill = idx === 0 ? TEAL : (idx % 2 === 0 ? ROW_FILL_B : ROW_FILL_A);
+    const color = idx === 0 ? WHITE : ROW_TEXT;
     const bold = idx === 0;
     return cells.map(cell => ({
       text: cell.text,
@@ -94,7 +105,7 @@ const addAwardsTable = (slide, rows, { x, y, w, colW, rowH }) => {
   slide.addTable(tableRows, {
     x, y, w, h: rowH * rows.length,
     colW,
-    border: { type: 'solid', color: 'DDDDDD', pt: 0.5 },
+    border: { type: 'solid', color: BORDER_COLOR, pt: 0.5 },
     autoPage: false,
     valign: 'middle',
     fontSize,
@@ -301,14 +312,15 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
     });
     y += 0.82;
 
-    // Total pot winnings - the "hero number", set in a highlighted banner
+    // Total pot winnings - the "hero number", set in the site's signature
+    // turquoise banner treatment (CONFIG_STYLING_BANNER_BACKGROUND_COLOR)
     const bannerH = 0.75;
     slide.addShape('roundRect', {
       x: MARGIN_X, y, w: CONTENT_W, h: bannerH,
-      fill: { color: NAVY }, rectRadius: 0.08,
+      fill: { color: TEAL }, rectRadius: 0.08,
     });
     slide.addText([
-      { text: 'TOTAL POT WINNINGS\n', options: { fontSize: 13, color: 'A9C6D8', bold: true, charSpacing: 2 } },
+      { text: 'TOTAL POT WINNINGS\n', options: { fontSize: 13, color: WHITE, bold: true, charSpacing: 2 } },
       { text: formatCurrency(data.totalPayout), options: { fontSize: 30, color: WHITE, bold: true } },
     ], {
       x: MARGIN_X, y, w: CONTENT_W, h: bannerH, align: 'center', valign: 'middle', lineSpacing: 28,
