@@ -111,10 +111,18 @@ module.exports = ({redisClient}) => {
       if (!imageResponse.ok) {
         return res.status(502).json({ error: `Failed to fetch image: ${imageResponse.status}` });
       }
-      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
-      const buffer = Buffer.from(await imageResponse.arrayBuffer());
+      const rawBuffer = Buffer.from(await imageResponse.arrayBuffer());
 
-      res.status(200).json({ dataUri: `data:${contentType};base64,${buffer.toString('base64')}` });
+      // Registration photos can be several MB straight off a phone camera.
+      // Downscale + recompress for embedding (e.g. in a slide deck) - full
+      // resolution is wasted there and just slows down fetch/render and
+      // bloats the resulting file.
+      const buffer = await sharp(rawBuffer)
+        .resize({ width: 1600, height: 1600, fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 82 })
+        .toBuffer();
+
+      res.status(200).json({ dataUri: `data:image/jpeg;base64,${buffer.toString('base64')}` });
     } catch (e) {
       console.error('Error in adminGetImageAsBase64:', e);
       res.status(500).json({ error: e.message });

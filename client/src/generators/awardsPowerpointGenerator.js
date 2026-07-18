@@ -246,11 +246,18 @@ export const generateAwardsPowerpoint = async (year, tournamentName) => {
     return a.localeCompare(b);
   });
 
-  // Pre-fetch all boat photos as base64 before building slides
+  // Pre-fetch all boat photos as base64 before building slides. Batched
+  // rather than all at once - each fetch is a Storage round-trip + image
+  // resize on the backend, and a single dyno bogs down if every qualifying
+  // team's photo request lands on it simultaneously.
   const photoDataByTeam = {};
-  await Promise.all(qualifyingTeams.map(async (teamName) => {
-    photoDataByTeam[teamName] = await imageUrlToBase64(apiUrl, year, boatPhotoByTeam[teamName]);
-  }));
+  const PHOTO_FETCH_BATCH_SIZE = 4;
+  for (let i = 0; i < qualifyingTeams.length; i += PHOTO_FETCH_BATCH_SIZE) {
+    const batch = qualifyingTeams.slice(i, i + PHOTO_FETCH_BATCH_SIZE);
+    await Promise.all(batch.map(async (teamName) => {
+      photoDataByTeam[teamName] = await imageUrlToBase64(apiUrl, year, boatPhotoByTeam[teamName]);
+    }));
+  }
 
   // Build the presentation
   const pptx = new PptxGenJS();
