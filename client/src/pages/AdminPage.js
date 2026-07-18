@@ -27,6 +27,7 @@ import { generateLeaderboardReport } from '../generators/leaderboardReports';
 import { generatePotsReport } from '../generators/potReports';
 import { generateAwardsReport } from '../generators/awardReports';
 import { generateAwardsPowerpoint } from '../generators/awardsPowerpointGenerator';
+import { generateCatchVerificationLog } from '../generators/catchVerificationLogGenerator';
 import "./RegisterPage.css";
 import { loadConfigForYear } from '../config/masterConfig';
 
@@ -145,6 +146,7 @@ function AdminPage() {
   const [isPotsReportLoading, setIsPotsReportLoading] = useState(false);
   const [isAwardsReportLoading, setIsAwardsReportLoading] = useState(false);
   const [isAwardsPowerpointLoading, setIsAwardsPowerpointLoading] = useState(false);
+  const [isCatchVerificationLogLoading, setIsCatchVerificationLogLoading] = useState(false);
 
   // INITIALIZE
   useEffect(() => {
@@ -617,6 +619,18 @@ function AdminPage() {
     }
   };
 
+  const handleGenerateCatchVerificationLog = async (year) => {
+    setIsCatchVerificationLogLoading(true);
+    try {
+      console.log('In handleGenerateCatchVerificationLog...');
+      await generateCatchVerificationLog(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating catch verification log:", error);
+    } finally {
+      setIsCatchVerificationLogLoading(false);
+    }
+  };
+
   const handleGenerateLeaderboardReport = async (year) => {
     setIsLeaderboardReportLoading(true);
     try {
@@ -821,6 +835,15 @@ function AdminPage() {
                                 disabled={isCatchesTeamReportLoading}
                               >
                                 {isCatchesTeamReportLoading ? "Processing..." : "Download Catch Log (Teams)"}
+                              </Button>
+                              <br /><br />
+                              <Button
+                                onClick={() => handleGenerateCatchVerificationLog(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                color="primary"
+                                variant="contained"
+                                disabled={isCatchVerificationLogLoading}
+                              >
+                                {isCatchVerificationLogLoading ? "Processing..." : "Download Catch Verification Log"}
                               </Button>
                               <br /><br />
                             </div>
