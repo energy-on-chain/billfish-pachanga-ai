@@ -101,17 +101,18 @@ module.exports = ({redisClient}) => {
         return res.status(400).json({ error: 'imageUrl is required' });
       }
 
-      const match = imageUrl.match(/\/o\/([^?]+)/);
-      if (!match) {
-        return res.status(400).json({ error: 'Could not parse Storage file path from imageUrl' });
+      // These are public download-token URLs (the same ones already used in
+      // <img> tags throughout the app) - fetch directly rather than through
+      // the Admin SDK's bucket API, which only has access to this
+      // environment's own Storage bucket and would fail for a photo that
+      // actually lives in a different Firebase project's bucket (e.g. when
+      // staging data has been synced from production).
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        return res.status(502).json({ error: `Failed to fetch image: ${imageResponse.status}` });
       }
-      const filePath = decodeURIComponent(match[1]);
-
-      const bucket = getStorage().bucket();
-      const file = bucket.file(filePath);
-      const [buffer] = await file.download();
-      const [metadata] = await file.getMetadata();
-      const contentType = metadata.contentType || 'image/jpeg';
+      const contentType = imageResponse.headers.get('content-type') || 'image/jpeg';
+      const buffer = Buffer.from(await imageResponse.arrayBuffer());
 
       res.status(200).json({ dataUri: `data:${contentType};base64,${buffer.toString('base64')}` });
     } catch (e) {

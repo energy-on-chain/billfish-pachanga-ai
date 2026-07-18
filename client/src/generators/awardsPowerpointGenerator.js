@@ -17,8 +17,6 @@ const WHITE = 'FFFFFF';
 const ROW_FILL_A = 'FFFFFF';
 const ROW_FILL_B = 'F2F6F8';
 const IDEAL_ROW_H = 0.46;
-const MIN_ROW_H = 0.3;
-const HEADER_ROW_H = 0.42;
 
 const formatCurrency = (value) => {
   return new Intl.NumberFormat('en-US', {
@@ -61,17 +59,29 @@ const imageUrlToBase64 = async (apiUrl, year, url) => {
 // Splits the vertical space left after the photo/name/total between the Pot
 // Awards and Leaderboard Awards tables, proportional to how many rows each
 // needs, and picks a row height that fits the larger of the two sections
-// (each table gets header + N item rows) within that shared budget.
+// (each table gets header + N item rows) within that shared budget. Never
+// returns more than what the budget allows - staying on the slide always
+// wins over hitting the ideal row height, since a boat with a huge number
+// of wins would otherwise force the table to overflow past the slide edge.
 const computeRowHeight = (potCount, boardCount, availableH) => {
   const potUnits = potCount > 0 ? potCount + 1 : 0;
   const boardUnits = boardCount > 0 ? boardCount + 1 : 0;
   const totalUnits = potUnits + boardUnits;
   if (totalUnits === 0) return IDEAL_ROW_H;
-  const maxRowH = availableH / totalUnits;
-  return Math.max(MIN_ROW_H, Math.min(IDEAL_ROW_H, maxRowH));
+  return Math.min(IDEAL_ROW_H, availableH / totalUnits);
+};
+
+// Table font size follows the row height so text never looks cramped or
+// overflows its row - only ever drops below 15pt in the rare case where a
+// boat has won a large number of pots/awards and needs more compact rows.
+const fontSizeForRowHeight = (rowH) => {
+  if (rowH >= 0.4) return 15;
+  if (rowH >= 0.32) return 13;
+  return 11;
 };
 
 const addAwardsTable = (slide, rows, { x, y, w, colW, rowH }) => {
+  const fontSize = fontSizeForRowHeight(rowH);
   const tableRows = rows.map((cells, idx) => {
     const fill = idx === 0 ? NAVY : (idx % 2 === 0 ? ROW_FILL_B : ROW_FILL_A);
     const color = idx === 0 ? WHITE : NAVY;
@@ -87,7 +97,7 @@ const addAwardsTable = (slide, rows, { x, y, w, colW, rowH }) => {
     border: { type: 'solid', color: 'DDDDDD', pt: 0.5 },
     autoPage: false,
     valign: 'middle',
-    fontSize: 15,
+    fontSize,
   });
   return rowH * rows.length;
 };
