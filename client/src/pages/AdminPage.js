@@ -26,6 +26,7 @@ import { fetchAndGenerateCatchesReport } from '../generators/catchesReports';
 import { generateLeaderboardReport } from '../generators/leaderboardReports';
 import { generatePotsReport } from '../generators/potReports';
 import { generateAwardsReport } from '../generators/awardReports';
+import { generateAwardsPowerpoint } from '../generators/awardsPowerpointGenerator';
 import "./RegisterPage.css";
 import { loadConfigForYear } from '../config/masterConfig';
 
@@ -143,6 +144,7 @@ function AdminPage() {
   const [isLeaderboardReportLoading, setIsLeaderboardReportLoading] = useState(false);
   const [isPotsReportLoading, setIsPotsReportLoading] = useState(false);
   const [isAwardsReportLoading, setIsAwardsReportLoading] = useState(false);
+  const [isAwardsPowerpointLoading, setIsAwardsPowerpointLoading] = useState(false);
 
   // INITIALIZE
   useEffect(() => {
@@ -651,6 +653,18 @@ function AdminPage() {
     }
   };
 
+  const handleGenerateAwardsPowerpoint = async (year) => {
+    setIsAwardsPowerpointLoading(true);
+    try {
+      console.log('In handleGenerateAwardsPowerpoint...');
+      await generateAwardsPowerpoint(year, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    } catch (error) {
+      console.error("Error generating awards powerpoint:", error);
+    } finally {
+      setIsAwardsPowerpointLoading(false);
+    }
+  };
+
   return (
     <AnimatedPage>
       <main>
@@ -850,6 +864,15 @@ function AdminPage() {
                                   disabled={isAwardsReportLoading}
                                 >
                                   {isAwardsReportLoading ? "Processing..." : "Download Awards"}
+                                </Button>
+                                <br /><br />
+                                <Button
+                                  onClick={() => handleGenerateAwardsPowerpoint(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isAwardsPowerpointLoading}
+                                >
+                                  {isAwardsPowerpointLoading ? "Processing..." : "Download Awards Ceremony PowerPoint"}
                                 </Button>
                                 <br /><br />
                               </div>
