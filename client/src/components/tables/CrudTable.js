@@ -3,7 +3,9 @@ import { useParams } from 'react-router-dom';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/DeleteOutlined';
+import Checkbox from '@mui/material/Checkbox';
 import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
 
 import AddTeamModal from '../modals/AddTeamModal';
 import EditTeamModal from '../modals/EditTeamModal';
@@ -42,6 +44,7 @@ function CrudTable(props) {
   const [initialState, setInitialState] = useState();
   const [pageSizeOptions, setPageSizeOptions] = useState();
   const [columnVisibilityModel, setColumnVisibilityModel] = useState({});
+  const [apiUrl, setApiUrl] = useState();
 
   // STATE - DATA
   const [editInfo, setEditInfo] = useState();
@@ -96,6 +99,11 @@ function CrudTable(props) {
       } else if (props.tableType === "Pots") {
         rawColumns = CONFIG_ADMIN_TABLE_PROPERTIES_FOR_POTS;
       }
+
+      const apiUrl = import.meta.env.VITE_NODE_ENV === 'production'
+        ? import.meta.env.VITE_SERVER_URL_PRODUCTION
+        : import.meta.env.VITE_SERVER_URL_STAGING;
+      setApiUrl(apiUrl);
 
       const updatedColumnList = rawColumns.map(columnObject => {
         const updatedColumn = { ...columnObject };
@@ -171,6 +179,18 @@ function CrudTable(props) {
           };
         }
 
+        // Let the "Checked-In?" box on the Teams table be toggled directly,
+        // instead of requiring the full edit-team modal for a single field.
+        if (props.tableType === "Teams" && columnObject.field === "hasCheckedIn") {
+          updatedColumn.renderCell = (params) => (
+            <Checkbox
+              checked={!!params.value}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => handleToggleCheckedIn(params.row, e.target.checked, apiUrl)}
+            />
+          );
+        }
+
         return updatedColumn;
       });
 
@@ -233,6 +253,24 @@ function CrudTable(props) {
     setEditInfo(props.rows[id]);
     openEditModal();
   }
+
+  const handleToggleCheckedIn = async (row, checked, currentApiUrl) => {    // Checked-In toggle
+    setRows(prevRows => prevRows.map(r => r.id === row.id ? { ...r, hasCheckedIn: checked } : r));
+
+    try {
+      const res = await fetch(`${currentApiUrl}/api/${year}/admin_toggle_team_checkin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId: row.teamId, hasCheckedIn: checked })
+      });
+      if (!res.ok) throw new Error('Request failed');
+      toast.success(`${row.teamName || 'Team'} marked as ${checked ? 'checked-in' : 'not checked-in'}`);
+    } catch (error) {
+      console.error('Error toggling check-in status:', error);
+      toast.error(`Failed to update check-in status for ${row.teamName || 'team'}`);
+      setRows(prevRows => prevRows.map(r => r.id === row.id ? { ...r, hasCheckedIn: !checked } : r));
+    }
+  };
 
   const openDeleteModal = () => {setIsDeleteModalOpen(true)};    // Delete
   const closeDeleteModal = () => {

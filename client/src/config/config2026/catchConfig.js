@@ -93,7 +93,11 @@ export default {
       pointsCalculationMethod: "weightRoundDown",
       weightIsRequired: true,
       lengthIsRequired: true,
-      girthIsRequired: true,
+      // Girth is still shown and used for tiebreaking (weight, then length,
+      // then girth), but weighmasters don't always have it on hand, so it's
+      // not required to submit a catch.
+      girthIsApplicable: true,
+      girthIsRequired: false,
       dateTimeIsRequired: false,
       photoIsRequired: false,
     },
@@ -104,7 +108,11 @@ export default {
       pointsCalculationMethod: "weightRoundDown",
       weightIsRequired: true,
       lengthIsRequired: true,
-      girthIsRequired: true,
+      // Girth is still shown and used for tiebreaking (weight, then length,
+      // then girth), but weighmasters don't always have it on hand, so it's
+      // not required to submit a catch.
+      girthIsApplicable: true,
+      girthIsRequired: false,
       dateTimeIsRequired: false,
       photoIsRequired: false,
     },
@@ -115,7 +123,11 @@ export default {
       pointsCalculationMethod: "weightRoundDown",
       weightIsRequired: true,
       lengthIsRequired: true,
-      girthIsRequired: true,
+      // Girth is still shown and used for tiebreaking (weight, then length,
+      // then girth), but weighmasters don't always have it on hand, so it's
+      // not required to submit a catch.
+      girthIsApplicable: true,
+      girthIsRequired: false,
       dateTimeIsRequired: false,
       photoIsRequired: false,
     },

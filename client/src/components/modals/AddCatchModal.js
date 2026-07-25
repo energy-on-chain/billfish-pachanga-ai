@@ -251,6 +251,9 @@ const AddCatchModal = (props) => {
       weightIsRequired: value["weightIsRequired"],
       lengthIsRequired: value["lengthIsRequired"],
       girthIsRequired: value["girthIsRequired"],
+      // Older year configs don't define girthIsApplicable - fall back to
+      // girthIsRequired so the field still shows exactly as it used to.
+      girthIsApplicable: value["girthIsApplicable"] ?? value["girthIsRequired"],
       dateTimeIsRequired: value["dateTimeIsRequired"],
       photoIsRequired: value["photoIsRequired"],
       isTagged: false,
@@ -365,7 +368,7 @@ const AddCatchModal = (props) => {
         { (
             catchData[index].lengthIsRequired ||
             catchData[index].widthIsRequired ||
-            catchData[index].girthIsRequired
+            catchData[index].girthIsApplicable
           ) &&
               <Grid container spacing={2}>
 
@@ -406,18 +409,18 @@ const AddCatchModal = (props) => {
                 }
 
                 {/* Girth */}
-                { catchData[index].girthIsRequired && 
+                { catchData[index].girthIsApplicable &&
                   <Grid item xs={12} sm={4} md={4} lg={4} xl={4}>
-                    <TextField 
+                    <TextField
                       type="number"
                       id={"select-catch-girth-" + index}
                       InputProps={{
-                          inputProps: { 
-                              step: 0.125, min: 0.125 
+                          inputProps: {
+                              step: 0.125, min: 0.125
                           }
                       }}
-                      label="Girth (by 1/8 inch)"
-                      value={catchData[index].girth || ''} 
+                      label={catchData[index].girthIsRequired ? "Girth (by 1/8 inch)" : "Girth (by 1/8 inch, optional)"}
+                      value={catchData[index].girth || ''}
                       onChange={(e) => handleGirthSelection(index, e)}
                       />
                   </Grid>

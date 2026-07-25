@@ -74,7 +74,7 @@ export const generateCatchVerificationLog = async (year, tournamentName) => {
 
     // Logo, top-left
     const logoW = 32;
-    const logoH = logoW * (193 / 380);
+    const logoH = logoW * (477 / 900); // matches tournamentLogo.png's aspect ratio
     doc.addImage(logoBase64, 'PNG', margin, 10, logoW, logoH);
 
     // Header fields - only Boat Name is filled in; the rest are blank lines

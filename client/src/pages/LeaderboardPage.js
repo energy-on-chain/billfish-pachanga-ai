@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import AnimatedPage from './AnimatedPage';
 import Footer from '../components/Footer';
 import Box from '@mui/material/Box';
-import { Select, MenuItem, Skeleton } from "@mui/material";
+import { Select, MenuItem, Skeleton, Autocomplete, TextField, CircularProgress } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import dayjs from 'dayjs';
@@ -34,6 +34,13 @@ function LeaderboardPage() {
   const [viewAlignment, setViewAlignment] = useState('List');
   const [selectedResult, setSelectedResult] = useState([]);
   const [hasSelectedResult, setHasSelectedResult] = useState(false);
+
+  // Select view - lookup mode (by category, or by team)
+  const selectViewOptions = ["By Category", "By Team"];
+  const [selectViewSelection, setSelectViewSelection] = useState("By Category");
+  const [registeredTeamNameList, setRegisteredTeamNameList] = useState([]);
+  const [teamNameListIsLoaded, setTeamNameListIsLoaded] = useState(false);
+  const [teamLookupSelection, setTeamLookupSelection] = useState();
 
   // State for dynamically loaded configuration
   const [config, setConfig] = useState(null);
@@ -99,14 +106,37 @@ function LeaderboardPage() {
 
       confirmTournamentStarted(apiUrl, loadedConfig);
       fetchData(apiUrl, queries, setResultArray);
+      fetchTeamNameList(apiUrl);
       setHasLoaded(true);
 
       setViewAlignment("List");
       setSelectedResult([]);
       setHasSelectedResult(false);
-      
+      setSelectViewSelection("By Category");
+      setTeamLookupSelection();
+
     } catch (error) {
       console.error('Error loading config or fetching data:', error);
+    }
+  };
+
+  const fetchTeamNameList = async (apiUrl) => {
+    try {
+      const res = await fetch(`${apiUrl}/api/${year}/admin_get_database_list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tableName: `teams${year}` })
+      });
+      const data = await res.json();
+      const tempNameList = Object.keys(data).map((teamKey) => ({
+        teamKey,
+        teamData: data[teamKey],
+        label: data[teamKey].teamName,
+      }));
+      setRegisteredTeamNameList(tempNameList);
+      setTeamNameListIsLoaded(true);
+    } catch (error) {
+      console.error('Error fetching team name list: ', error);
     }
   };
 
@@ -181,6 +211,18 @@ function LeaderboardPage() {
     let result = resultArray.filter(item => item.title === e.target.value);
     setSelectedResult(result);
     setHasSelectedResult(true);
+  };
+
+  const handleTeamLookupSelection = (event, value) => {
+    setTeamLookupSelection(value ? value["teamData"]["teamName"] : undefined);
+  };
+
+  const formatPlace = (num) => {
+    const j = num % 10, k = num % 100;
+    if (j === 1 && k !== 11) return `${num}st`;
+    if (j === 2 && k !== 12) return `${num}nd`;
+    if (j === 3 && k !== 13) return `${num}rd`;
+    return `${num}th`;
   };
 
   return (
@@ -287,44 +329,134 @@ function LeaderboardPage() {
                     </Box>
                   ) : (
                     <div>
-                      <div className="select-div">
-                        <br/>
-                        <Select
-                          labelId="select-category"
-                          id="select-category"
-                          value={selectedResult[0]?.title || ''}
-                          onChange={handleSelectResult}
-                        >
-                          {config?.leaderboardConfig?.CONFIG_LEADERBOARD_CATEGORIES.map((category) => (
-                            <MenuItem key={category.title} value={category.title}>
-                              {category.title}
-                            </MenuItem>
-                          ))}
-                        </Select>
+                      <div style={{ marginBottom: '16px' }}>
+                        {matches ? (
+                          <ToggleSliderButton choice={selectViewSelection} choiceList={selectViewOptions} setAlignment={setSelectViewSelection} />
+                        ) : (
+                          <Select
+                            labelId="select-lookup-mode"
+                            id="select-lookup-mode"
+                            value={selectViewSelection}
+                            onChange={(e) => setSelectViewSelection(e.target.value)}
+                          >
+                            {selectViewOptions.map(option => (
+                              <MenuItem key={option} value={option}>{option}</MenuItem>
+                            ))}
+                          </Select>
+                        )}
                       </div>
 
-                      {hasSelectedResult ? (
-                        <div>
-                          {selectedResult.map(result => (
-                            result.rows.length > 0 ? (
-                              <LeaderboardResultTable
-                                key={result.title}
-                                style={{ width: '100%' }}
-                                title={result.title}
-                                subtitle={result.subtitle}
-                                numPlaces={result.numPlaces}
-                                rows={result.rows}
-                                columns={matches ? result.desktopColumns : result.mobileColumns}
-                                isMobile={!matches}
-                                density="compact"
+                      {/* BY CATEGORY */}
+                      {selectViewSelection === "By Category" && (
+                        <>
+                          <div className="select-div">
+                            <br/>
+                            <Select
+                              labelId="select-category"
+                              id="select-category"
+                              value={selectedResult[0]?.title || ''}
+                              onChange={handleSelectResult}
+                            >
+                              {config?.leaderboardConfig?.CONFIG_LEADERBOARD_CATEGORIES.map((category) => (
+                                <MenuItem key={category.title} value={category.title}>
+                                  {category.title}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </div>
+
+                          {hasSelectedResult ? (
+                            <div>
+                              {selectedResult.map(result => (
+                                result.rows.length > 0 ? (
+                                  <LeaderboardResultTable
+                                    key={result.title}
+                                    style={{ width: '100%' }}
+                                    title={result.title}
+                                    subtitle={result.subtitle}
+                                    numPlaces={result.numPlaces}
+                                    rows={result.rows}
+                                    columns={matches ? result.desktopColumns : result.mobileColumns}
+                                    isMobile={!matches}
+                                    density="compact"
+                                  />
+                                ) : (
+                                  <h1 key={result.title}>No results yet.</h1>
+                                )
+                              ))}
+                            </div>
+                          ) : (
+                            <h1 style={{ color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>Please select a category</h1>
+                          )}
+                        </>
+                      )}
+
+                      {/* BY TEAM */}
+                      {selectViewSelection === "By Team" && (
+                        <>
+                          <br/>
+                          {!teamNameListIsLoaded ? (
+                            <CircularProgress/>
+                          ) : (
+                            <div className='pot-div'>
+                              <Autocomplete
+                                className='pot-autocomplete'
+                                disablePortal
+                                id="select-leaderboard-by-team-autocomplete-box"
+                                options={registeredTeamNameList}
+                                renderInput={(params) => <TextField {...params} label="Select Team" />}
+                                onChange={handleTeamLookupSelection}
+                                sx={{ width: '400px' }}
                               />
-                            ) : (
-                              <h1 key={result.title}>No results yet.</h1>
-                            )
-                          ))}
-                        </div>
-                      ) : (
-                        <h1 style={{ color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>Please select a category</h1>
+                            </div>
+                          )}
+                          <br/>
+
+                          {!teamLookupSelection && (
+                            <h1 style={{ color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>Please select a team</h1>
+                          )}
+
+                          {teamLookupSelection && (() => {
+                            const overallResult = resultArray.find(r => r.title === "Tournament Grand Champion");
+                            const overallRow = overallResult?.rows.find(row => row.team === teamLookupSelection);
+                            const otherCategoryRows = resultArray
+                              .filter(r => r.title !== "Tournament Grand Champion")
+                              .map(r => ({ title: r.title, ...r.rows.find(row => row.team === teamLookupSelection) }))
+                              .filter(entry => entry.team === teamLookupSelection);
+
+                            return (
+                              <div>
+                                <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>
+                                  <strong>Team Name:</strong> {teamLookupSelection}
+                                </p>
+                                {overallRow ? (
+                                  <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>
+                                    <strong>Total Points:</strong> {overallRow.points} (Overall Place: {formatPlace(overallRow.place)})
+                                  </p>
+                                ) : (
+                                  <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>
+                                    This team has not caught any qualifying fish yet.
+                                  </p>
+                                )}
+
+                                {otherCategoryRows.length > 0 && (
+                                  <>
+                                    <p style={{ fontSize: '20px', color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>
+                                      <strong>Also Ranked In ({otherCategoryRows.length}):</strong>
+                                    </p>
+                                    <ul>
+                                      {otherCategoryRows.map(entry => (
+                                        <p key={entry.title} style={{ fontSize: '18px', color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR }}>
+                                          {entry.title} &mdash; {formatPlace(entry.place)}{entry.points !== undefined && ` (${entry.points} points)`}
+                                        </p>
+                                      ))}
+                                    </ul>
+                                  </>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </>
                       )}
                     </div>
                   )

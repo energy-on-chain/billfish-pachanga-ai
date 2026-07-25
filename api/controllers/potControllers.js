@@ -848,9 +848,12 @@ exports.getBillfishPachangaMeatfishSpeciesChampionPotStandings = async (req, res
         const data = doc.data();
         const { teamId, teamName, weight, length, girth } = data;
 
+        // Girth isn't always recorded by the weighmaster - default it to 0
+        // so a missing girth never wins a weight/length tie against a team
+        // that did record one, while still using it to break ties when present.
         const parsedWeight = parseFloat(weight);
         const parsedLength = parseFloat(length);
-        const parsedGirth = parseFloat(girth);
+        const parsedGirth = parseFloat(girth) || 0;
 
         if (!teamPoints[teamId] ||
             parsedWeight > teamPoints[teamId].weight ||

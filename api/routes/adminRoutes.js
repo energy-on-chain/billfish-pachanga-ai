@@ -9,6 +9,7 @@ module.exports = ({ redisClient }) => {
     adminGetImageAsBase64,
     adminAddTeam,
     adminEditTeam,
+    adminToggleTeamCheckin,
     adminDeleteTeam,
     adminAddCatch,
     adminEditCatch,
@@ -39,7 +40,8 @@ module.exports = ({ redisClient }) => {
   ]), adminAddTeam);
   router.post('/api/:year/admin_edit_team', upload.fields([
     { name: 'newImages', maxCount: 20 }
-  ]), adminEditTeam);  
+  ]), adminEditTeam);
+  router.post('/api/:year/admin_toggle_team_checkin', adminToggleTeamCheckin);
   router.post('/api/:year/admin_delete_team', adminDeleteTeam);
   router.post('/api/:year/admin_add_catch', upload.any(), adminAddCatch);
   router.post('/api/:year/admin_edit_catch', upload.any(), adminEditCatch);

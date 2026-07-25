@@ -450,6 +450,39 @@ module.exports = ({redisClient}) => {
     }
   };
   
+  // Lightweight endpoint for toggling a team's checked-in status directly
+  // from the admin table (no image/team-name payload needed, unlike
+  // adminEditTeam which is built for the full edit modal).
+  const adminToggleTeamCheckin = async (req, res) => {
+    console.log('In api/admin_toggle_team_checkin...');
+
+    try {
+      const { year } = req.params;
+      const { teamId } = req.body;
+      const hasCheckedIn = parseBoolean(req.body.hasCheckedIn);
+
+      if (!teamId) {
+        return res.status(400).json({ error: 'teamId is required' });
+      }
+
+      const db = getFirestore();
+      const teamDocRef = db.collection(`teams${year}`).doc(teamId);
+      const teamDoc = await teamDocRef.get();
+
+      if (!teamDoc.exists) {
+        return res.status(404).json({ error: 'Team not found' });
+      }
+
+      await teamDocRef.update({ hasCheckedIn });
+
+      console.log(`Team ${teamId} check-in status set to ${hasCheckedIn}`);
+      res.status(200).json({ hasCheckedIn });
+    } catch (e) {
+      console.error('Error in adminToggleTeamCheckin:', e);
+      res.status(500).json({ error: e.message });
+    }
+  };
+
   const adminDeleteTeam = async (req, res) => {
     console.log('In api/admin_delete_team...');
   
@@ -1012,6 +1045,7 @@ module.exports = ({redisClient}) => {
     adminGetImageAsBase64,
     adminAddTeam,
     adminEditTeam,
+    adminToggleTeamCheckin,
     adminDeleteTeam,
     adminAddCatch,
     adminEditCatch,

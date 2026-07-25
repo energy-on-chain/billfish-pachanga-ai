@@ -728,7 +728,12 @@ function AdminPage() {
               <TabContext value={tabName}>
 
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <TabList variant="scrollable" onChange={handleTabChange} aria-label="lab API tabs example">
+                  <TabList
+                    variant="scrollable"
+                    scrollButtons={false}
+                    onChange={handleTabChange}
+                    aria-label="lab API tabs example"
+                  >
                     {config?.adminConfig?.CONFIG_ADMIN_DEFAULT_TAB_NAME_LIST.map((tab) => (
                       <Tab key={tab} label={tab} value={tab} />
                     ))}

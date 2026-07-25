@@ -213,11 +213,16 @@ const EditCatchModal = (props) => {
               />
             }
 
-            {/* Girth */}
-            {speciesConfig?.girthIsRequired &&
+            {/* Girth - shown whenever applicable to the species, but only
+                required to submit if girthIsRequired (weighmasters don't
+                always have it on hand; it's still used for tiebreaking
+                when present). Older year configs don't define
+                girthIsApplicable, so fall back to girthIsRequired to keep
+                their original show-only-if-required behavior. */}
+            {(speciesConfig?.girthIsApplicable ?? speciesConfig?.girthIsRequired) &&
               <TextField
                 type="number"
-                label="Girth (by 1/8 inch)"
+                label={speciesConfig?.girthIsRequired ? "Girth (by 1/8 inch)" : "Girth (by 1/8 inch, optional)"}
                 value={girth || ''}
                 onChange={(e) => setGirth(e.target.value)}
                 InputProps={{ inputProps: { step: 0.125, min: 0.125 } }}

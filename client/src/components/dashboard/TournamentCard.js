@@ -5,6 +5,11 @@ import { useSearchParams } from 'react-router-dom';
 import { loadConfigForYear } from '../../config/masterConfig';
 import '../../pages/DashboardPage.css';
 
+// Vite has no equivalent to webpack's dynamic require(), so the dashboard
+// logo filenames from dashboardConfig.js (e.g. './BillfishPachangaLogo2026.png')
+// are resolved against this eagerly-loaded glob of every PNG in this directory.
+const logoModules = import.meta.glob('./*.png', { eager: true, import: 'default' });
+
 function TournamentCard({ tournament, cardWidth, cardHeight }) {
   // Get the year from URL params if available
   const { year: yearFromParams } = useParams();
@@ -24,15 +29,12 @@ function TournamentCard({ tournament, cardWidth, cardHeight }) {
         const config = await loadConfigForYear(year);
         if (config) {
           setConfigs(config);
-          
-          // Attempt to require the image based on the logo path
-          try {
-            const image = require(`${tournament.logo}`);
-            setLogoImage(image);
-          } catch (err) {
-            console.error(`Failed to load image at path: ${tournament.logo}`, err);
-            setLogoImage(null); // Fallback in case the image is not found
+
+          const image = logoModules[tournament.logo];
+          if (!image) {
+            console.error(`Failed to load image at path: ${tournament.logo}`);
           }
+          setLogoImage(image || null);
         }
       };
       loadConfigs();
