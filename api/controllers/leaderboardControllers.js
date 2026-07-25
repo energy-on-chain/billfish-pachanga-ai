@@ -62,13 +62,15 @@ exports.getBillfishPachangaTournamentGrandChampion = async (req, res) => {
       result = sortedTeams.map((team, index) => ({
         place: index + 1,
         team: team.team,
-        points: team.points
+        points: team.points,
+        lastCatch: team.lastCatch
       }));
     } else {
       result = sortedTeams.slice(0, numPlaces).map((team, index) => ({
         place: index + 1,
         team: team.team,
-        points: team.points
+        points: team.points,
+        lastCatch: team.lastCatch
       }));
     }
 

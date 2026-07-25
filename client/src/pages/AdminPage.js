@@ -9,6 +9,8 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import dayjs from 'dayjs';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
@@ -29,6 +31,7 @@ import { generateAwardsReport } from '../generators/awardReports';
 import { generateAwardsPowerpoint, generateAwardsPowerpoint16x9 } from '../generators/awardsPowerpointGenerator';
 import { generateCatchVerificationLog } from '../generators/catchVerificationLogGenerator';
 import { generatePotSummaryByTeamReport } from '../generators/potSummaryByTeamReport';
+import { computeCloseCalls, generateCloseCallsPDF, CLOSE_CALLS_DEFAULT_THRESHOLDS } from '../generators/closeCallsReport';
 import "./RegisterPage.css";
 import { loadConfigForYear } from '../config/masterConfig';
 
@@ -135,6 +138,11 @@ function AdminPage() {
   const [awardsConfig, setAwardsConfig] = useState({});
   const [awardsConfigHaveLoaded, setAwardsConfigHaveLoaded] = useState(false);
   const [awardsSaving, setAwardsSaving] = useState({});
+
+  // STATE - CLOSE CALLS
+  const [closeCallsThresholds, setCloseCallsThresholds] = useState(CLOSE_CALLS_DEFAULT_THRESHOLDS);
+  const [closeCallsData, setCloseCallsData] = useState(null);
+  const [isCloseCallsLoading, setIsCloseCallsLoading] = useState(false);
 
   // STATE - AUCTION
   // FIXME
@@ -525,6 +533,14 @@ function AdminPage() {
     }).format(value);
   };
 
+  const formatPlace = (num) => {
+    const j = num % 10, k = num % 100;
+    if (j === 1 && k !== 11) return `${num}st`;
+    if (j === 2 && k !== 12) return `${num}nd`;
+    if (j === 3 && k !== 13) return `${num}rd`;
+    return `${num}th`;
+  };
+
   const handleTabChange = (event, newTab) => {
     setTabName(newTab);
     window.localStorage.setItem('selectedTab', newTab); // Save the selected tab to local storage
@@ -694,6 +710,25 @@ function AdminPage() {
     }
   };
 
+  const handleGenerateCloseCallsReport = async () => {
+    setIsCloseCallsLoading(true);
+    try {
+      const data = await computeCloseCalls(year, config, closeCallsThresholds);
+      setCloseCallsData(data);
+    } catch (error) {
+      console.error("Error computing close calls report:", error);
+      toast.error("Error computing the close calls report.");
+    } finally {
+      setIsCloseCallsLoading(false);
+    }
+  };
+
+  const handlePrintCloseCallsReport = () => {
+    if (closeCallsData) {
+      generateCloseCallsPDF(closeCallsData, config?.generalConfig?.CONFIG_GENERAL_TOURNAMENT_NAME);
+    }
+  };
+
   const handleGenerateAwardsPowerpoint16x9 = async (year) => {
     setIsAwardsPowerpoint16x9Loading(true);
     try {
@@ -832,11 +867,19 @@ function AdminPage() {
                       </TabPanel>
                     );
                   } else if (tab === "Reports") {
+                    const reportSectionStyle = { marginBottom: '28px' };
+                    const reportHeadingStyle = {
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: config?.stylingConfig?.CONFIG_STYLING_H2_COLOR || '#666',
+                      marginBottom: '10px',
+                    };
                     return (
                       <TabPanel key="Reports" value="Reports">
                         <div>
                           {config?.generalConfig?.CONFIG_GENERAL_HAS_REGISTRATION && (
-                            <div>
+                            <div style={reportSectionStyle}>
+                              <Typography variant="subtitle2" style={reportHeadingStyle}>Registration</Typography>
                               <Button
                                 onClick={() => handleGenerateRegistrationReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
                                 color="primary"
@@ -845,44 +888,44 @@ function AdminPage() {
                               >
                                 {isRegistrationReportLoading ? "Processing..." : "Download Check-In Form"}
                               </Button>
-                              <br /><br />
                             </div>
                           )}
 
                           {config?.generalConfig?.CONFIG_GENERAL_HAS_NEWSFEED && (
-                            <div>
-                              <Button
-                                onClick={() => handleGenerateCatchesReportSpecies(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                color="primary"
-                                variant="contained"
-                                disabled={isCatchesSpeciesReportLoading}
-                              >
-                                {isCatchesSpeciesReportLoading ? "Processing..." : "Download Catch Log (Species)"}
-                              </Button>
-                              <br /><br />
-                              <Button
-                                onClick={() => handleGenerateCatchesReportTeams(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                color="primary"
-                                variant="contained"
-                                disabled={isCatchesTeamReportLoading}
-                              >
-                                {isCatchesTeamReportLoading ? "Processing..." : "Download Catch Log (Teams)"}
-                              </Button>
-                              <br /><br />
-                              <Button
-                                onClick={() => handleGenerateCatchVerificationLog(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                color="primary"
-                                variant="contained"
-                                disabled={isCatchVerificationLogLoading}
-                              >
-                                {isCatchVerificationLogLoading ? "Processing..." : "Download Catch Verification Log"}
-                              </Button>
-                              <br /><br />
+                            <div style={reportSectionStyle}>
+                              <Typography variant="subtitle2" style={reportHeadingStyle}>Catches</Typography>
+                              <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
+                                <Button
+                                  onClick={() => handleGenerateCatchesReportSpecies(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isCatchesSpeciesReportLoading}
+                                >
+                                  {isCatchesSpeciesReportLoading ? "Processing..." : "Download Catch Log (Species)"}
+                                </Button>
+                                <Button
+                                  onClick={() => handleGenerateCatchesReportTeams(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isCatchesTeamReportLoading}
+                                >
+                                  {isCatchesTeamReportLoading ? "Processing..." : "Download Catch Log (Teams)"}
+                                </Button>
+                                <Button
+                                  onClick={() => handleGenerateCatchVerificationLog(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isCatchVerificationLogLoading}
+                                >
+                                  {isCatchVerificationLogLoading ? "Processing..." : "Download Catch Verification Log"}
+                                </Button>
+                              </Stack>
                             </div>
                           )}
 
                           {config?.generalConfig?.CONFIG_GENERAL_HAS_LEADERBOARD && (
-                            <div>
+                            <div style={reportSectionStyle}>
+                              <Typography variant="subtitle2" style={reportHeadingStyle}>Leaderboard</Typography>
                               <Button
                                 onClick={() => handleGenerateLeaderboardReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
                                 color="primary"
@@ -891,63 +934,73 @@ function AdminPage() {
                               >
                                 {isLeaderboardReportLoading ? "Processing..." : "Download Leaderboard"}
                               </Button>
-                              <br /><br />
                             </div>
                           )}
 
                           {config?.generalConfig?.CONFIG_GENERAL_HAS_POTS && (
-                            <div>
-                              <Button
-                                onClick={() => handleGeneratePotsReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                color="primary"
-                                variant="contained"
-                                disabled={isPotsReportLoading}
-                              >
-                                {isPotsReportLoading ? "Processing..." : "Download Pot Standings"}
-                              </Button>
-                              <br /><br />
-                              <Button
-                                onClick={() => handleGeneratePotSummaryByTeamReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                color="primary"
-                                variant="contained"
-                                disabled={isPotSummaryByTeamLoading}
-                              >
-                                {isPotSummaryByTeamLoading ? "Processing..." : "Download Pot Summary (By Team)"}
-                              </Button>
-                              <br /><br />
+                            <div style={reportSectionStyle}>
+                              <Typography variant="subtitle2" style={reportHeadingStyle}>Pots</Typography>
+                              <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
+                                <Button
+                                  onClick={() => handleGeneratePotsReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isPotsReportLoading}
+                                >
+                                  {isPotsReportLoading ? "Processing..." : "Download Pot Standings"}
+                                </Button>
+                                <Button
+                                  onClick={() => handleGeneratePotSummaryByTeamReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                  color="primary"
+                                  variant="contained"
+                                  disabled={isPotSummaryByTeamLoading}
+                                >
+                                  {isPotSummaryByTeamLoading ? "Processing..." : "Download Pot Summary (By Team)"}
+                                </Button>
+                              </Stack>
                             </div>
                           )}
 
                           {config?.generalConfig?.CONFIG_GENERAL_HAS_LEADERBOARD &&
                             config?.generalConfig?.CONFIG_GENERAL_HAS_POTS && (
-                              <div>
-                                <Button
-                                  onClick={() => handleGenerateAwardsReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                  color="primary"
-                                  variant="contained"
-                                  disabled={isAwardsReportLoading}
-                                >
-                                  {isAwardsReportLoading ? "Processing..." : "Download Awards"}
-                                </Button>
-                                <br /><br />
-                                <Button
-                                  onClick={() => handleGenerateAwardsPowerpoint(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                  color="primary"
-                                  variant="contained"
-                                  disabled={isAwardsPowerpointLoading}
-                                >
-                                  {isAwardsPowerpointLoading ? "Processing..." : "Download Awards Ceremony PowerPoint"}
-                                </Button>
-                                <br /><br />
-                                <Button
-                                  onClick={() => handleGenerateAwardsPowerpoint16x9(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
-                                  color="primary"
-                                  variant="contained"
-                                  disabled={isAwardsPowerpoint16x9Loading}
-                                >
-                                  {isAwardsPowerpoint16x9Loading ? "Processing..." : "Download Awards Ceremony PowerPoint (16:9)"}
-                                </Button>
-                                <br /><br />
+                              <div style={reportSectionStyle}>
+                                <Typography variant="subtitle2" style={reportHeadingStyle}>Awards</Typography>
+                                <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
+                                  <Button
+                                    onClick={() => handleGenerateAwardsReport(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                    color="primary"
+                                    variant="contained"
+                                    disabled={isAwardsReportLoading}
+                                  >
+                                    {isAwardsReportLoading ? "Processing..." : "Download Awards"}
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleGenerateAwardsPowerpoint(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                    color="primary"
+                                    variant="contained"
+                                    disabled={isAwardsPowerpointLoading}
+                                  >
+                                    {isAwardsPowerpointLoading ? "Processing..." : "Download Awards Ceremony PowerPoint"}
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleGenerateAwardsPowerpoint16x9(config?.generalConfig?.CONFIG_GENERAL_YEAR)}
+                                    color="primary"
+                                    variant="contained"
+                                    disabled={isAwardsPowerpoint16x9Loading}
+                                  >
+                                    {isAwardsPowerpoint16x9Loading ? "Processing..." : "Download Awards Ceremony PowerPoint (16:9)"}
+                                  </Button>
+                                </Stack>
+                              </div>
+                            )}
+
+                          {config?.generalConfig?.CONFIG_GENERAL_HAS_LEADERBOARD &&
+                            config?.generalConfig?.CONFIG_GENERAL_HAS_POTS && (
+                              <div style={reportSectionStyle}>
+                                <Typography variant="subtitle2" style={reportHeadingStyle}>Close Calls</Typography>
+                                <Typography variant="body2" gutterBottom>
+                                  Adjustable thresholds and an on-screen preview are on the "Close Calls" tab.
+                                </Typography>
                               </div>
                             )}
                         </div>
@@ -1278,6 +1331,131 @@ function AdminPage() {
                                 </div>
                               );
                             })}
+                          </div>
+                        )}
+                      </TabPanel>
+                    );
+                  } else if (tab === "Close Calls") {
+                    return (
+                      <TabPanel key="Close Calls" value="Close Calls">
+                        <Typography variant="h6" gutterBottom>Close Calls &amp; Tiebreaker Report</Typography>
+                        <Typography variant="body2" gutterBottom>
+                          Scans every leaderboard category and pot for teams that are within threshold of each
+                          other, or already exactly tied and decided by a tiebreak. Rows highlighted in the
+                          printed report straddle the paying/trophy cutoff, meaning they change who actually
+                          gets paid or awarded - review those catches first.
+                        </Typography>
+                        <br/>
+
+                        <Grid container spacing={2} style={{ maxWidth: '700px' }}>
+                          <Grid item xs={6} sm={3}>
+                            <TextField
+                              type="number"
+                              label="Points margin"
+                              size="small"
+                              fullWidth
+                              value={closeCallsThresholds.points}
+                              inputProps={{ min: 0, step: 1 }}
+                              onChange={(e) => setCloseCallsThresholds(prev => ({ ...prev, points: parseFloat(e.target.value) || 0 }))}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={3}>
+                            <TextField
+                              type="number"
+                              label="Weight margin (lbs)"
+                              size="small"
+                              fullWidth
+                              value={closeCallsThresholds.weight}
+                              inputProps={{ min: 0, step: 0.1 }}
+                              onChange={(e) => setCloseCallsThresholds(prev => ({ ...prev, weight: parseFloat(e.target.value) || 0 }))}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={3}>
+                            <TextField
+                              type="number"
+                              label="Length margin (in)"
+                              size="small"
+                              fullWidth
+                              value={closeCallsThresholds.length}
+                              inputProps={{ min: 0, step: 0.1 }}
+                              onChange={(e) => setCloseCallsThresholds(prev => ({ ...prev, length: parseFloat(e.target.value) || 0 }))}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={3}>
+                            <TextField
+                              type="number"
+                              label="Time margin (hrs)"
+                              size="small"
+                              fullWidth
+                              value={closeCallsThresholds.time}
+                              inputProps={{ min: 0, step: 0.5 }}
+                              onChange={(e) => setCloseCallsThresholds(prev => ({ ...prev, time: parseFloat(e.target.value) || 0 }))}
+                            />
+                          </Grid>
+                        </Grid>
+                        <br/>
+
+                        <Button
+                          color="primary"
+                          variant="contained"
+                          onClick={handleGenerateCloseCallsReport}
+                          disabled={isCloseCallsLoading}
+                          startIcon={isCloseCallsLoading ? <CircularProgress size={20} /> : null}
+                        >
+                          {isCloseCallsLoading ? "Scanning..." : "Generate Report"}
+                        </Button>
+                        {closeCallsData && (
+                          <Button
+                            color="primary"
+                            variant="outlined"
+                            style={{ marginLeft: '12px' }}
+                            onClick={handlePrintCloseCallsReport}
+                          >
+                            Print / Download PDF
+                          </Button>
+                        )}
+                        <br/><br/>
+
+                        {closeCallsData && (
+                          <div>
+                            <Typography variant="body2" gutterBottom>
+                              <strong>{closeCallsData.totalFlagged}</strong> close call{closeCallsData.totalFlagged === 1 ? '' : 's'} found.
+                              {closeCallsData.truncated && ` The PDF shows the ${closeCallsData.pdfFlags.length} highest-priority ones.`}
+                            </Typography>
+                            <br/>
+
+                            {[
+                              { heading: 'Leaderboard Close Calls', flags: closeCallsData.leaderboardFlags },
+                              { heading: 'Pot Close Calls', flags: closeCallsData.potFlags },
+                            ].map(section => (
+                              <div key={section.heading} style={{ marginBottom: '24px' }}>
+                                <Typography variant="subtitle1" gutterBottom><strong>{section.heading}</strong></Typography>
+                                {section.flags.length === 0 ? (
+                                  <Typography variant="body2">None at these thresholds.</Typography>
+                                ) : (
+                                  section.flags.map((f, i) => (
+                                    <div
+                                      key={i}
+                                      style={{
+                                        padding: '8px 12px',
+                                        marginBottom: '6px',
+                                        borderRadius: '4px',
+                                        border: '1px solid #ddd',
+                                        backgroundColor: f.critical ? '#FFE9B3' : 'transparent',
+                                      }}
+                                    >
+                                      <Typography variant="body2">
+                                        <strong>{f.tiers.length > 1 ? `${f.categoryTitle} (${f.tiers.length} tiers)` : f.categoryTitle}</strong>
+                                        {f.critical && <> &mdash; <strong>straddles cutoff</strong></>}
+                                      </Typography>
+                                      <Typography variant="body2">
+                                        {formatPlace(f.placeA)} {f.teamA} vs {formatPlace(f.placeB)} {f.teamB} &mdash; {f.detail.text}
+                                      </Typography>
+                                    </div>
+                                  ))
+                                )}
+                              </div>
+                            ))}
                           </div>
                         )}
                       </TabPanel>

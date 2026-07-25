@@ -13,6 +13,7 @@ export default {
     "Reports",
     "Pot Splits",
     "Awards",
+    "Close Calls",
   ],
   CONFIG_ADMIN_TOURNAMENT_START_DATE_STRING: "2026-07-16",
   CONFIG_ADMIN_TOURNAMENT_END_DATE_STRING: "2026-07-19",

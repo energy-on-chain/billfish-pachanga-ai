@@ -225,6 +225,7 @@ exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res
         place: index + 1,
         team: team.team,
         points: team.points,
+        lastCatch: team.lastCatch,
         payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
         totalPayout: netTotal,
       }));
@@ -233,6 +234,7 @@ exports.getBillfishPachangaTournamentGrandChampionPotStandings = async (req, res
         place: index + 1,
         team: team.team,
         points: team.points,
+        lastCatch: team.lastCatch,
         payout: payoutStructure[index + 1] ? parseFloat(payoutStructure[index + 1]) * netTotal : 0, // Calculate payout based on the place
         totalPayout: netTotal,
       }));
@@ -1129,6 +1131,7 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
         place: index + 1,
         team: team.team,
         points: team.points,
+        lastCatch: team.lastCatch,
         payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
@@ -1137,6 +1140,7 @@ exports.getBillfishPachangaCaptainAndMatePotStandings = async (req, res) => {
         place: index + 1,
         team: team.team,
         points: team.points,
+        lastCatch: team.lastCatch,
         payout: adjustedPayoutStructure[index + 1] ? parseFloat(adjustedPayoutStructure[index + 1]) * netTotal : 0,
         totalPayout: netTotal,
       }));
